@@ -1,11 +1,13 @@
 using EdTechApi.DTOs;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
 [ApiController]
 [Route("api/students")]
+[EnableRateLimiting("ApiPolicy")]
 public class StudentController : ControllerBase
 {
     private readonly IStudentService _studentService;

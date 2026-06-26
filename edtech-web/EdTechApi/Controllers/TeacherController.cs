@@ -2,11 +2,13 @@ using EdTechApi.DTOs;
 using EdTechApi.Models;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
 [ApiController]
 [Route("api/teacher")]
+[EnableRateLimiting("ApiPolicy")]
 public class TeacherController : ControllerBase
 {
     private readonly ITeacherService _teacherService;

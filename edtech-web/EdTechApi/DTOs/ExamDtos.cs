@@ -1,27 +1,39 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace EdTechApi.DTOs;
 
 public class CreateExamRequest
 {
+    [Required(ErrorMessage = "Title is required")]
+    [MinLength(3, ErrorMessage = "Title must be at least 3 characters")]
+    [MaxLength(255, ErrorMessage = "Title must be at most 255 characters")]
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Subject is required")]
+    [MinLength(2, ErrorMessage = "Subject must be at least 2 characters")]
+    [MaxLength(100, ErrorMessage = "Subject must be at most 100 characters")]
     [JsonPropertyName("subject")]
     public string Subject { get; set; } = string.Empty;
 
+    [MaxLength(50000, ErrorMessage = "Syllabus text must be at most 50000 characters")]
     [JsonPropertyName("syllabus_text")]
     public string? SyllabusText { get; set; }
 
+    [MaxLength(500, ErrorMessage = "Syllabus PDF path must be at most 500 characters")]
     [JsonPropertyName("syllabus_pdf_path")]
     public string? SyllabusPdfPath { get; set; }
 
+    [Range(1, 480, ErrorMessage = "Duration must be between 1 and 480 minutes")]
     [JsonPropertyName("duration_minutes")]
     public int DurationMinutes { get; set; }
 
+    [Range(1, 500, ErrorMessage = "Total questions must be between 1 and 500")]
     [JsonPropertyName("total_questions")]
     public int TotalQuestions { get; set; }
 
+    [RegularExpression("^(draft|active|closed)$", ErrorMessage = "Status must be 'draft', 'active', or 'closed'")]
     [JsonPropertyName("status")]
     public string? Status { get; set; }
 }
@@ -175,6 +187,9 @@ public class QuestionItem
 
 public class BulkImportRequest
 {
+    [Required(ErrorMessage = "CSV text is required")]
+    [MinLength(10, ErrorMessage = "CSV text must be at least 10 characters")]
+    [MaxLength(500000, ErrorMessage = "CSV text must be at most 500000 characters")]
     [JsonPropertyName("csv_text")]
     public string CsvText { get; set; } = string.Empty;
 }
@@ -205,15 +220,23 @@ public class PaginationInfo
 
 public class AiCreateExamRequest
 {
+    [Required(ErrorMessage = "Subject is required")]
+    [MinLength(2, ErrorMessage = "Subject must be at least 2 characters")]
+    [MaxLength(100, ErrorMessage = "Subject must be at most 100 characters")]
     [JsonPropertyName("subject")]
     public string Subject { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Topic is required")]
+    [MinLength(2, ErrorMessage = "Topic must be at least 2 characters")]
+    [MaxLength(200, ErrorMessage = "Topic must be at most 200 characters")]
     [JsonPropertyName("topic")]
     public string Topic { get; set; } = string.Empty;
 
+    [Range(1, 100, ErrorMessage = "Question count must be between 1 and 100")]
     [JsonPropertyName("question_count")]
     public int QuestionCount { get; set; }
 
+    [RegularExpression("^(easy|medium|hard)$", ErrorMessage = "Difficulty must be 'easy', 'medium', or 'hard'")]
     [JsonPropertyName("difficulty")]
     public string? Difficulty { get; set; }
 }

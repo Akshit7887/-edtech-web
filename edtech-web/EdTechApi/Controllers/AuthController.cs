@@ -1,6 +1,8 @@
+using System.Threading.RateLimiting;
 using EdTechApi.DTOs;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
@@ -16,6 +18,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("generate-otp")]
+    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> GenerateOtp([FromBody] GenerateOtpRequest request)
     {
         var result = await _authService.GenerateOtpAsync(request.Identifier, request.Role, request.Password);
@@ -23,6 +26,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("verify-otp")]
+    [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
     {
         var result = await _authService.VerifyOtpAsync(request.Identifier, request.OtpCode, request.Role);
@@ -30,6 +34,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("send-register-otp")]
+    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> SendRegisterOtp([FromBody] RegisterRequest request)
     {
         var result = await _authService.SendRegisterOtpAsync(request.Name, request.Identifier, request.Password, request.Role);
@@ -37,6 +42,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("verify-register-otp")]
+    [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> VerifyRegisterOtp([FromBody] VerifyRegisterOtpRequest request)
     {
         var result = await _authService.VerifyRegisterOtpAsync(request.Identifier, request.OtpCode);
@@ -44,6 +50,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("forgot-password")]
+    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
         var result = await _authService.ForgotPasswordAsync(request.Identifier);
@@ -51,6 +58,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("reset-password")]
+    [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         var result = await _authService.ResetPasswordAsync(request.Identifier, request.OtpCode, request.NewPassword);
@@ -58,16 +66,15 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("refresh-token")]
+    [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
     {
-        if (string.IsNullOrEmpty(request.Token))
-            return BadRequest(new { success = false, error = "Refresh token is required" });
-
         var result = await _authService.RefreshTokenAsync(request.Token);
         return Ok(new { success = true, data = result });
     }
 
     [HttpPut("profile")]
+    [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         var userId = GetUserId();
@@ -76,6 +83,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("change-password")]
+    [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         var userId = GetUserId();
@@ -84,11 +92,9 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("supabase-session")]
+    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> SupabaseSession([FromBody] SupabaseSessionRequest request)
     {
-        if (string.IsNullOrEmpty(request.Email))
-            return BadRequest(new { success = false, error = "Email is required" });
-
         var result = await _authService.SupabaseSessionAsync(request.Email, request.Name, request.Role, request.SupabaseUserId);
         return Ok(result);
     }

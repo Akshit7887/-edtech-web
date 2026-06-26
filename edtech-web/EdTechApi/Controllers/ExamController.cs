@@ -1,11 +1,13 @@
 using EdTechApi.DTOs;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
 [ApiController]
 [Route("api/exams")]
+[EnableRateLimiting("ApiPolicy")]
 public class ExamController : ControllerBase
 {
     private readonly IExamService _examService;

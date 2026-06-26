@@ -1,14 +1,34 @@
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using EdTechApi.Data;
 using EdTechApi.Middleware;
 using EdTechApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Database ──
-var connectionString = builder.Configuration.GetConnectionString("Supabase")
-    ?? throw new InvalidOperationException("Connection string 'Supabase' not found");
+// ── Secrets from environment variables (override placeholder config) ──
+string GetConfigOrEnv(string configKey, string envKey, string? defaultValue = null)
+{
+    var val = builder.Configuration[configKey];
+    if (!string.IsNullOrEmpty(val)) return val;
+    val = Environment.GetEnvironmentVariable(envKey);
+    if (!string.IsNullOrEmpty(val)) return val;
+    return defaultValue ?? throw new InvalidOperationException($"Missing configuration: set {envKey} env var or {configKey} in config.");
+}
 
-builder.Services.AddSingleton<IDbConnectionFactory>(new DbConnectionFactory(connectionString));
+var dbConnectionString = GetConfigOrEnv("ConnectionStrings:Supabase", "SUPABASE_CONNECTION_STRING");
+var jwtSecret = GetConfigOrEnv("Jwt:Secret", "JWT_SECRET");
+var geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? builder.Configuration["Gemini:ApiKey"] ?? "";
+var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY") ?? builder.Configuration["SendGrid:ApiKey"] ?? "";
+
+// Override config with env var values for downstream services
+builder.Configuration["Jwt:Secret"] = jwtSecret;
+builder.Configuration["Gemini:ApiKey"] = geminiApiKey;
+builder.Configuration["SendGrid:ApiKey"] = sendGridApiKey;
+builder.Configuration["ConnectionStrings:Supabase"] = dbConnectionString;
+
+// ── Database ──
+builder.Services.AddSingleton<IDbConnectionFactory>(new DbConnectionFactory(dbConnectionString));
 
 // ── Services ──
 builder.Services.AddSingleton<IJwtService, JwtService>();
@@ -37,8 +57,46 @@ builder.Services.AddCors(options =>
     });
 });
 
-// ── Controllers ──
-builder.Services.AddControllers()
+// ── Rate Limiting ──
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Strict policy for auth endpoints
+    options.AddFixedWindowLimiter("AuthPolicy", cfg =>
+    {
+        cfg.PermitLimit = 5;
+        cfg.Window = TimeSpan.FromMinutes(1);
+        cfg.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        cfg.QueueLimit = 0;
+    });
+
+    // Moderate policy for general API
+    options.AddFixedWindowLimiter("ApiPolicy", cfg =>
+    {
+        cfg.PermitLimit = 100;
+        cfg.Window = TimeSpan.FromMinutes(1);
+        cfg.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        cfg.QueueLimit = 5;
+    });
+
+    // Strict policy for OTP verification
+    options.AddFixedWindowLimiter("OtpPolicy", cfg =>
+    {
+        cfg.PermitLimit = 10;
+        cfg.Window = TimeSpan.FromMinutes(1);
+        cfg.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        cfg.QueueLimit = 0;
+    });
+});
+
+// ── Controllers with validation ──
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+})
+    .ConfigureApiBehaviorOptions(opt => opt.SuppressModelStateInvalidFilter = true)
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower;
@@ -51,6 +109,7 @@ var app = builder.Build();
 
 // ── Middleware pipeline ──
 app.UseRequestId();
+app.UseRateLimiter();
 app.UseCors();
 app.UseErrorHandler();
 

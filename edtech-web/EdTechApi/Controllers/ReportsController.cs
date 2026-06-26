@@ -1,10 +1,12 @@
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
 [ApiController]
 [Route("api/reports")]
+[EnableRateLimiting("ApiPolicy")]
 public class ReportsController : ControllerBase
 {
     private readonly IReportsService _reportsService;

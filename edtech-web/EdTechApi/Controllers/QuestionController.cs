@@ -1,11 +1,13 @@
 using EdTechApi.DTOs;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
 [ApiController]
 [Route("api/questions")]
+[EnableRateLimiting("ApiPolicy")]
 public class QuestionController : ControllerBase
 {
     private readonly IQuestionService _questionService;
