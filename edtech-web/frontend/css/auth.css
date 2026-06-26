@@ -1,0 +1,41 @@
+.auth-container {
+  width: 100%; max-width: 420px; padding: 20px;
+}
+.auth-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 40px 32px;
+  box-shadow: var(--shadow);
+}
+.auth-logo { text-align: center; margin-bottom: 32px; }
+.auth-logo h1 { font-size: 1.75rem; color: var(--primary-light); }
+.auth-logo p { color: var(--text-dim); margin-top: 4px; font-size: 0.9rem; }
+.auth-title { text-align: center; margin-bottom: 24px; }
+.auth-title h2 { font-size: 1.25rem; }
+.auth-title p { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text-dim); font-size: 0.8rem; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.auth-footer { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
+.auth-role-selector { display: flex; gap: 8px; margin-bottom: 20px; }
+.role-option {
+  flex: 1; padding: 10px; text-align: center; border-radius: var(--radius-sm);
+  border: 2px solid var(--border); cursor: pointer; transition: var(--transition);
+  font-size: 0.85rem; font-weight: 500; color: var(--text-muted); background: transparent;
+}
+.role-option:hover { border-color: var(--border-light); }
+.role-option.selected { border-color: var(--primary); color: var(--primary-light); background: rgba(99,102,241,0.08); }
+.role-option .role-icon { font-size: 1.2rem; display: block; margin-bottom: 4px; }
+
+.otp-inputs { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+.otp-input {
+  width: 48px; height: 56px; text-align: center; font-size: 1.5rem; font-weight: 600;
+  background: var(--bg-input); border: 2px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); transition: var(--transition);
+}
+.otp-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); outline: none; }
+
+.animated-check { text-align: center; padding: 20px 0; }
+.check-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(34,197,94,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 2rem; color: var(--success); }
+
+.password-input-wrap { position: relative; }
+.toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px; font-size: 0.85rem; }
+.toggle-password:hover { color: var(--text-muted); }

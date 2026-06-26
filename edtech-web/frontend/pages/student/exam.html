@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/exam.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="exam-timer" class="exam-timer">Time Remaining: --</div>
+  <div id="proctor-warnings" style="background:var(--warning);color:#000;text-align:center;padding:6px;font-size:0.8rem;display:none"></div>
+  <div class="exam-container" style="padding:20px;max-width:800px;margin:0 auto">
+    <div id="alert-container"></div>
+    <div id="exam-header" class="exam-header">
+      <h2 id="exam-title">Loading Exam...</h2>
+      <div class="exam-meta">
+        <span class="exam-meta-item">📖 <span id="exam-subject"></span></span>
+        <span class="exam-meta-item">📄 <span id="exam-total-q">0</span> questions</span>
+      </div>
+      <div class="exam-progress">
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        <div class="progress-text" id="progress-text">0/0 answered</div>
+      </div>
+    </div>
+    <div id="question-container"><div class="loading-overlay"><div class="spinner"></div><span>Loading questions...</span></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px">
+      <button class="btn btn-secondary" onclick="examEngine.prevQuestion()" id="prev-btn">← Previous</button>
+      <button class="btn btn-primary" onclick="handleSubmit()" id="submit-btn">Submit Exam ✓</button>
+      <button class="btn btn-secondary" onclick="examEngine.nextQuestion()" id="next-btn">Next →</button>
+    </div>
+  </div>
+  <div class="question-navigator" id="question-navigator"></div>
+  <div id="submit-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header"><h3>Submit Exam</h3></div>
+      <div class="modal-body">
+        <p>Are you sure you want to submit your exam?</p>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px">
+          Answered: <span id="modal-answered">0</span>/<span id="modal-total">0</span>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeSubmitModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmSubmit()">Submit</button>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/timer.js"></script>
+  <script src="../../js/proctor.js"></script>
+  <script src="../../js/exam.js"></script>
+  <script>
+    let examEngine = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('student')) return;
+      const examId = parseInt(getQueryParam('id'));
+      if (!examId) { showAlert('No exam ID specified', 'error'); return; }
+
+      examEngine = new ExamEngine({
+        examId,
+        studentId: getUserId(),
+        mode: 'exam',
+        onComplete: (data) => {
+          document.getElementById('exam-timer').style.display = 'none';
+          showAlert('Exam submitted successfully!', 'success');
+          setTimeout(() => goTo(`results.html`), 1500);
+        }
+      });
+
+      try {
+        const data = await examEngine.startSession();
+        document.getElementById('exam-title').textContent = data.exam?.title || 'Exam';
+        document.getElementById('exam-subject').textContent = data.exam?.subject || '';
+        document.getElementById('exam-total-q').textContent = examEngine.questions.length;
+      } catch (e) {
+        document.getElementById('exam-header').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    });
+
+    function handleSubmit() {
+      document.getElementById('modal-answered').textContent = examEngine.getAnsweredCount();
+      document.getElementById('modal-total').textContent = examEngine.questions.length;
+      document.getElementById('submit-modal').classList.add('active');
+    }
+
+    function closeSubmitModal() {
+      document.getElementById('submit-modal').classList.remove('active');
+    }
+
+    async function confirmSubmit() {
+      closeSubmitModal();
+      await examEngine.submitExam();
+    }
+
+    window.addEventListener('beforeunload', (e) => {
+      if (examEngine && !examEngine.isSubmitting) {
+        e.preventDefault();
+        e.returnValue = 'You have an exam in progress. Are you sure you want to leave?';
+      }
+    });
+  </script>
+</body>
+</html>

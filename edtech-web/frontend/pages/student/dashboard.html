@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav" id="student-nav">
+      <li><a href="dashboard.html" class="active">Dashboard</a></li>
+      <li><a href="results.html">My Results</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="profile.html">Profile</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html" class="active"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="results.html"><span class="nav-icon">📝</span><span>My Results</span></a></li>
+        <li><a href="notifications.html"><span class="nav-icon">🔔</span><span>Notifications</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1>Welcome, <span id="student-name"></span></h1>
+        <p>Student Dashboard</p>
+      </div>
+      <div id="alert-container"></div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value" id="stat-total">-</div><div class="stat-label">Total Exams</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="stat-completed">-</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-value" id="stat-avg">-</div><div class="stat-label">Average Score</div></div>
+        <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value" id="stat-highest">-</div><div class="stat-label">Highest Score</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2>Available Exams</h2>
+        <button class="btn btn-primary" onclick="goTo('../../exam-list.html')">Browse Exams</button>
+      </div>
+      <div id="exam-list"><div class="loading-overlay"><div class="spinner"></div><span>Loading exams...</span></div></div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('student')) return;
+      document.getElementById('student-name').textContent = getUserName();
+      setupNavbar();
+      await loadAnalytics();
+      await loadExams();
+    });
+
+    async function loadAnalytics() {
+      try {
+        const res = await api.get(`/api/students/analytics/${getUserId()}`);
+        const d = res.data;
+        document.getElementById('stat-total').textContent = d.total_exams || 0;
+        document.getElementById('stat-completed').textContent = d.completed_exams || 0;
+        document.getElementById('stat-avg').textContent = (d.average_score || 0).toFixed(1);
+        document.getElementById('stat-highest').textContent = d.highest_score || 0;
+      } catch (e) {
+        document.getElementById('stats-grid').innerHTML = '<div class="alert alert-error">Failed to load analytics</div>';
+      }
+    }
+
+    async function loadExams() {
+      try {
+        const res = await api.get(`/api/exams?page=1&limit=10`);
+        const exams = res.data || [];
+        const container = document.getElementById('exam-list');
+        if (!exams.length) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><h3>No exams available</h3><p>Check back later when your teacher assigns exams.</p></div>';
+          return;
+        }
+        container.innerHTML = '<div class="exam-grid">' + exams.map(e => `
+          <div class="exam-card" onclick="startExam(${e.id})">
+            <div class="exam-card-title">${e.title}</div>
+            <div class="exam-card-meta">
+              <span>📖 ${e.subject}</span>
+              <span>⏱ ${e.duration_minutes} min</span>
+              <span>📄 ${e.total_questions} questions</span>
+              ${statusBadge(e.status)}
+            </div>
+            <div class="exam-card-footer">
+              <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
+              <span class="btn btn-sm btn-primary">Take Exam →</span>
+            </div>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        document.getElementById('exam-list').innerHTML = '<div class="alert alert-error">Failed to load exams</div>';
+      }
+    }
+
+    function startExam(examId) {
+      goTo(`exam.html?id=${examId}`);
+    }
+  </script>
+</body>
+</html>

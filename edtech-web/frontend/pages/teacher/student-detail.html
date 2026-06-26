@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Detail - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="students.html" class="active">Students</a></li>
+      <li><a href="classes.html">Classes</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="students.html"><span class="nav-icon">👥</span><span>Students</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div id="alert-container"></div>
+      <div id="student-content"><div class="loading-overlay"><div class="spinner"></div><span>Loading student...</span></div></div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('teacher')) return;
+      setupNavbar();
+      const sid = parseInt(getQueryParam('id'));
+      if (!sid) { showAlert('No student ID', 'error'); return; }
+      await loadStudent(sid);
+    });
+
+    async function loadStudent(sid) {
+      try {
+        const s = await loadStudentDetail(sid);
+        if (!s) { document.getElementById('student-content').innerHTML = '<div class="alert alert-error">Student not found</div>'; return; }
+        document.getElementById('student-content').innerHTML = `
+          <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="display:flex;align-items:center;gap:16px">
+                <div class="student-avatar" style="width:48px;height:48px;font-size:1.25rem">${s.name.charAt(0).toUpperCase()}</div>
+                <div>
+                  <h1>${s.name}</h1>
+                  <p>${s.email || ''} · ${s.phone || ''} · ${s.role}</p>
+                </div>
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="goTo('students.html')">← Back</button>
+          </div>
+          <div class="stats-grid" style="margin-top:24px">
+            <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value">${s.exam_history?.length || 0}</div><div class="stat-label">Exams Taken</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${(s.exam_history || []).filter(e => e.status === 'completed').length}</div><div class="stat-label">Completed</div></div>
+          </div>
+          <h3 style="margin:24px 0 12px">Exam History</h3>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Exam</th><th>Status</th><th>Score</th><th>Total</th><th>Submitted</th></tr></thead>
+              <tbody>
+                ${(!s.exam_history || !s.exam_history.length) ? '<tr><td colspan="5"><div class="empty-state" style="padding:20px">No exam history</div></td></tr>' : s.exam_history.map(h => `
+                  <tr>
+                    <td><strong>${h.exam_title}</strong></td>
+                    <td>${statusBadge(h.status)}</td>
+                    <td>${h.score ?? '-'}</td>
+                    <td>${h.total_questions}</td>
+                    <td>${formatDate(h.submitted_at)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('student-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

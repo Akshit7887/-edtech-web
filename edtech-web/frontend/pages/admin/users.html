@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Users - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech Admin</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="users.html" class="active">Users</a></li>
+      <li><a href="exams.html">All Exams</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="users.html" class="active"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="exams.html"><span class="nav-icon">📝</span><span>All Exams</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1>Users</h1>
+        <p>Manage all platform users</p>
+      </div>
+      <div id="alert-container"></div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Created</th></tr></thead>
+          <tbody id="users-tbody"><tr><td colspan="5"><div class="loading-overlay"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireRole('admin')) return;
+      setupNavbar();
+      loadUsers();
+    });
+
+    async function loadUsers() {
+      try {
+        const res = await api.get('/api/teacher/students?page=1&limit=100');
+        const users = res.data || [];
+        const tbody = document.getElementById('users-tbody');
+        if (!users.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state">No users found</div></td></tr>'; return; }
+        tbody.innerHTML = users.map(u => `
+          <tr>
+            <td><div class="student-row"><div class="student-avatar">${u.name.charAt(0).toUpperCase()}</div><strong>${u.name}</strong></div></td>
+            <td>${u.email || '-'}</td>
+            <td>${u.phone || '-'}</td>
+            <td><span class="user-badge">student</span></td>
+            <td>${formatDate(u.created_at)}</td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        document.getElementById('users-tbody').innerHTML = `<tr><td colspan="5"><div class="alert alert-error">${e.message}</div></td></tr>`;
+      }
+    }
+  </script>
+</body>
+</html>

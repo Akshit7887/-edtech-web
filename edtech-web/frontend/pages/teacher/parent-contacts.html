@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parent Contacts - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="students.html">Students</a></li>
+      <li><a href="classes.html">Classes</a></li>
+      <li><a href="parent-contacts.html" class="active">Parent Contacts</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="students.html"><span class="nav-icon">👥</span><span>Students</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
+        <li><a href="parent-contacts.html" class="active"><span class="nav-icon">👪</span><span>Parent Contacts</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1>Parent Contacts</h1>
+        <p>Manage parent contact information for students</p>
+      </div>
+      <div id="alert-container"></div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Student</th><th>Parent Name</th><th>Parent Email</th><th>Parent Phone</th><th>Relationship</th><th>Actions</th></tr></thead>
+          <tbody id="contacts-tbody"><tr><td colspan="6"><div class="loading-overlay"><div class="spinner"></div></div></td></tr></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('teacher')) return;
+      setupNavbar();
+      await loadContacts();
+    });
+
+    async function loadContacts() {
+      try {
+        const contacts = await loadParentContacts();
+        const tbody = document.getElementById('contacts-tbody');
+        if (!contacts.length) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👪</div><h3>No parent contacts</h3><p>Add parent contacts for your students.</p></div></td></tr>';
+          return;
+        }
+        tbody.innerHTML = contacts.map(c => `
+          <tr>
+            <td><strong>${c.student_name}</strong></td>
+            <td>${c.parent_name}</td>
+            <td>${c.parent_email || '-'}</td>
+            <td>${c.parent_phone || '-'}</td>
+            <td>${c.relationship || '-'}</td>
+            <td>
+              <button class="btn btn-sm btn-ghost" onclick="editContact(${c.student_id}, '${c.parent_name}', '${c.parent_email || ''}', '${c.parent_phone || ''}', '${c.relationship || ''}')">✏️</button>
+              <button class="btn btn-sm btn-danger" onclick="handleDeleteContact(${c.student_id})">🗑️</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        document.getElementById('contacts-tbody').innerHTML = `<tr><td colspan="6"><div class="alert alert-error">${e.message}</div></td></tr>`;
+      }
+    }
+
+    function editContact(studentId, parentName, parentEmail, parentPhone, relationship) {
+      const html = `
+        <div class="form-group"><label class="form-label">Parent Name</label><input class="form-input" id="pc-name" value="${parentName}"></div>
+        <div class="form-group"><label class="form-label">Parent Email</label><input class="form-input" id="pc-email" value="${parentEmail}"></div>
+        <div class="form-group"><label class="form-label">Parent Phone</label><input class="form-input" id="pc-phone" value="${parentPhone}"></div>
+        <div class="form-group"><label class="form-label">Relationship</label><input class="form-input" id="pc-rel" value="${relationship}"></div>
+      `;
+      const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'pc-modal';
+      overlay.innerHTML = `
+        <div class="modal"><div class="modal-header"><h3>Edit Parent Contact</h3><button class="modal-close" onclick="closePcModal()">×</button></div>
+        <div class="modal-body">${html}</div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closePcModal()">Cancel</button><button class="btn btn-primary" onclick="handleSaveContact(${studentId})">Save</button></div></div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    function closePcModal() { const m = document.getElementById('pc-modal'); if (m) m.remove(); }
+
+    async function handleSaveContact(studentId) {
+      const data = {
+        parent_name: document.getElementById('pc-name').value.trim(),
+        parent_email: document.getElementById('pc-email').value.trim() || null,
+        parent_phone: document.getElementById('pc-phone').value.trim() || null,
+        relationship: document.getElementById('pc-rel').value.trim() || null
+      };
+      if (!data.parent_name) { showAlert('Parent name is required', 'error'); return; }
+      try { await saveParentContact(studentId, data); showAlert('Contact saved!', 'success'); closePcModal(); await loadContacts(); } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function handleDeleteContact(studentId) {
+      if (!await confirmAction('Delete this parent contact?')) return;
+      try { await deleteParentContact(studentId); showAlert('Contact deleted', 'success'); await loadContacts(); } catch (e) { showAlert(e.message, 'error'); }
+    }
+  </script>
+</body>
+</html>

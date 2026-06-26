@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="create-exam.html">Create Exam</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="edit-exam.html?id=" id="back-link"><span class="nav-icon">←</span><span>Back to Exam</span></a></li>
+        <li><a href="reports.html" class="active"><span class="nav-icon">📄</span><span>Reports</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div id="alert-container"></div>
+      <div id="reports-content"><div class="loading-overlay"><div class="spinner"></div><span>Loading reports...</span></div></div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('teacher')) return;
+      setupNavbar();
+      const examId = parseInt(getQueryParam('id'));
+      if (!examId) { showAlert('No exam ID', 'error'); return; }
+      document.getElementById('back-link').href = `edit-exam.html?id=${examId}`;
+      await loadReports(examId);
+    });
+
+    async function loadReports(examId) {
+      try {
+        const [history, pending] = await Promise.all([
+          loadReportHistory(examId),
+          getPendingReports(examId)
+        ]);
+        document.getElementById('reports-content').innerHTML = `
+          <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+            <div><h1>Parent Reports</h1><p>Send exam results to parents</p></div>
+            <button class="btn btn-primary" onclick="handleSendReports(${examId})">📧 Send Parent Reports</button>
+          </div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3 class="card-title">Pending Reports</h3></div>
+            <div class="card-body">
+              ${pending.length === 0 ? '<p style="color:var(--text-dim)">All students have parent contacts assigned.</p>' : `
+                <p style="color:var(--warning);margin-bottom:8px">${pending.length} student(s) need parent contact information:</p>
+                <ul style="color:var(--text-muted);font-size:0.85rem">
+                  ${pending.map(s => `<li>${s.student_name || `Student #${s.student_id}`}</li>`).join('')}
+                </ul>
+              `}
+            </div>
+          </div>
+          <h3 style="margin-bottom:12px">Report History</h3>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Student</th><th>Message</th><th>Sent Via</th><th>Sent At</th><th>Status</th></tr></thead>
+              <tbody>
+                ${history.length === 0 ? '<tr><td colspan="5"><div class="empty-state" style="padding:20px">No reports sent yet</div></td></tr>' : history.map(r => `
+                  <tr>
+                    <td><strong>${r.student_name}</strong></td>
+                    <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.message}</td>
+                    <td>${r.sent_via || '-'}</td>
+                    <td>${formatDate(r.sent_at)}</td>
+                    <td>${statusBadge(r.delivery_status)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('reports-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+
+    async function handleSendReports(examId) {
+      if (!await confirmAction('Send reports to all parents with contacts?')) return;
+      try {
+        await sendParentReports(examId);
+        showAlert('Reports sent successfully!', 'success');
+        await loadReports(examId);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+  </script>
+</body>
+</html>

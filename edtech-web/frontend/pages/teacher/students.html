@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Students - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="create-exam.html">Create Exam</a></li>
+      <li><a href="students.html" class="active">Students</a></li>
+      <li><a href="classes.html">Classes</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="students.html" class="active"><span class="nav-icon">👥</span><span>Students</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
+        <li><a href="parent-contacts.html"><span class="nav-icon">👪</span><span>Parent Contacts</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h1>Students</h1>
+          <p>Manage your students</p>
+        </div>
+        <button class="btn btn-secondary" onclick="showAnnounceModal()">📢 Send Announcement</button>
+      </div>
+      <div id="alert-container"></div>
+      <div class="table-container">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Class</th><th>Created</th><th>Actions</th></tr></thead>
+          <tbody id="students-tbody">
+            <tr><td colspan="6"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="students-pagination"></div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
+  <script>
+    let currentPage = 1;
+
+    document.addEventListener('DOMContentLoaded', () => { if (!requireRole('teacher')) return; setupNavbar(); loadStudentsPage(1); });
+
+    async function loadStudentsPage(page) {
+      currentPage = page;
+      try {
+        const res = await loadStudents(page, 20);
+        const students = res.data || [];
+        const pagination = res.pagination || { page: 1, total: 0, total_pages: 1 };
+        const tbody = document.getElementById('students-tbody');
+        if (!students.length) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><h3>No students found</h3></div></td></tr>';
+        } else {
+          tbody.innerHTML = students.map(s => `
+            <tr>
+              <td><div class="student-row"><div class="student-avatar">${s.name.charAt(0).toUpperCase()}</div><strong>${s.name}</strong></div></td>
+              <td>${s.email || '-'}</td>
+              <td>${s.phone || '-'}</td>
+              <td>${s.class_name || '-'}</td>
+              <td>${formatDate(s.created_at)}</td>
+              <td><button class="btn btn-sm btn-info" onclick="goTo('student-detail.html?id=${s.id}')">View</button></td>
+            </tr>
+          `).join('');
+        }
+        renderPagination(pagination);
+      } catch (e) {
+        document.getElementById('students-tbody').innerHTML = `<tr><td colspan="6"><div class="alert alert-error">${e.message}</div></td></tr>`;
+      }
+    }
+
+    function renderPagination(p) {
+      const el = document.getElementById('students-pagination');
+      if (p.total_pages <= 1) { el.innerHTML = ''; return; }
+      let html = `<button onclick="loadStudentsPage(1)" ${p.page <= 1 ? 'disabled' : ''}>«</button>`;
+      html += `<button onclick="loadStudentsPage(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>‹</button>`;
+      html += `<span class="pagination-info">Page ${p.page} of ${p.total_pages} (${p.total} total)</span>`;
+      html += `<button onclick="loadStudentsPage(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>›</button>`;
+      html += `<button onclick="loadStudentsPage(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>»</button>`;
+      el.innerHTML = html;
+    }
+
+    function showAnnounceModal() {
+      const html = `
+        <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="ann-title" placeholder="Announcement title"></div>
+        <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" id="ann-message" placeholder="Your message to all students..."></textarea></div>
+      `;
+      const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'ann-modal';
+      overlay.innerHTML = `
+        <div class="modal"><div class="modal-header"><h3>Send Announcement</h3><button class="modal-close" onclick="closeAnnModal()">×</button></div>
+        <div class="modal-body">${html}</div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeAnnModal()">Cancel</button><button class="btn btn-primary" onclick="handleAnnounce()">Send</button></div></div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    function closeAnnModal() { const m = document.getElementById('ann-modal'); if (m) m.remove(); }
+
+    async function handleAnnounce() {
+      const title = document.getElementById('ann-title').value.trim();
+      const msg = document.getElementById('ann-message').value.trim();
+      if (!title || !msg) { showAlert('Title and message required', 'error'); return; }
+      try { await sendAnnouncement(title, msg); showAlert('Announcement sent!', 'success'); closeAnnModal(); } catch (e) { showAlert(e.message, 'error'); }
+    }
+  </script>
+</body>
+</html>

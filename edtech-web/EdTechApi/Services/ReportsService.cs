@@ -90,7 +90,7 @@ public class ReportsService : IReportsService
                 var html = $"<div><h2>Exam Result Notification</h2><p>{msg}</p></div>";
                 var result = await _email.SendEmailAsync(contact.ParentEmail, subject, html);
                 if (result.Status == "sent") emailCount++;
-                emailResult = new { status = result.Status, message = result.Message };
+                emailResult = new { status = result.Status, message = result.Message ?? "" };
             }
 
             var now = DateTime.UtcNow;

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Practice - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/exam.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="results.html">My Results</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="results.html"><span class="nav-icon">📝</span><span>My Results</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div id="alert-container"></div>
+      <div id="practice-container">
+        <div style="text-align:center;padding:60px 20px">
+          <h1 style="margin-bottom:16px">Practice Mode</h1>
+          <p style="color:var(--text-muted);margin-bottom:24px">Select an exam to practice with instant feedback</p>
+          <div id="practice-exams"><div class="spinner" style="margin:0 auto"></div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('student')) return;
+      setupNavbar();
+      const examId = getQueryParam('examId');
+      if (examId) await startPractice(parseInt(examId));
+      else await loadExams();
+    });
+
+    async function loadExams() {
+      try {
+        const res = await api.get(`/api/exams?page=1&limit=20`);
+        const exams = res.data || [];
+        const container = document.getElementById('practice-exams');
+        if (!exams.length) { container.innerHTML = '<p style="color:var(--text-dim)">No exams available for practice.</p>'; return; }
+        container.innerHTML = '<div class="exam-grid">' + exams.map(e => `
+          <div class="exam-card" onclick="startPractice(${e.id})">
+            <div class="exam-card-title">${e.title}</div>
+            <div class="exam-card-meta">
+              <span>📖 ${e.subject}</span>
+              <span>📄 ${e.total_questions} questions</span>
+            </div>
+            <div class="exam-card-footer">
+              <span class="btn btn-sm btn-success">Practice →</span>
+            </div>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        document.getElementById('practice-exams').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+
+    async function startPractice(examId) {
+      try {
+        const res = await api.post('/api/students/practice/start', { exam_id: examId });
+        const data = res.data;
+        const container = document.getElementById('practice-container');
+        container.innerHTML = `
+          <div class="exam-header">
+            <h2>Practice: ${data.exam_title || 'Exam'}</h2>
+            <div style="color:var(--text-muted)">Answer all questions and submit for instant feedback</div>
+          </div>
+          <div id="practice-questions"></div>
+          <button class="btn btn-primary btn-block btn-lg" style="margin-top:16px" onclick="submitPractice(${examId})">Submit Practice ✓</button>
+        `;
+        renderPracticeQuestions(data.questions || []);
+      } catch (e) {
+        showAlert(e.message, 'error');
+      }
+    }
+
+    let practiceAnswers = {};
+
+    function renderPracticeQuestions(questions) {
+      const container = document.getElementById('practice-questions');
+      if (!questions.length) { container.innerHTML = '<div class="empty-state">No questions available</div>'; return; }
+      container.innerHTML = questions.map((q, i) => {
+        const opts = [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean);
+        const letters = ['A', 'B', 'C', 'D'];
+        return `
+          <div class="question-card">
+            <div class="question-number">${i + 1}</div>
+            <div class="question-text">${q.question_text}</div>
+            <div class="options">
+              ${opts.map((o, oi) => `<label class="option-label" onclick="selectPracticeAnswer(${q.id}, '${letters[oi]}')">
+                <input type="radio" name="pq_${q.id}" value="${letters[oi]}">
+                <span class="option-prefix">${letters[oi]}.</span><span>${o}</span>
+              </label>`).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectPracticeAnswer(qId, answer) {
+      practiceAnswers[qId] = answer;
+      document.querySelectorAll(`input[name="pq_${qId}"]`).forEach(el => {
+        el.checked = el.value === answer;
+      });
+    }
+
+    async function submitPractice(examId) {
+      const answers = Object.entries(practiceAnswers).map(([qId, ans]) => ({ question_id: parseInt(qId), answer: ans }));
+      try {
+        const res = await api.post('/api/students/practice/submit', { exam_id: examId, answers });
+        const data = res.data;
+        const container = document.getElementById('practice-container');
+        container.innerHTML = '<div style="text-align:center;padding:40px"><h2>Practice Results</h2>' +
+          `<p style="font-size:2rem;font-weight:700;color:var(--primary-light);margin:20px 0">${data.score} / ${data.total_questions}</p>` +
+          `<p style="color:var(--text-muted)">${data.total_questions ? ((data.score / data.total_questions) * 100).toFixed(1) : 0}%</p>` +
+          '<div style="margin-top:24px">' +
+          (data.results || []).map(r => `
+            <div style="padding:8px 12px;margin:4px 0;border-radius:var(--radius-sm);background:${r.is_correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}">
+              <strong>Q${r.question_id}:</strong> ${r.is_correct ? '✓ Correct' : '✗ Incorrect'} (Your: ${r.student_answer}, Correct: ${r.correct_answer})
+            </div>
+          `).join('') +
+          '</div>' +
+          '<button class="btn btn-secondary" style="margin-top:20px" onclick="goTo(\'practice.html\')">Try Another →</button>' +
+          '</div>';
+      } catch (e) {
+        showAlert(e.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

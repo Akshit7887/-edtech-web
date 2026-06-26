@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Review - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/exam.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="results.html" class="active">My Results</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="results.html"><span class="nav-icon">📝</span><span>My Results</span></a></li>
+        <li><a href="notifications.html"><span class="nav-icon">🔔</span><span>Notifications</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div id="alert-container"></div>
+      <div id="review-container">
+        <div class="loading-overlay"><div class="spinner"></div><span>Loading review...</span></div>
+      </div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('student')) return;
+      setupNavbar();
+      const sessionId = parseInt(getQueryParam('session'));
+      if (!sessionId) { showAlert('No session specified', 'error'); return; }
+      await loadReview(sessionId);
+    });
+
+    async function loadReview(sessionId) {
+      try {
+        const data = await loadExamReview(sessionId);
+        if (!data) { document.getElementById('review-container').innerHTML = '<div class="alert alert-error">Review not found</div>'; return; }
+        const container = document.getElementById('review-container');
+        const pct = data.total_questions > 0 ? ((data.score / data.total_questions) * 100).toFixed(1) : 0;
+        container.innerHTML = `
+          <div class="exam-header">
+            <h2>${data.exam_title}</h2>
+            <div class="exam-meta">
+              <span class="exam-meta-item">📖 ${data.subject}</span>
+              <span class="exam-meta-item">📄 ${data.total_questions} questions</span>
+              <span class="exam-meta-item">✅ Score: ${data.score}/${data.total_questions} (${pct}%)</span>
+              <span class="exam-meta-item">${statusBadge(data.status)}</span>
+              ${data.time_used ? `<span class="exam-meta-item">⏱ Used: ${Math.floor(data.time_used / 60)}m ${data.time_used % 60}s</span>` : ''}
+            </div>
+          </div>
+          <h3 style="margin-bottom:16px">Question Review</h3>
+          ${data.questions.map((q, i) => {
+            const isCorrect = q.is_correct;
+            return `
+              <div class="review-question ${isCorrect ? 'correct' : 'incorrect'}">
+                <div class="question-number">${i + 1}</div>
+                <div class="question-text">${q.question_text}</div>
+                <div class="review-answer ${isCorrect ? 'correct' : 'incorrect'}">
+                  <div class="review-answer-label">Your answer:</div>
+                  <span style="font-weight:600">${q.student_answer || 'Not answered'}</span>
+                  ${!isCorrect ? `<div class="review-answer-label" style="margin-top:8px">Correct answer: <span style="font-weight:600;color:var(--success)">${q.correct_answer}</span></div>` : ''}
+                </div>
+                <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;font-size:0.85rem;color:var(--text-muted)">
+                  ${[q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean).map((o, oi) => {
+                    const letter = String.fromCharCode(65 + oi);
+                    const isCorrectOpt = letter === q.correct_answer;
+                    const isStudentOpt = letter === q.student_answer;
+                    return `<span style="${isCorrectOpt ? 'color:var(--success);font-weight:600' : isStudentOpt ? 'color:var(--danger)' : ''}">${letter}. ${o}</span>`;
+                  }).join(' / ')}
+                </div>
+              </div>
+            `;
+          }).join('')}
+          <div style="margin-top:24px">
+            <button class="btn btn-secondary" onclick="goTo('results.html')">← Back to Results</button>
+            <button class="btn btn-primary" style="margin-left:8px" onclick="goTo('dashboard.html')">Dashboard</button>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('review-container').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

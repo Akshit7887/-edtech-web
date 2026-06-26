@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Results - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="results.html" class="active">My Results</a></li>
+      <li><a href="notifications.html">Notifications</a></li>
+      <li><a href="profile.html">Profile</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="results.html" class="active"><span class="nav-icon">📝</span><span>My Results</span></a></li>
+        <li><a href="notifications.html"><span class="nav-icon">🔔</span><span>Notifications</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="dashboard-header">
+        <h1>My Results</h1>
+        <p>View your exam history and performance</p>
+      </div>
+      <div id="alert-container"></div>
+      <div class="table-container" id="results-container">
+        <div class="loading-overlay"><div class="spinner"></div><span>Loading results...</span></div>
+      </div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('student')) return;
+      setupNavbar();
+      await loadResults();
+    });
+
+    async function loadResults() {
+      try {
+        const results = await loadMyResults();
+        const container = document.getElementById('results-container');
+        if (!results || !results.length) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No results yet</h3><p>Complete an exam to see your results here.</p></div>';
+          return;
+        }
+        container.innerHTML = `
+          <table>
+            <thead><tr>
+              <th>Exam</th><th>Subject</th><th>Score</th><th>Total</th><th>Percentage</th><th>Status</th><th>Submitted</th><th>Time</th><th>Action</th>
+            </tr></thead>
+            <tbody>
+              ${results.map(r => `
+                <tr class="${r.status === 'completed' ? (r.score >= r.total_questions * 0.4 ? 'row-high-pass' : 'row-high-fail') : ''}">
+                  <td><strong>${r.exam_title}</strong></td>
+                  <td>${r.subject || '-'}</td>
+                  <td>${r.score ?? '-'}</td>
+                  <td>${r.total_questions || '-'}</td>
+                  <td>${r.total_questions ? ((r.score / r.total_questions) * 100).toFixed(1) + '%' : '-'}</td>
+                  <td>${statusBadge(r.status)}</td>
+                  <td>${formatDate(r.submitted_at)}</td>
+                  <td>${r.time_used ? r.time_used + 's' : '-'}</td>
+                  <td>
+                    ${r.status === 'completed' ? `<button class="btn btn-sm btn-info" onclick="goTo('review.html?session=${r.session_id}')">Review</button>` : '-'}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } catch (e) {
+        document.getElementById('results-container').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

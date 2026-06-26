@@ -1,5 +1,5 @@
-using System.Net;
-using System.Net.Mail;
+using SendGrid;
+using SendGrid.Helpers.Mail;
 
 namespace EdTechApi.Services;
 
@@ -18,52 +18,50 @@ public class EmailSendResult
 
 public class EmailService : IEmailService
 {
-    private readonly IConfiguration _config;
+    private readonly string? _apiKey;
+    private readonly string? _fromEmail;
+    private readonly string? _fromName;
     private readonly ILogger<EmailService> _logger;
-    private SmtpClient? _smtpClient;
 
     public EmailService(IConfiguration config, ILogger<EmailService> logger)
     {
-        _config = config;
+        _apiKey = config["SendGrid:ApiKey"];
+        _fromEmail = config["SendGrid:FromEmail"] ?? config["Email:SmtpFrom"] ?? "noreply@edtech.app";
+        _fromName = config["SendGrid:FromName"] ?? "EdTech Examination App";
         _logger = logger;
-        InitializeSmtp();
-    }
-
-    private void InitializeSmtp()
-    {
-        var host = _config["Email:SmtpHost"];
-        var user = _config["Email:SmtpUser"];
-        if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(user)) return;
-
-        var port = int.TryParse(_config["Email:SmtpPort"], out var p) ? p : 587;
-        var pass = _config["Email:SmtpPass"] ?? "";
-
-        _smtpClient = new SmtpClient(host, port)
-        {
-            Credentials = new NetworkCredential(user, pass),
-            EnableSsl = port == 465
-        };
     }
 
     public async Task<EmailSendResult> SendEmailAsync(string to, string subject, string html)
     {
-        if (_smtpClient != null)
+        if (string.IsNullOrEmpty(_apiKey))
         {
-            try
-            {
-                var from = _config["Email:SmtpFrom"] ?? _config["Email:SmtpUser"];
-                var msg = new MailMessage(from!, to, subject, html) { IsBodyHtml = true };
-                await _smtpClient.SendMailAsync(msg);
-                _logger.LogInformation("[Email] Sent via SMTP to {To}", to);
-                return new EmailSendResult { Status = "sent", Via = "smtp" };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning("[Email] SMTP failed: {Error}", ex.Message);
-            }
+            _logger.LogInformation("[Email] SendGrid not configured. Would send to {To}: {Subject}", to, subject);
+            return new EmailSendResult { Status = "skipped", Message = "SendGrid not configured" };
         }
 
-        _logger.LogInformation("[Email] No email provider configured. Would send to {To}: {Subject}", to, subject);
-        return new EmailSendResult { Status = "skipped", Message = "No email provider configured" };
+        try
+        {
+            var client = new SendGridClient(_apiKey);
+            var from = new EmailAddress(_fromEmail, _fromName);
+            var recipient = new EmailAddress(to);
+            var msg = MailHelper.CreateSingleEmail(from, recipient, subject, null, html);
+            var response = await client.SendEmailAsync(msg);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var body = await response.Body.ReadAsStringAsync();
+                _logger.LogInformation("[Email] Sent via SendGrid to {To}, status: {StatusCode}", to, response.StatusCode);
+                return new EmailSendResult { Status = "sent", Via = "sendgrid", Id = body };
+            }
+
+            var errBody = await response.Body.ReadAsStringAsync();
+            _logger.LogWarning("[Email] SendGrid failed ({StatusCode}): {Error}", response.StatusCode, errBody);
+            return new EmailSendResult { Status = "failed", Message = $"SendGrid returned {response.StatusCode}" };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("[Email] SendGrid error: {Error}", ex.Message);
+            return new EmailSendResult { Status = "failed", Message = ex.Message };
+        }
     }
 }

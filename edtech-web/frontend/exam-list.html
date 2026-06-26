@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Exams - EdTech</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="login.html">Login</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div style="max-width:1000px;margin:40px auto;padding:0 20px">
+    <h1 style="margin-bottom:8px">Available Exams</h1>
+    <p style="color:var(--text-muted);margin-bottom:24px">Browse and take exams assigned to you</p>
+    <div id="alert-container"></div>
+    <div id="exam-list"><div class="loading-overlay"><div class="spinner"></div><span>Loading exams...</span></div></div>
+  </div>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = api.getToken();
+      if (token) setupNavbar();
+      await loadExams();
+    });
+
+    async function loadExams() {
+      try {
+        const res = await api.get('/api/exams?page=1&limit=20');
+        const exams = res.data || [];
+        const container = document.getElementById('exam-list');
+        if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><h3>No exams available</h3></div>'; return; }
+        container.innerHTML = '<div class="exam-grid">' + exams.map(e => `
+          <div class="exam-card" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${e.id}')` : `goTo('login.html')`}">
+            <div class="exam-card-title">${e.title}</div>
+            <div class="exam-card-meta">
+              <span>📖 ${e.subject}</span>
+              <span>⏱ ${e.duration_minutes} min</span>
+              <span>📄 ${e.total_questions} Q</span>
+              ${statusBadge(e.status)}
+            </div>
+            <div class="exam-card-footer">
+              <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
+              <span class="btn btn-sm btn-primary">${api.getToken() ? 'Take Exam →' : 'Login to Take'}</span>
+            </div>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        document.getElementById('exam-list').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

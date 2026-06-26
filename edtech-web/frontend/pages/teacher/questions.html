@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Questions - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="create-exam.html">Create Exam</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="edit-exam.html?id=" id="back-to-exam"><span class="nav-icon">←</span><span>Back to Exam</span></a></li>
+        <li><a href="questions.html" class="active"><span class="nav-icon">📋</span><span>Questions</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div id="alert-container"></div>
+      <div id="questions-content"><div class="loading-overlay"><div class="spinner"></div><span>Loading questions...</span></div></div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
+  <script>
+    let examId = 0;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('teacher')) return;
+      setupNavbar();
+      examId = parseInt(getQueryParam('examId'));
+      if (!examId) { showAlert('No exam ID', 'error'); return; }
+      document.getElementById('back-to-exam').href = `edit-exam.html?id=${examId}`;
+      await loadQuestions();
+    });
+
+    async function loadQuestions() {
+      try {
+        const questions = await getQuestionBank(examId);
+        const container = document.getElementById('questions-content');
+        const exam = await getExamDetail(examId).catch(() => null);
+        container.innerHTML = `
+          <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h1>Questions: ${exam?.title || 'Exam'}</h1>
+              <p>${questions.length} questions in the bank</p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-secondary" onclick="showAddModal()">+ Add Question</button>
+              <button class="btn btn-info" onclick="showGenerateModal()">🤖 AI Generate</button>
+              <button class="btn btn-success" onclick="handlePublish()">Publish</button>
+              <button class="btn btn-primary" onclick="handleAssign()">Assign to Students</button>
+            </div>
+          </div>
+          <div id="questions-table">
+            ${questions.length === 0 ? '<div class="empty-state"><div class="empty-state-icon">📋</div><h3>No questions yet</h3><p>Add questions manually or generate with AI.</p></div>' : `
+              <div class="table-container">
+                <table>
+                  <thead><tr><th>#</th><th>Question</th><th>Options</th><th>Answer</th><th>Difficulty</th><th>Points</th><th>Status</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    ${questions.map((q, i) => `
+                      <tr>
+                        <td>${i + 1}</td>
+                        <td>${q.question_text.substring(0, 60)}${q.question_text.length > 60 ? '...' : ''}</td>
+                        <td style="font-size:0.8rem">A:${q.option_a.substring(0,20)} / B:${q.option_b.substring(0,20)}${q.option_c ? ' / C:' + q.option_c.substring(0,20) : ''}${q.option_d ? ' / D:' + q.option_d.substring(0,20) : ''}</td>
+                        <td><span class="badge badge-success">${q.correct_answer}</span></td>
+                        <td>${statusBadge(q.difficulty)}</td>
+                        <td>${q.points || 1}</td>
+                        <td>${statusBadge(q.status)}</td>
+                        <td>
+                          <button class="btn btn-sm btn-ghost" onclick="editQuestion(${q.id}, ${i})">✏️</button>
+                          <button class="btn btn-sm btn-danger" onclick="handleDeleteQ(${q.id})">🗑️</button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            `}
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('questions-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+
+    function showAddModal() { showQuestionModal(); }
+    function showGenerateModal() {
+      const html = `
+        <div class="form-group"><label class="form-label">Question Count</label><input type="number" class="form-input" id="gen-count" value="5" min="1"></div>
+        <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="gen-difficulty"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
+      `;
+      showCustomModal('AI Generate Questions', html, async () => {
+        const count = parseInt(document.getElementById('gen-count').value);
+        const difficulty = document.getElementById('gen-difficulty').value;
+        try { await generateQuestions(examId, count, difficulty, ''); showAlert('Questions generated!', 'success'); closeModal(); await loadQuestions(); } catch (e) { showAlert(e.message, 'error'); }
+      });
+    }
+
+    function showQuestionModal(q = null) {
+      const isEdit = q !== null;
+      const html = `
+        <div class="form-group"><label class="form-label">Question Text</label><textarea class="form-textarea" id="q-text">${isEdit ? q.question_text : ''}</textarea></div>
+        <div class="row">
+          <div class="col-2"><div class="form-group"><label class="form-label">Option A</label><input class="form-input" id="q-a" value="${isEdit ? q.option_a : ''}"></div></div>
+          <div class="col-2"><div class="form-group"><label class="form-label">Option B</label><input class="form-input" id="q-b" value="${isEdit ? q.option_b : ''}"></div></div>
+        </div>
+        <div class="row">
+          <div class="col-2"><div class="form-group"><label class="form-label">Option C</label><input class="form-input" id="q-c" value="${isEdit ? (q.option_c || '') : ''}"></div></div>
+          <div class="col-2"><div class="form-group"><label class="form-label">Option D</label><input class="form-input" id="q-d" value="${isEdit ? (q.option_d || '') : ''}"></div></div>
+        </div>
+        <div class="row">
+          <div class="col-3"><div class="form-group"><label class="form-label">Correct Answer</label><select class="form-select" id="q-answer"><option value="A" ${isEdit && q.correct_answer === 'A' ? 'selected' : ''}>A</option><option value="B" ${isEdit && q.correct_answer === 'B' ? 'selected' : ''}>B</option><option value="C" ${isEdit && q.correct_answer === 'C' ? 'selected' : ''}>C</option><option value="D" ${isEdit && q.correct_answer === 'D' ? 'selected' : ''}>D</option></select></div>
+          <div class="col-3"><div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="q-difficulty"><option value="easy" ${isEdit && q.difficulty === 'easy' ? 'selected' : ''}>Easy</option><option value="medium" ${(!isEdit || q.difficulty === 'medium') ? 'selected' : ''}>Medium</option><option value="hard" ${isEdit && q.difficulty === 'hard' ? 'selected' : ''}>Hard</option></select></div>
+          <div class="col-3"><div class="form-group"><label class="form-label">Points</label><input type="number" class="form-input" id="q-points" value="${isEdit ? (q.points || 1) : 1}"></div></div>
+        </div>
+      `;
+      const action = isEdit ? () => handleEditQuestion(q.id) : () => handleAddQuestion();
+      showCustomModal(isEdit ? 'Edit Question' : 'Add Question', html, action);
+    }
+
+    async function handleAddQuestion() {
+      const data = getQuestionFormData();
+      if (!data) return;
+      try { await addQuestion(examId, data); showAlert('Question added', 'success'); closeModal(); await loadQuestions(); } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    function editQuestion(id, idx) {
+      getQuestionBank(examId).then(qs => { showQuestionModal(qs[idx]); });
+    }
+
+    async function handleEditQuestion(id) {
+      const data = getQuestionFormData();
+      if (!data) return;
+      try { await updateQuestion(id, data); showAlert('Question updated', 'success'); closeModal(); await loadQuestions(); } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    function getQuestionFormData() {
+      const text = document.getElementById('q-text').value.trim();
+      const a = document.getElementById('q-a').value.trim();
+      const b = document.getElementById('q-b').value.trim();
+      if (!text || !a || !b) { showAlert('Question text, Option A, and Option B are required', 'error'); return null; }
+      return {
+        question_text: text,
+        option_a: a, option_b: b,
+        option_c: document.getElementById('q-c').value.trim() || null,
+        option_d: document.getElementById('q-d').value.trim() || null,
+        correct_answer: document.getElementById('q-answer').value,
+        difficulty: document.getElementById('q-difficulty').value,
+        points: parseInt(document.getElementById('q-points').value) || 1
+      };
+    }
+
+    async function handleDeleteQ(id) {
+      if (!await confirmAction('Delete this question?')) return;
+      try { await deleteQuestion(id); showAlert('Question deleted', 'success'); await loadQuestions(); } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function handlePublish() {
+      try { await publishQuestions(examId); showAlert('Questions published!', 'success'); await loadQuestions(); } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function handleAssign() {
+      try { await assignQuestions(examId); showAlert('Questions assigned to students', 'success'); } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    function showCustomModal(title, bodyHtml, onConfirm) {
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay active';
+      overlay.id = 'custom-modal';
+      overlay.innerHTML = `
+        <div class="modal">
+          <div class="modal-header"><h3>${title}</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+          <div class="modal-body">${bodyHtml}</div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" id="modal-confirm">Save</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      document.getElementById('modal-confirm').onclick = onConfirm;
+    }
+
+    function closeModal() { const m = document.getElementById('custom-modal'); if (m) m.remove(); }
+  </script>
+</body>
+</html>

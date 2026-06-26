@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Statistics - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="create-exam.html">Create Exam</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="edit-exam.html?id=" id="back-link"><span class="nav-icon">←</span><span>Back to Exam</span></a></li>
+        <li><a href="statistics.html" class="active"><span class="nav-icon">📈</span><span>Statistics</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div id="alert-container"></div>
+      <div id="stats-content"><div class="loading-overlay"><div class="spinner"></div><span>Loading statistics...</span></div></div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('teacher')) return;
+      setupNavbar();
+      const examId = parseInt(getQueryParam('id'));
+      if (!examId) { showAlert('No exam ID', 'error'); return; }
+      document.getElementById('back-link').href = `edit-exam.html?id=${examId}`;
+      await loadStats(examId);
+    });
+
+    async function loadStats(examId) {
+      try {
+        const stats = await getExamStatistics(examId);
+        if (!stats) { document.getElementById('stats-content').innerHTML = '<div class="alert alert-error">Failed to load statistics</div>'; return; }
+        document.getElementById('stats-content').innerHTML = `
+          <div class="dashboard-header">
+            <h1>${stats.exam_title}</h1>
+            <p>${stats.subject} · Exam Statistics</p>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${stats.total_students}</div><div class="stat-label">Total Students</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${stats.completed_count}</div><div class="stat-label">Completed</div></div>
+            <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-value">${stats.average_score?.toFixed(1) || '0'}</div><div class="stat-label">Average Score</div></div>
+            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">${stats.highest_score}</div><div class="stat-label">Highest</div></div>
+            <div class="stat-card"><div class="stat-icon">⬇️</div><div class="stat-value">${stats.lowest_score}</div><div class="stat-label">Lowest</div></div>
+            <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-value">${stats.pass_rate || 0}%</div><div class="stat-label">Pass Rate</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${stats.pass_count}</div><div class="stat-label">Passed</div></div>
+            <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-value">${stats.fail_count}</div><div class="stat-label">Failed</div></div>
+          </div>
+          <h3 style="margin-bottom:12px">Score Distribution</h3>
+          ${stats.score_distribution ? Object.entries(stats.score_distribution).map(([range, count]) => `
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+              <span style="min-width:60px;font-size:0.85rem">${range}</span>
+              <div class="score-bar" style="flex:1">
+                <div class="score-bar-fill">
+                  <div class="score-bar-progress" style="width:${stats.completed_count ? (count / stats.completed_count * 100) : 0}%;background:var(--primary)"></div>
+                </div>
+                <span class="score-value">${count}</span>
+              </div>
+            </div>
+          `).join('') : '<p style="color:var(--text-dim)">No data</p>'}
+
+          <h3 style="margin:24px 0 12px">Student Results</h3>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Student</th><th>Score</th><th>Total</th><th>Percentage</th><th>Status</th><th>Time Used</th><th>Submitted</th></tr></thead>
+              <tbody>
+                ${(stats.student_results || []).map(r => `
+                  <tr class="${r.status === 'completed' ? (r.score >= stats.max_possible_score * 0.4 ? 'row-high-pass' : 'row-high-fail') : ''}">
+                    <td><strong>${r.student_name}</strong></td>
+                    <td>${r.score}</td>
+                    <td>${r.total_questions}</td>
+                    <td>${r.total_questions ? ((r.score / r.total_questions) * 100).toFixed(1) + '%' : '-'}</td>
+                    <td>${statusBadge(r.status)}</td>
+                    <td>${r.time_used ? Math.floor(r.time_used / 60) + 'm ' + (r.time_used % 60) + 's' : '-'}</td>
+                    <td>${formatDate(r.submitted_at)}</td>
+                  </tr>
+                `).join('')}
+                ${(!stats.student_results || !stats.student_results.length) ? '<tr><td colspan="7"><div class="empty-state" style="padding:20px">No results yet</div></td></tr>' : ''}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('stats-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

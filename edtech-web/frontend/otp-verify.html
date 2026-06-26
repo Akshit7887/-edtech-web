@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP - EdTech</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1>📚 EdTech</h1>
+        <p>Verify your identity</p>
+      </div>
+      <div id="alert-container"></div>
+      <div class="auth-title">
+        <h2>Enter OTP</h2>
+        <p>A one-time password has been sent to your email</p>
+      </div>
+      <div class="otp-inputs" id="otp-inputs">
+        <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" autofocus oninput="moveNext(this, 0)" onkeydown="movePrev(this, event)">
+        <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 1)" onkeydown="movePrev(this, event)">
+        <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 2)" onkeydown="movePrev(this, event)">
+        <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 3)" onkeydown="movePrev(this, event)">
+        <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 4)" onkeydown="movePrev(this, event)">
+        <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveNext(this, 5)" onkeydown="movePrev(this, event)">
+      </div>
+      <button class="btn btn-primary btn-block btn-lg" id="verify-btn" onclick="handleVerifyOtp()">
+        <span id="verify-text">Verify OTP</span>
+        <span id="verify-spinner" class="spinner spinner-sm" style="display:none"></span>
+      </button>
+      <div class="auth-footer" style="margin-top:16px">
+        <p>Didn't receive OTP? <a href="#" onclick="resendOtp()">Resend</a></p>
+      </div>
+    </div>
+  </div>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const identifier = sessionStorage.getItem('otp_identifier');
+    const role = sessionStorage.getItem('otp_role') || 'student';
+    const isRegistration = sessionStorage.getItem('otp_registration') === 'true';
+
+    if (!identifier) { goTo('login.html'); }
+
+    function moveNext(input, idx) {
+      if (input.value.length === 1 && idx < 5) {
+        document.querySelectorAll('.otp-input')[idx + 1].focus();
+      }
+    }
+
+    function movePrev(input, e) {
+      if (e.key === 'Backspace' && !input.value) {
+        const inputs = document.querySelectorAll('.otp-input');
+        const idx = Array.from(inputs).indexOf(input);
+        if (idx > 0) inputs[idx - 1].focus();
+      }
+    }
+
+    async function handleVerifyOtp() {
+      clearAlerts();
+      const inputs = document.querySelectorAll('.otp-input');
+      const otp = Array.from(inputs).map(i => i.value).join('');
+      if (otp.length !== 6) {
+        showAlert('Please enter the complete 6-digit OTP', 'error', document.getElementById('alert-container'));
+        return;
+      }
+
+      const btn = document.getElementById('verify-btn');
+      const text = document.getElementById('verify-text');
+      const spinner = document.getElementById('verify-spinner');
+      btn.disabled = true; text.textContent = 'Verifying...'; spinner.style.display = 'inline-block';
+
+      try {
+        if (isRegistration) {
+          const data = await verifyRegisterOtp(identifier, otp);
+          saveSession(data.token, { id: data.user.id, name: data.user.name, role: data.user.role, email: data.user.email, phone: data.user.phone });
+          showSuccess();
+        } else {
+          const data = await verifyOtpRequest(identifier, otp, role);
+          saveSession(data.token, { id: data.user.id, name: data.user.name, role: data.user.role, email: data.user.email, phone: data.user.phone });
+          showSuccess();
+        }
+      } catch (e) {
+        showAlert(e.message, 'error', document.getElementById('alert-container'));
+        btn.disabled = false; text.textContent = 'Verify OTP'; spinner.style.display = 'none';
+      }
+    }
+
+    function showSuccess() {
+      const container = document.querySelector('.auth-card');
+      container.innerHTML = `
+        <div class="animated-check">
+          <div class="check-icon">✓</div>
+          <h2>Verified Successfully!</h2>
+          <p style="color:var(--text-muted);margin-top:8px">Redirecting to dashboard...</p>
+        </div>
+      `;
+      const role = getUserRole();
+      setTimeout(() => goTo(`/pages/${role}/dashboard.html`), 1500);
+    }
+
+    async function resendOtp() {
+      clearAlerts();
+      try {
+        await loginRequest(identifier, '', role);
+        showAlert('OTP resent successfully', 'success', document.getElementById('alert-container'));
+      } catch (e) {
+        showAlert(e.message, 'error', document.getElementById('alert-container'));
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="create-exam.html">Create Exam</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="edit-exam.html?id=" id="back-link"><span class="nav-icon">←</span><span>Back to Exam</span></a></li>
+        <li><a href="attendance.html" class="active"><span class="nav-icon">✅</span><span>Attendance</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div id="alert-container"></div>
+      <div id="attendance-content"><div class="loading-overlay"><div class="spinner"></div><span>Loading attendance...</span></div></div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('teacher')) return;
+      setupNavbar();
+      const examId = parseInt(getQueryParam('id'));
+      if (!examId) { showAlert('No exam ID', 'error'); return; }
+      document.getElementById('back-link').href = `edit-exam.html?id=${examId}`;
+      await loadAttendance(examId);
+    });
+
+    async function loadAttendance(examId) {
+      try {
+        const report = await getAttendanceReport(examId);
+        if (!report) { document.getElementById('attendance-content').innerHTML = '<div class="alert alert-error">Failed to load attendance</div>'; return; }
+        document.getElementById('attendance-content').innerHTML = `
+          <div class="dashboard-header">
+            <h1>Attendance Report</h1>
+            <p>Exam attendance tracking</p>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${report.present_count || 0}</div><div class="stat-label">Present</div></div>
+            <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-value">${report.absent_count || 0}</div><div class="stat-label">Absent</div></div>
+            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${(report.present_count || 0) + (report.absent_count || 0)}</div><div class="stat-label">Total</div></div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Student</th><th>Email</th><th>Status</th><th>Marked At</th></tr></thead>
+              <tbody>
+                ${(report.students || []).map(s => `
+                  <tr>
+                    <td><strong>${s.student_name}</strong></td>
+                    <td>${s.student_email || '-'}</td>
+                    <td>${statusBadge(s.status)}</td>
+                    <td>${formatDate(s.marked_at)}</td>
+                  </tr>
+                `).join('')}
+                ${(!report.students || !report.students.length) ? '<tr><td colspan="4"><div class="empty-state" style="padding:20px">No attendance records</div></td></tr>' : ''}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('attendance-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard - EdTech</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand">📚 EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html" class="active">Dashboard</a></li>
+      <li><a href="create-exam.html">Create Exam</a></li>
+      <li><a href="students.html">Students</a></li>
+      <li><a href="classes.html">Classes</a></li>
+      <!-- USER -->
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html" class="active"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="create-exam.html"><span class="nav-icon">➕</span><span>Create Exam</span></a></li>
+        <li><a href="students.html"><span class="nav-icon">👥</span><span>Students</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
+        <li><a href="parent-contacts.html"><span class="nav-icon">👪</span><span>Parent Contacts</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h1>Welcome, <span id="teacher-name"></span></h1>
+          <p>Teacher Dashboard</p>
+        </div>
+        <button class="btn btn-primary" onclick="goTo('create-exam.html')">+ New Exam</button>
+      </div>
+      <div id="alert-container"></div>
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value" id="stat-exams">-</div><div class="stat-label">Total Exams</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="stat-active">-</div><div class="stat-label">Active Exams</div></div>
+        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="stat-students">-</div><div class="stat-label">Students</div></div>
+        <div class="stat-card"><div class="stat-icon">🏫</div><div class="stat-value" id="stat-classes">-</div><div class="stat-label">Classes</div></div>
+      </div>
+      <h2 style="margin-bottom:16px">Your Exams</h2>
+      <div id="exam-list"><div class="loading-overlay"><div class="spinner"></div><span>Loading exams...</span></div></div>
+    </main>
+  </div>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('teacher')) return;
+      document.getElementById('teacher-name').textContent = getUserName();
+      setupNavbar();
+      await loadStats();
+      await loadExamList();
+    });
+
+    async function loadStats() {
+      try {
+        const [examsRes, studentsRes, classesRes] = await Promise.all([
+          loadExams(1, 1),
+          loadStudents(1, 1),
+          loadClasses()
+        ]);
+        document.getElementById('stat-exams').textContent = examsRes.pagination?.total || 0;
+        document.getElementById('stat-active').textContent = (examsRes.data || []).filter(e => e.status === 'active').length;
+        document.getElementById('stat-students').textContent = studentsRes.pagination?.total || 0;
+        document.getElementById('stat-classes').textContent = (classesRes || []).length;
+      } catch (e) {}
+    }
+
+    async function loadExamList() {
+      try {
+        const res = await loadExams(1, 20);
+        const exams = res.data || [];
+        const container = document.getElementById('exam-list');
+        if (!exams.length) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No exams yet</h3><p>Create your first exam to get started.</p></div>';
+          return;
+        }
+        container.innerHTML = '<div class="exam-grid">' + exams.map(e => `
+          <div class="exam-card" onclick="goTo('edit-exam.html?id=${e.id}')">
+            <div class="exam-card-title">${e.title}</div>
+            <div class="exam-card-meta">
+              <span>📖 ${e.subject}</span>
+              <span>⏱ ${e.duration_minutes} min</span>
+              <span>📄 ${e.total_questions} Q</span>
+              <span>👥 ${e.students_attended || 0} attended</span>
+              ${statusBadge(e.status)}
+            </div>
+            <div class="exam-card-footer">
+              <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
+              <div style="display:flex;gap:4px">
+                ${e.status === 'draft' ? `<button class="btn btn-sm btn-success" onclick="event.stopPropagation();activateExamItem(${e.id})">Activate</button>` : ''}
+                <button class="btn btn-sm btn-info" onclick="event.stopPropagation();goTo('statistics.html?id=${e.id}')">Stats</button>
+              </div>
+            </div>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        document.getElementById('exam-list').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+
+    async function activateExamItem(id) {
+      try {
+        await activateExam(id);
+        showAlert('Exam activated successfully', 'success');
+        await loadExamList();
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+  </script>
+</body>
+</html>
