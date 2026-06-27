@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/exam.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="results.html">My Results</a></li>
@@ -28,7 +29,7 @@
     </aside>
     <main class="main-content">
       <div id="alert-container"></div>
-      <div id="practice-container">
+      <div id="practice-container" data-aos="fade-up">
         <div style="text-align:center;padding:60px 20px">
           <h1 style="margin-bottom:16px">Practice Mode</h1>
           <p style="color:var(--text-muted);margin-bottom:24px">Select an exam to practice with instant feedback</p>
@@ -37,6 +38,8 @@
       </div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script>
@@ -54,15 +57,15 @@
         const exams = res.data || [];
         const container = document.getElementById('practice-exams');
         if (!exams.length) { container.innerHTML = '<p style="color:var(--text-dim)">No exams available for practice.</p>'; return; }
-        container.innerHTML = '<div class="exam-grid">' + exams.map(e => `
-          <div class="exam-card" onclick="startPractice(${e.id})">
+        container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
+          <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s" onclick="startPractice(${e.id})">
             <div class="exam-card-title">${e.title}</div>
             <div class="exam-card-meta">
               <span>📖 ${e.subject}</span>
               <span>📄 ${e.total_questions} questions</span>
             </div>
             <div class="exam-card-footer">
-              <span class="btn btn-sm btn-success">Practice →</span>
+              <span class="btn btn-sm btn-success">Practice</span>
             </div>
           </div>
         `).join('') + '</div>';
@@ -82,7 +85,7 @@
             <div style="color:var(--text-muted)">Answer all questions and submit for instant feedback</div>
           </div>
           <div id="practice-questions"></div>
-          <button class="btn btn-primary btn-block btn-lg" style="margin-top:16px" onclick="submitPractice(${examId})">Submit Practice ✓</button>
+          <button class="btn btn-primary btn-block btn-lg" style="margin-top:16px" onclick="submitPractice(${examId})">Submit Practice</button>
         `;
         renderPracticeQuestions(data.questions || []);
       } catch (e) {
@@ -127,16 +130,16 @@
         const data = res.data;
         const container = document.getElementById('practice-container');
         container.innerHTML = '<div style="text-align:center;padding:40px"><h2>Practice Results</h2>' +
-          `<p style="font-size:2rem;font-weight:700;color:var(--primary-light);margin:20px 0">${data.score} / ${data.total_questions}</p>` +
+          `<p style="font-size:2.5rem;font-weight:800;color:var(--primary-light);margin:20px 0">${data.score} / ${data.total_questions}</p>` +
           `<p style="color:var(--text-muted)">${data.total_questions ? ((data.score / data.total_questions) * 100).toFixed(1) : 0}%</p>` +
-          '<div style="margin-top:24px">' +
+          '<div style="margin-top:24px;max-width:500px;margin-left:auto;margin-right:auto">' +
           (data.results || []).map(r => `
-            <div style="padding:8px 12px;margin:4px 0;border-radius:var(--radius-sm);background:${r.is_correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'}">
-              <strong>Q${r.question_id}:</strong> ${r.is_correct ? '✓ Correct' : '✗ Incorrect'} (Your: ${r.student_answer}, Correct: ${r.correct_answer})
+            <div style="padding:10px 14px;margin:6px 0;border-radius:var(--radius-sm);background:${r.is_correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'};border-left:3px solid ${r.is_correct ? 'var(--success)' : 'var(--danger)'}">
+              <strong>Q${r.question_id}:</strong> ${r.is_correct ? 'Correct' : 'Incorrect'} <span style="color:var(--text-dim)">(Your: ${r.student_answer}, Correct: ${r.correct_answer})</span>
             </div>
           `).join('') +
           '</div>' +
-          '<button class="btn btn-secondary" style="margin-top:20px" onclick="goTo(\'practice.html\')">Try Another →</button>' +
+          '<button class="btn btn-secondary" style="margin-top:20px" onclick="goTo(\'practice.html\')">Try Another</button>' +
           '</div>';
       } catch (e) {
         showAlert(e.message, 'error');

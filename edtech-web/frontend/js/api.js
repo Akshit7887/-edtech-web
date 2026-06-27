@@ -2,9 +2,9 @@ const API_BASE = (() => {
   const stored = localStorage.getItem('api_base');
   if (stored) return stored.replace(/\/+$/, '');
   const host = window.location.hostname;
-  if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5180';
+  if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5000';
   if (host.includes('vercel.app')) return 'https://backend-wine-six-74.vercel.app';
-  return 'http://localhost:5180';
+  return 'http://localhost:5000';
 })();
 
 class ApiClient {

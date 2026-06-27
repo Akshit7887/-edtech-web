@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="create-exam.html">Create Exam</a></li>
@@ -31,9 +32,11 @@
     </aside>
     <main class="main-content">
       <div id="alert-container"></div>
-      <div id="exam-content"><div class="loading-overlay"><div class="spinner"></div><span>Loading exam...</span></div></div>
+      <div id="exam-content" data-aos="fade-up"><div class="loading-overlay"><div class="spinner"></div><span>Loading exam...</span></div></div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>
@@ -73,22 +76,22 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-2">
-                  <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-input" id="edit-title" value="${exam.title}"></div>
+                  <div class="form-group form-floating"><input type="text" class="form-input" id="edit-title" value="${exam.title}" placeholder=" "><label class="form-label">Title</label></div>
                 </div>
                 <div class="col-2">
-                  <div class="form-group"><label class="form-label">Subject</label><input type="text" class="form-input" id="edit-subject" value="${exam.subject}"></div>
+                  <div class="form-group form-floating"><input type="text" class="form-input" id="edit-subject" value="${exam.subject}" placeholder=" "><label class="form-label">Subject</label></div>
                 </div>
               </div>
-              <div class="form-group">
+              <div class="form-group form-floating">
+                <textarea class="form-textarea" id="edit-syllabus" placeholder=" " style="min-height:80px">${exam.syllabus_text || ''}</textarea>
                 <label class="form-label">Syllabus</label>
-                <textarea class="form-textarea" id="edit-syllabus">${exam.syllabus_text || ''}</textarea>
               </div>
               <div class="row">
                 <div class="col-3">
-                  <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-input" id="edit-duration" value="${exam.duration_minutes}"></div>
+                  <div class="form-group form-floating"><input type="number" class="form-input" id="edit-duration" value="${exam.duration_minutes}" placeholder=" "><label class="form-label">Duration (min)</label></div>
                 </div>
                 <div class="col-3">
-                  <div class="form-group"><label class="form-label">Total Questions</label><input type="number" class="form-input" id="edit-total-q" value="${exam.total_questions_count || exam.total_questions}"></div>
+                  <div class="form-group form-floating"><input type="number" class="form-input" id="edit-total-q" value="${exam.total_questions_count || exam.total_questions}" placeholder=" "><label class="form-label">Total Questions</label></div>
                 </div>
                 <div class="col-3">
                   <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="edit-status">

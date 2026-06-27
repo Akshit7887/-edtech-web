@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="students.html">Students</a></li>
@@ -29,14 +30,16 @@
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center" data-aos="fade-up">
         <div><h1>Classes</h1><p>Organize students into classes</p></div>
         <button class="btn btn-primary" onclick="showCreateClassModal()">+ New Class</button>
       </div>
       <div id="alert-container"></div>
-      <div id="classes-container"><div class="loading-overlay"><div class="spinner"></div><span>Loading classes...</span></div></div>
+      <div id="classes-container" data-aos="fade-up" data-aos-delay="100"><div class="loading-overlay"><div class="spinner"></div><span>Loading classes...</span></div></div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>
@@ -55,8 +58,8 @@
           container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏫</div><h3>No classes yet</h3><p>Create your first class to organize students.</p></div>';
           return;
         }
-        container.innerHTML = '<div class="exam-grid">' + classes.map(c => `
-          <div class="exam-card">
+        container.innerHTML = '<div class="exam-grid">' + classes.map((c, i) => `
+          <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s">
             <div class="exam-card-title">${c.name}</div>
             <div class="exam-card-meta">
               <span>📖 ${c.subject || 'General'}</span>
@@ -79,9 +82,9 @@
 
     function showCreateClassModal() {
       const html = `
-        <div class="form-group"><label class="form-label">Class Name</label><input class="form-input" id="cls-name" placeholder="e.g., Class 10A"></div>
-        <div class="form-group"><label class="form-label">Subject</label><input class="form-input" id="cls-subject" placeholder="e.g., Mathematics"></div>
-        <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="cls-desc" placeholder="Optional description"></textarea></div>
+        <div class="form-group form-floating"><input class="form-input" id="cls-name" placeholder=" "><label class="form-label">Class Name</label></div>
+        <div class="form-group form-floating"><input class="form-input" id="cls-subject" placeholder=" "><label class="form-label">Subject</label></div>
+        <div class="form-group form-floating"><textarea class="form-textarea" id="cls-desc" placeholder=" " style="min-height:60px"></textarea><label class="form-label">Description</label></div>
       `;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'cls-modal';
       overlay.innerHTML = `
@@ -108,7 +111,7 @@
     function showAddStudentsModal(classId) {
       const html = `
         <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">Enter student IDs separated by commas</p>
-        <div class="form-group"><label class="form-label">Student IDs</label><input class="form-input" id="st-ids" placeholder="e.g., 1, 2, 3"></div>
+        <div class="form-group form-floating"><input class="form-input" id="st-ids" placeholder=" "><label class="form-label">Student IDs</label></div>
       `;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'st-modal';
       overlay.innerHTML = `

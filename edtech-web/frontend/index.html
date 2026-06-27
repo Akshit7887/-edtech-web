@@ -3,46 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EdTech - Examination Platform</title>
+  <title>EdTech - AI-Powered Examination Platform</title>
   <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
-  <div style="min-height:100vh;display:flex;flex-direction:column">
-    <nav class="navbar" style="justify-content:center">
-      <div class="navbar-brand">📚 EdTech Examination Platform</div>
-    </nav>
-    <div style="flex:1;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px">
-      <div style="max-width:500px">
-        <h1 style="font-size:2.5rem;margin-bottom:12px;color:var(--primary-light)">EdTech</h1>
-        <p style="color:var(--text-muted);font-size:1.1rem;margin-bottom:32px">AI-powered examination platform for teachers and students</p>
-        <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-          <a href="login.html" class="btn btn-primary btn-lg">Login</a>
-          <a href="register.html" class="btn btn-secondary btn-lg">Register</a>
+  <nav class="navbar" id="main-nav">
+    <div class="navbar-brand">EdTech</div>
+    <ul class="navbar-nav">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="login.html">Login</a></li>
+      <li><a href="register.html">Register</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero-section">
+    <div id="particles-bg" style="position:absolute;inset:0;z-index:0"></div>
+    <div class="hero-bg-glow"></div>
+    <div class="hero-content">
+      <div data-aos="fade-up" data-aos-duration="800">
+        <span class="badge badge-primary" style="font-size:0.85rem">✨ AI-Powered Learning Platform</span>
+      </div>
+      <h1 class="hero-title" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
+        <span class="gradient-text">Smart Exams,</span><br>
+        <span style="color:var(--text)">Smarter Learning</span>
+      </h1>
+      <p class="hero-subtitle" data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
+        AI-powered examination platform that adapts to every student. Create, proctor, and analyze exams with intelligent insights.
+      </p>
+      <div class="hero-cta" data-aos="fade-up" data-aos-duration="800" data-aos-delay="300">
+        <a href="register.html" class="btn btn-primary btn-lg">Get Started Free</a>
+        <a href="login.html" class="btn btn-lg btn-secondary">Sign In</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-bg-glow" style="background:radial-gradient(ellipse at 50% 100%, rgba(99,102,241,0.08) 0%, transparent 60%)"></div>
+    <div class="section-inner">
+      <div class="section-header" data-aos="fade-up">
+        <h2>Everything You Need</h2>
+        <p>A complete examination platform for modern education</p>
+      </div>
+      <div class="feature-grid">
+        <div class="card feature-card hover-lift" data-aos="fade-up" data-aos-delay="100">
+          <div class="feature-icon" style="background:rgba(99,102,241,0.12);color:var(--primary-light);box-shadow:0 4px 12px rgba(99,102,241,0.2)">📝</div>
+          <h3>Smart Exams</h3>
+          <p>AI-generated questions with auto-grading and instant feedback. Create comprehensive exams in minutes.</p>
         </div>
-        <div style="display:flex;gap:24px;justify-content:center;margin-top:48px;flex-wrap:wrap">
-          <div class="card" style="flex:1;min-width:150px">
-            <div style="font-size:2rem;margin-bottom:8px">📝</div>
-            <h3 style="color:var(--text)">Smart Exams</h3>
-            <p style="font-size:0.85rem;color:var(--text-muted)">AI-generated questions with auto-grading</p>
+        <div class="card feature-card hover-lift" data-aos="fade-up" data-aos-delay="200">
+          <div class="feature-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary);box-shadow:0 4px 12px rgba(6,182,212,0.2)">🛡️</div>
+          <h3>Proctored Mode</h3>
+          <p>Secure browser-based exam monitoring with real-time violation tracking and auto-disqualification.</p>
+        </div>
+        <div class="card feature-card hover-lift" data-aos="fade-up" data-aos-delay="300">
+          <div class="feature-icon" style="background:rgba(34,197,94,0.12);color:var(--success);box-shadow:0 4px 12px rgba(34,197,94,0.2)">📊</div>
+          <h3>Analytics</h3>
+          <p>Detailed performance insights with visual breakdowns, trend analysis, and actionable recommendations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tint">
+    <div class="section-inner">
+      <div class="section-header" data-aos="fade-up">
+        <h2>How It Works</h2>
+        <p>Simple steps to get started with EdTech</p>
+      </div>
+      <div class="steps-row">
+        <div class="step-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <h3>Create Exam</h3>
+            <p>Design your exam manually or let AI generate questions based on your syllabus. Customize settings and publish instantly.</p>
           </div>
-          <div class="card" style="flex:1;min-width:150px">
-            <div style="font-size:2rem;margin-bottom:8px">🛡️</div>
-            <h3 style="color:var(--text)">Proctored</h3>
-            <p style="font-size:0.85rem;color:var(--text-muted)">Secure browser-based exam monitoring</p>
+        </div>
+        <div class="step-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <h3>Take Exam</h3>
+            <p>Students access exams through their dashboard. Proctoring mode ensures integrity with real-time monitoring.</p>
           </div>
-          <div class="card" style="flex:1;min-width:150px">
-            <div style="font-size:2rem;margin-bottom:8px">📊</div>
-            <h3 style="color:var(--text)">Analytics</h3>
-            <p style="font-size:0.85rem;color:var(--text-muted)">Detailed performance insights</p>
+        </div>
+        <div class="step-item" data-aos="fade-up" data-aos-delay="300">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <h3>Get Results</h3>
+            <p>Instant grading with detailed analytics. Track student progress and identify areas for improvement.</p>
           </div>
         </div>
       </div>
     </div>
-    <footer style="text-align:center;padding:20px;color:var(--text-dim);font-size:0.85rem">
-      &copy; 2026 EdTech. All rights reserved.
-    </footer>
-  </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <h2>EdTech</h2>
+        <p>AI-powered examination platform</p>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="login.html">Login</a>
+        <a href="register.html">Register</a>
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+      </div>
+      <p>&copy; 2026 EdTech. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+  <script>
+    AOS.init({ once: true, offset: 100 });
+
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('main-nav');
+      if (window.scrollY > 40) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+    });
+
+    if (typeof tsParticles !== 'undefined') {
+      tsParticles.load('particles-bg', {
+        fpsLimit: 30,
+        particles: {
+          number: { value: 30, density: { enable: true } },
+          color: { value: '#6366f1' },
+          opacity: { value: 0.15, random: true },
+          size: { value: 2, random: true },
+          move: { enable: true, speed: 0.3, direction: 'none', outModes: 'bounce' },
+          links: { enable: true, distance: 150, color: '#6366f1', opacity: 0.08, width: 1 }
+        },
+        interactivity: {
+          events: { onHover: { enable: true, mode: 'repulse' } },
+          modes: { repulse: { distance: 80, duration: 0.4 } }
+        },
+        background: { color: 'transparent' }
+      }).catch(() => {});
+    }
+  </script>
 </body>
 </html>

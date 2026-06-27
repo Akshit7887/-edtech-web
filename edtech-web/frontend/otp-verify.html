@@ -7,12 +7,13 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/auth.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body class="auth-page">
-  <div class="auth-container">
+  <div class="auth-container" data-aos="fade-up" data-aos-duration="500">
     <div class="auth-card">
       <div class="auth-logo">
-        <h1>📚 EdTech</h1>
+        <h1>EdTech</h1>
         <p>Verify your identity</p>
       </div>
       <div id="alert-container"></div>
@@ -32,11 +33,13 @@
         <span id="verify-text">Verify OTP</span>
         <span id="verify-spinner" class="spinner spinner-sm" style="display:none"></span>
       </button>
-      <div class="auth-footer" style="margin-top:16px">
+      <div class="auth-footer">
         <p>Didn't receive OTP? <a href="#" onclick="resendOtp()">Resend</a></p>
       </div>
     </div>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script>
@@ -50,6 +53,9 @@
       if (input.value.length === 1 && idx < 5) {
         document.querySelectorAll('.otp-input')[idx + 1].focus();
       }
+      document.querySelectorAll('.otp-input').forEach(el => {
+        el.classList.toggle('filled', el.value.length > 0);
+      });
     }
 
     function movePrev(input, e) {
@@ -58,6 +64,9 @@
         const idx = Array.from(inputs).indexOf(input);
         if (idx > 0) inputs[idx - 1].focus();
       }
+      document.querySelectorAll('.otp-input').forEach(el => {
+        el.classList.toggle('filled', el.value.length > 0);
+      });
     }
 
     async function handleVerifyOtp() {

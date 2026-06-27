@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html" class="active">Dashboard</a></li>
       <li><a href="create-exam.html">Create Exam</a></li>
@@ -31,24 +32,31 @@
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center" data-aos="fade-up">
         <div>
-          <h1>Welcome, <span id="teacher-name"></span></h1>
+          <h1>Welcome, <span id="teacher-name" class="gradient-text"></span></h1>
           <p>Teacher Dashboard</p>
         </div>
         <button class="btn btn-primary" onclick="goTo('create-exam.html')">+ New Exam</button>
       </div>
       <div id="alert-container"></div>
-      <div class="stats-grid" id="stats-grid">
-        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value" id="stat-exams">-</div><div class="stat-label">Total Exams</div></div>
-        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="stat-active">-</div><div class="stat-label">Active Exams</div></div>
-        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="stat-students">-</div><div class="stat-label">Students</div></div>
-        <div class="stat-card"><div class="stat-icon">🏫</div><div class="stat-value" id="stat-classes">-</div><div class="stat-label">Classes</div></div>
+      <div class="stats-grid" id="stats-grid" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-card stagger-1"><div class="stat-icon">📝</div><div class="stat-value" id="stat-exams">-</div><div class="stat-label">Total Exams</div></div>
+        <div class="stat-card stagger-2"><div class="stat-icon">✅</div><div class="stat-value" id="stat-active">-</div><div class="stat-label">Active Exams</div></div>
+        <div class="stat-card stagger-3"><div class="stat-icon">👥</div><div class="stat-value" id="stat-students">-</div><div class="stat-label">Students</div></div>
+        <div class="stat-card stagger-4"><div class="stat-icon">🏫</div><div class="stat-value" id="stat-classes">-</div><div class="stat-label">Classes</div></div>
       </div>
-      <h2 style="margin-bottom:16px">Your Exams</h2>
-      <div id="exam-list"><div class="loading-overlay"><div class="spinner"></div><span>Loading exams...</span></div></div>
+      <h2 style="margin-bottom:16px" data-aos="fade-up" data-aos-delay="150">Your Exams</h2>
+      <div id="exam-list" data-aos="fade-up" data-aos-delay="200">
+        <div class="exam-grid">
+          <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
+          <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
+        </div>
+      </div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true, offset: 50 });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>
@@ -68,11 +76,26 @@
           loadStudents(1, 1),
           loadClasses()
         ]);
-        document.getElementById('stat-exams').textContent = examsRes.pagination?.total || 0;
-        document.getElementById('stat-active').textContent = (examsRes.data || []).filter(e => e.status === 'active').length;
-        document.getElementById('stat-students').textContent = studentsRes.pagination?.total || 0;
-        document.getElementById('stat-classes').textContent = (classesRes || []).length;
+        animateCounter('stat-exams', examsRes.pagination?.total || 0);
+        animateCounter('stat-active', (examsRes.data || []).filter(e => e.status === 'active').length);
+        animateCounter('stat-students', studentsRes.pagination?.total || 0);
+        animateCounter('stat-classes', (classesRes || []).length);
       } catch (e) {}
+    }
+
+    function animateCounter(id, target) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const numTarget = typeof target === 'number' ? target : parseFloat(target) || 0;
+      const duration = 800;
+      const start = performance.now();
+      function update(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * numTarget);
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
     }
 
     async function loadExamList() {
@@ -84,8 +107,8 @@
           container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No exams yet</h3><p>Create your first exam to get started.</p></div>';
           return;
         }
-        container.innerHTML = '<div class="exam-grid">' + exams.map(e => `
-          <div class="exam-card" onclick="goTo('edit-exam.html?id=${e.id}')">
+        container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
+          <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s" onclick="goTo('edit-exam.html?id=${e.id}')">
             <div class="exam-card-title">${e.title}</div>
             <div class="exam-card-meta">
               <span>📖 ${e.subject}</span>

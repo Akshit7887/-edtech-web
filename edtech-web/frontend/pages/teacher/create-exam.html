@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="create-exam.html" class="active">Create Exam</a></li>
@@ -30,48 +31,48 @@
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header">
+      <div class="dashboard-header" data-aos="fade-up">
         <h1>Create Exam</h1>
         <p>Create manually or generate with AI</p>
       </div>
       <div id="alert-container"></div>
-      <div class="tabs">
+      <div class="tabs" data-aos="fade-up" data-aos-delay="100">
         <button class="tab active" onclick="switchTab('manual', this)">Manual</button>
         <button class="tab" onclick="switchTab('ai', this)">AI Generate</button>
       </div>
-      <div id="tab-manual">
+      <div id="tab-manual" data-aos="fade-up" data-aos-delay="150">
         <div class="card">
           <div class="card-header"><h3 class="card-title">Exam Details</h3></div>
           <div class="card-body">
             <div class="row">
               <div class="col-2">
-                <div class="form-group">
+                <div class="form-group form-floating">
+                  <input type="text" class="form-input" id="exam-title" placeholder=" " required>
                   <label class="form-label">Title *</label>
-                  <input type="text" class="form-input" id="exam-title" placeholder="e.g., Midterm Exam">
                 </div>
               </div>
               <div class="col-2">
-                <div class="form-group">
+                <div class="form-group form-floating">
+                  <input type="text" class="form-input" id="exam-subject" placeholder=" " required>
                   <label class="form-label">Subject *</label>
-                  <input type="text" class="form-input" id="exam-subject" placeholder="e.g., Mathematics">
                 </div>
               </div>
             </div>
-            <div class="form-group">
+            <div class="form-group form-floating">
+              <textarea class="form-textarea" id="exam-syllabus" placeholder=" " style="min-height:80px"></textarea>
               <label class="form-label">Syllabus Text</label>
-              <textarea class="form-textarea" id="exam-syllabus" placeholder="Describe the syllabus/content covered..."></textarea>
             </div>
             <div class="row">
               <div class="col-3">
-                <div class="form-group">
+                <div class="form-group form-floating">
+                  <input type="number" class="form-input" id="exam-duration" value="30" min="1" placeholder=" ">
                   <label class="form-label">Duration (minutes) *</label>
-                  <input type="number" class="form-input" id="exam-duration" value="30" min="1">
                 </div>
               </div>
               <div class="col-3">
-                <div class="form-group">
+                <div class="form-group form-floating">
+                  <input type="number" class="form-input" id="exam-questions" value="10" min="1" placeholder=" ">
                   <label class="form-label">Total Questions *</label>
-                  <input type="number" class="form-input" id="exam-questions" value="10" min="1">
                 </div>
               </div>
               <div class="col-3">
@@ -88,21 +89,21 @@
           </div>
         </div>
       </div>
-      <div id="tab-ai" style="display:none">
+      <div id="tab-ai" style="display:none" data-aos="fade-up" data-aos-delay="150">
         <div class="card">
           <div class="card-header"><h3 class="card-title">AI Generate Exam</h3></div>
           <div class="card-body">
             <div class="row">
               <div class="col-2">
-                <div class="form-group">
+                <div class="form-group form-floating">
+                  <input type="text" class="form-input" id="ai-subject" placeholder=" " required>
                   <label class="form-label">Subject *</label>
-                  <input type="text" class="form-input" id="ai-subject" placeholder="e.g., Science">
                 </div>
               </div>
               <div class="col-2">
-                <div class="form-group">
+                <div class="form-group form-floating">
+                  <input type="text" class="form-input" id="ai-topic" placeholder=" " required>
                   <label class="form-label">Topic *</label>
-                  <input type="text" class="form-input" id="ai-topic" placeholder="e.g., Photosynthesis">
                 </div>
               </div>
             </div>
@@ -130,6 +131,8 @@
       </div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>

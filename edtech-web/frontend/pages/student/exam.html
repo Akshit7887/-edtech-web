@@ -25,20 +25,20 @@
       </div>
     </div>
     <div id="question-container"><div class="loading-overlay"><div class="spinner"></div><span>Loading questions...</span></div></div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px">
+    <div class="exam-nav-btns" id="exam-bottom-nav" style="margin-top:24px">
       <button class="btn btn-secondary" onclick="examEngine.prevQuestion()" id="prev-btn">← Previous</button>
-      <button class="btn btn-primary" onclick="handleSubmit()" id="submit-btn">Submit Exam ✓</button>
+      <button class="btn btn-primary" onclick="handleSubmit()" id="submit-btn">Submit Exam</button>
       <button class="btn btn-secondary" onclick="examEngine.nextQuestion()" id="next-btn">Next →</button>
     </div>
   </div>
   <div class="question-navigator" id="question-navigator"></div>
   <div id="submit-modal" class="modal-overlay">
     <div class="modal">
-      <div class="modal-header"><h3>Submit Exam</h3></div>
+      <div class="modal-header"><h3>Submit Exam</h3><button class="modal-close" onclick="closeSubmitModal()">×</button></div>
       <div class="modal-body">
         <p>Are you sure you want to submit your exam?</p>
         <p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px">
-          Answered: <span id="modal-answered">0</span>/<span id="modal-total">0</span>
+          Answered: <strong id="modal-answered">0</strong>/<strong id="modal-total">0</strong>
         </p>
       </div>
       <div class="modal-footer">

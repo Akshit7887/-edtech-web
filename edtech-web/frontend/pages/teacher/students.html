@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="create-exam.html">Create Exam</a></li>
@@ -30,7 +31,7 @@
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center" data-aos="fade-up">
         <div>
           <h1>Students</h1>
           <p>Manage your students</p>
@@ -38,7 +39,7 @@
         <button class="btn btn-secondary" onclick="showAnnounceModal()">📢 Send Announcement</button>
       </div>
       <div id="alert-container"></div>
-      <div class="table-container">
+      <div class="table-container" data-aos="fade-up" data-aos-delay="100">
         <table>
           <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Class</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody id="students-tbody">
@@ -49,6 +50,8 @@
       <div class="pagination" id="students-pagination"></div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>
@@ -97,8 +100,8 @@
 
     function showAnnounceModal() {
       const html = `
-        <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="ann-title" placeholder="Announcement title"></div>
-        <div class="form-group"><label class="form-label">Message</label><textarea class="form-textarea" id="ann-message" placeholder="Your message to all students..."></textarea></div>
+        <div class="form-group form-floating"><input class="form-input" id="ann-title" placeholder=" "><label class="form-label">Title</label></div>
+        <div class="form-group form-floating"><textarea class="form-textarea" id="ann-message" placeholder=" " style="min-height:80px"></textarea><label class="form-label">Message</label></div>
       `;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'ann-modal';
       overlay.innerHTML = `

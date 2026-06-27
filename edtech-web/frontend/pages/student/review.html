@@ -7,13 +7,14 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/exam.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
-      <li><a href="results.html" class="active">My Results</a></li>
+      <li><a href="results.html">My Results</a></li>
       <li><a href="notifications.html">Notifications</a></li>
       <!-- USER -->
     </ul>
@@ -29,11 +30,13 @@
     </aside>
     <main class="main-content">
       <div id="alert-container"></div>
-      <div id="review-container">
+      <div id="review-container" data-aos="fade-up">
         <div class="loading-overlay"><div class="spinner"></div><span>Loading review...</span></div>
       </div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script>
@@ -57,7 +60,7 @@
             <div class="exam-meta">
               <span class="exam-meta-item">📖 ${data.subject}</span>
               <span class="exam-meta-item">📄 ${data.total_questions} questions</span>
-              <span class="exam-meta-item">✅ Score: ${data.score}/${data.total_questions} (${pct}%)</span>
+              <span class="exam-meta-item" style="font-size:1.1rem;font-weight:600">✅ Score: <span style="color:${pct >= 40 ? 'var(--success)' : 'var(--danger)'}">${data.score}/${data.total_questions} (${pct}%)</span></span>
               <span class="exam-meta-item">${statusBadge(data.status)}</span>
               ${data.time_used ? `<span class="exam-meta-item">⏱ Used: ${Math.floor(data.time_used / 60)}m ${data.time_used % 60}s</span>` : ''}
             </div>
@@ -66,7 +69,7 @@
           ${data.questions.map((q, i) => {
             const isCorrect = q.is_correct;
             return `
-              <div class="review-question ${isCorrect ? 'correct' : 'incorrect'}">
+              <div class="review-question ${isCorrect ? 'correct' : 'incorrect'} animate-fade-up" style="animation-delay:${i * 0.05}s">
                 <div class="question-number">${i + 1}</div>
                 <div class="question-text">${q.question_text}</div>
                 <div class="review-answer ${isCorrect ? 'correct' : 'incorrect'}">
@@ -87,7 +90,7 @@
           }).join('')}
           <div style="margin-top:24px">
             <button class="btn btn-secondary" onclick="goTo('results.html')">← Back to Results</button>
-            <button class="btn btn-primary" style="margin-left:8px" onclick="goTo('dashboard.html')">Dashboard</button>
+            <button class="btn btn-primary" onclick="goTo('dashboard.html')">Dashboard</button>
           </div>
         `;
       } catch (e) {

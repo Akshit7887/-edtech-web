@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="results.html">My Results</a></li>
@@ -29,7 +30,7 @@
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
+      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center" data-aos="fade-up">
         <div>
           <h1>Notifications</h1>
           <p>Stay updated with exam announcements</p>
@@ -37,9 +38,11 @@
         <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark All Read</button>
       </div>
       <div id="alert-container"></div>
-      <div id="notifications-container"><div class="loading-overlay"><div class="spinner"></div><span>Loading notifications...</span></div></div>
+      <div id="notifications-container" data-aos="fade-up" data-aos-delay="100"><div class="loading-overlay"><div class="spinner"></div><span>Loading notifications...</span></div></div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script>
@@ -58,8 +61,8 @@
           container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔔</div><h3>No notifications</h3><p>You\'re all caught up!</p></div>';
           return;
         }
-        container.innerHTML = items.map(n => `
-          <div class="card" style="margin-bottom:8px;cursor:pointer;${n.is_read ? '' : 'border-left:3px solid var(--primary)'}" onclick="markRead(${n.id}, this)">
+        container.innerHTML = items.map((n, i) => `
+          <div class="card notification-card animate-fade-up" style="animation-delay:${i * 0.03}s;${n.is_read ? '' : 'border-left:3px solid var(--primary)'}" onclick="markRead(${n.id}, this)">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div>
                 <h4 style="font-size:0.95rem;margin-bottom:4px">${n.title}</h4>
@@ -87,7 +90,7 @@
     async function markAllRead() {
       try {
         await api.put('/api/students/notifications/read-all');
-        document.querySelectorAll('.card').forEach(el => el.style.borderLeft = 'none');
+        document.querySelectorAll('.card.notification-card').forEach(el => el.style.borderLeft = 'none');
         showAlert('All notifications marked as read', 'success');
       } catch (e) {
         showAlert(e.message, 'error');

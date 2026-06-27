@@ -1,41 +1,258 @@
-.auth-container {
-  width: 100%; max-width: 420px; padding: 20px;
-}
+/* EdTech Web - Auth Pages Styles
+   Enhanced with floating labels, focus animations, and smooth transitions */
+
+/* ===== Auth Container ===== */
+.auth-container { width: 100%; max-width: 480px; padding: 20px; }
+
 .auth-card {
-  background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 40px 32px;
-  box-shadow: var(--shadow);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 48px 36px;
+  box-shadow: var(--shadow-xl);
+  animation: fadeInUp 0.5s var(--ease);
+  position: relative;
+  overflow: hidden;
 }
-.auth-logo { text-align: center; margin-bottom: 32px; }
-.auth-logo h1 { font-size: 1.75rem; color: var(--primary-light); }
-.auth-logo p { color: var(--text-dim); margin-top: 4px; font-size: 0.9rem; }
-.auth-title { text-align: center; margin-bottom: 24px; }
-.auth-title h2 { font-size: 1.25rem; }
-.auth-title p { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
-.auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text-dim); font-size: 0.8rem; }
-.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.auth-footer { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
-.auth-role-selector { display: flex; gap: 8px; margin-bottom: 20px; }
+.auth-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+}
+.auth-card:hover { box-shadow: var(--shadow-xl); border-color: var(--border-light); }
+
+/* Logo Area */
+.auth-logo { text-align: center; margin-bottom: 40px; }
+.auth-logo h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+.auth-logo p { color: var(--text-dim); margin-top: 8px; font-size: 0.95rem; }
+
+/* Title Area */
+.auth-title { text-align: center; margin-bottom: 32px; }
+.auth-title h2 { font-size: 1.5rem; margin-bottom: 8px; }
+.auth-title p { color: var(--text-muted); font-size: 0.95rem; }
+
+/* Divider */
+.auth-divider { display: flex; align-items: center; gap: 16px; margin: 24px 0; color: var(--text-dim); font-size: 0.85rem; }
+.auth-divider::before, .auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.auth-divider::before { max-width: 40%; }
+.auth-divider::after { max-width: 40%; }
+
+/* Footer */
+.auth-footer { text-align: center; margin-top: 32px; font-size: 0.85rem; color: var(--text-muted); }
+.auth-footer p { margin-bottom: 8px; }
+.auth-footer a { color: var(--primary-light); text-decoration: none; transition: all var(--ease) 0.2s; }
+.auth-footer a:hover { color: var(--primary); text-decoration: underline; }
+
+/* ===== Role Selector ===== */
+.auth-role-selector {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  position: relative;
+}
 .role-option {
-  flex: 1; padding: 10px; text-align: center; border-radius: var(--radius-sm);
-  border: 2px solid var(--border); cursor: pointer; transition: var(--transition);
-  font-size: 0.85rem; font-weight: 500; color: var(--text-muted); background: transparent;
+  flex: 1;
+  padding: 16px;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all var(--ease) 0.3s;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  position: relative;
 }
-.role-option:hover { border-color: var(--border-light); }
-.role-option.selected { border-color: var(--primary); color: var(--primary-light); background: rgba(99,102,241,0.08); }
-.role-option .role-icon { font-size: 1.2rem; display: block; margin-bottom: 4px; }
+.role-option:hover {
+  border-color: var(--primary-light);
+  background: rgba(99,102,241,0.08);
+  transform: translateY(-2px);
+}
+.role-option.selected {
+  border-color: var(--primary);
+  color: var(--primary-light);
+  background: rgba(99,102,241,0.12);
+  box-shadow: 0 0 0 2px rgba(99,102,241,0.15), inset 0 1px 0 rgba(99,102,241,0.2);
+}
+.role-option .role-icon { font-size: 1.4rem; display: block; margin-bottom: 6px; }
 
-.otp-inputs { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
+/* ===== OTP Inputs ===== */
+.otp-inputs { display: flex; gap: 12px; justify-content: center; margin-bottom: 32px; }
 .otp-input {
-  width: 48px; height: 56px; text-align: center; font-size: 1.5rem; font-weight: 600;
-  background: var(--bg-input); border: 2px solid var(--border); border-radius: var(--radius-sm);
-  color: var(--text); transition: var(--transition);
+  width: 52px;
+  height: 64px;
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: var(--bg-input);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  transition: all var(--ease) 0.2s;
+  caret-color: var(--primary);
 }
-.otp-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.15); outline: none; }
+.otp-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.1), 0 0 0 2px rgba(99,102,241,0.3);
+  outline: none;
+  transform: translateY(-2px);
+}
+.otp-input.filled { border-color: var(--primary); background: rgba(99,102,241,0.05); }
 
-.animated-check { text-align: center; padding: 20px 0; }
-.check-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(34,197,94,0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 2rem; color: var(--success); }
+/* OTP Input Error State */
+.otp-input.error {
+  border-color: var(--danger);
+  animation: shake 0.4s var(--ease);
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
 
+/* ===== Animated Check (Success State) ===== */
+.animated-check { text-align: center; padding: 40px 0; animation: fadeInUp 0.5s var(--ease); }
+.check-icon {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(34,197,94,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 2.5rem;
+  color: var(--success);
+  animation: checkBounce 0.6s var(--ease-bounce);
+  border: 2px solid rgba(34,197,94,0.2);
+  box-shadow: 0 0 30px rgba(34,197,94,0.2);
+}
+.animated-check h2 { color: var(--success); margin-bottom: 8px; font-size: 1.5rem; }
+.animated-check p { color: var(--text-muted); font-size: 0.95rem; }
+
+/* ===== Password Toggle ===== */
 .password-input-wrap { position: relative; }
-.toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-dim); cursor: pointer; padding: 4px; font-size: 0.85rem; }
-.toggle-password:hover { color: var(--text-muted); }
+.password-input-wrap .form-input { padding-right: 48px; }
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 8px;
+  font-size: 1rem;
+  transition: all var(--ease) 0.2s;
+  z-index: 10;
+}
+.toggle-password:hover { color: var(--text-muted); transform: translateY(-50%) scale(1.1); }
+.toggle-password:active { transform: translateY(-50%) scale(0.95); }
+
+/* ===== Floating Label Animations ===== */
+.form-floating { position: relative; }
+
+/* Input states with animations */
+.form-input, .form-select, .form-textarea {
+  transition: all var(--ease) 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  background: rgba(99,102,241,0.03);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.1), 0 0 0 1px rgba(99,102,241,0.2);
+}
+
+/* Floating Label Specific Styles */
+.form-floating .form-input, .form-floating .form-select {
+  padding-top: 20px;
+  padding-bottom: 6px;
+}
+.form-floating .form-label {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  pointer-events: none;
+  transition: all var(--ease) 0.2s;
+  margin-bottom: 0;
+}
+.form-floating .form-input:focus ~ .form-label,
+.form-floating .form-input:not(:placeholder-shown) ~ .form-label,
+.form-floating .form-select:focus ~ .form-label,
+.form-floating .form-select:not([value=""]):valid ~ .form-label {
+  top: 8px;
+  transform: translateY(0);
+  font-size: 0.75rem;
+  color: var(--primary-light);
+  background: var(--bg);
+  padding: 0 6px;
+  border-radius: 2px;
+}
+
+/* ===== Resend Countdown ===== */
+.resend-countdown { font-size: 0.85rem; color: var(--text-muted); margin-top: 16px; text-align: center; }
+.resend-countdown a { color: var(--primary-light); text-decoration: none; transition: color var(--ease) 0.2s; }
+.resend-countdown a:hover { color: var(--primary); text-decoration: underline; }
+.resend-countdown.disabled { opacity: 0.4; pointer-events: none; }
+
+/* ===== Step Transitions ===== */
+.auth-step { animation: fadeInUp 0.4s var(--ease); }
+.auth-step:not(.visible) { display: none; }
+
+/* ===== Mobile Optimizations ===== */
+@media (max-width: 480px) {
+  .auth-container { max-width: 100%; padding: 16px; }
+  .auth-card { padding: 32px 20px; }
+
+  .auth-logo h1 { font-size: 1.5rem; }
+  .auth-logo p { font-size: 0.9rem; }
+  .auth-title h2 { font-size: 1.25rem; }
+
+  .auth-role-selector { gap: 8px; }
+  .role-option { padding: 12px; }
+  .role-option .role-icon { font-size: 1.2rem; }
+
+  .otp-inputs { gap: 8px; }
+  .otp-input {
+    width: 44px;
+    height: 52px;
+    font-size: 1.5rem;
+  }
+
+  .password-input-wrap .form-input { padding-right: 44px; }
+  .toggle-password { right: 8px; font-size: 0.9rem; }
+
+  .auth-footer { font-size: 0.8rem; }
+}
+
+/* ===== Animation Keyframes ===== */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes checkBounce {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}

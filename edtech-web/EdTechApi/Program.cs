@@ -36,6 +36,7 @@ builder.Services.AddSingleton<IOtpService, OtpService>();
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 builder.Services.AddSingleton<IEmailService, EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddHttpClient<IGoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<IExamService, ExamService>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<ITeacherService, TeacherService>();

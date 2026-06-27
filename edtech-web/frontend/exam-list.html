@@ -7,22 +7,33 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="index.html">Home</a></li>
       <li><a href="login.html">Login</a></li>
       <!-- USER -->
     </ul>
   </nav>
-  <div style="max-width:1000px;margin:40px auto;padding:0 20px">
-    <h1 style="margin-bottom:8px">Available Exams</h1>
-    <p style="color:var(--text-muted);margin-bottom:24px">Browse and take exams assigned to you</p>
+  <div class="container" style="margin-top:40px" data-aos="fade-up">
+    <div class="exam-list-header">
+      <h1>Available Exams</h1>
+      <p>Browse and take exams assigned to you</p>
+    </div>
     <div id="alert-container"></div>
-    <div id="exam-list"><div class="loading-overlay"><div class="spinner"></div><span>Loading exams...</span></div></div>
+    <div id="exam-list">
+      <div class="exam-grid">
+        <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
+      </div>
+    </div>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script>
@@ -38,8 +49,8 @@
         const exams = res.data || [];
         const container = document.getElementById('exam-list');
         if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><h3>No exams available</h3></div>'; return; }
-        container.innerHTML = '<div class="exam-grid">' + exams.map(e => `
-          <div class="exam-card" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${e.id}')` : `goTo('login.html')`}">
+        container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
+          <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${e.id}')` : `goTo('login.html')`}">
             <div class="exam-card-title">${e.title}</div>
             <div class="exam-card-meta">
               <span>📖 ${e.subject}</span>
@@ -49,7 +60,7 @@
             </div>
             <div class="exam-card-footer">
               <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
-              <span class="btn btn-sm btn-primary">${api.getToken() ? 'Take Exam →' : 'Login to Take'}</span>
+              <span class="btn btn-sm ${api.getToken() ? 'btn-primary' : 'btn-secondary'}">${api.getToken() ? 'Take Exam →' : 'Login to Take'}</span>
             </div>
           </div>
         `).join('') + '</div>';

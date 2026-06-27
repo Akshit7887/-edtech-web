@@ -1,56 +1,144 @@
+/* EdTech Web - Dashboard Styles
+   Enhanced consistent table and card styles */
+
+/* ===== Dashboard Header ===== */
 .dashboard-header { margin-bottom: 24px; }
 .dashboard-header h1 { font-size: 1.75rem; }
 .dashboard-header p { color: var(--text-muted); margin-top: 4px; }
 
-.exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
-.exam-card {
-  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 20px; transition: var(--transition); cursor: pointer;
-}
-.exam-card:hover { border-color: var(--border-light); transform: translateY(-2px); box-shadow: var(--shadow); }
-.exam-card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 8px; }
-.exam-card-meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; }
-.exam-card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--border); }
+/* ===== Exam Grid ===== */
+.exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
 
+.exam-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all var(--ease) 0.3s;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.exam-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity var(--ease) 0.3s;
+}
+.exam-card:hover {
+  border-color: var(--border-light);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.exam-card:hover::before { opacity: 1; }
+
+.exam-card-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 8px; }
+.exam-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.exam-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* ===== Student Avatar ===== */
 .student-row { display: flex; align-items: center; gap: 12px; }
 .student-avatar {
-  width: 36px; height: 36px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 600; font-size: 0.85rem; background: var(--primary); color: #fff; flex-shrink: 0;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  background: var(--primary);
+  color: #fff;
+  flex-shrink: 0;
 }
 
-/* Score bar */
+/* Score Bar */
 .score-bar { display: flex; align-items: center; gap: 12px; }
 .score-bar-fill { flex: 1; height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden; }
-.score-bar-progress { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.score-bar-progress {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s var(--ease);
+}
 .score-value { font-size: 0.85rem; font-weight: 600; min-width: 40px; text-align: right; }
 
-/* Tabs */
+/* ===== Tabs ===== */
 .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
 .tab {
-  padding: 10px 20px; border: none; background: none; color: var(--text-muted);
-  cursor: pointer; font-family: var(--font); font-size: 0.875rem; font-weight: 500;
-  border-bottom: 2px solid transparent; transition: var(--transition); margin-bottom: -1px;
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all var(--ease) 0.2s;
+  margin-bottom: -1px;
 }
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--primary-light); border-bottom-color: var(--primary); }
 
-/* Deep link */
+/* ===== Deep Link Box ===== */
 .deep-link-box {
-  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
-  background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-size: 0.85rem; color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
-.deep-link-box code { flex: 1; color: var(--text); }
+.deep-link-box code { flex: 1; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Email template editor */
-.template-editor { min-height: 300px; font-family: monospace; font-size: 0.85rem; }
+/* ===== Email Template Editor ===== */
+.template-editor { min-height: 300px; font-family: monospace; font-size: 0.85rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; color: var(--text); }
 
-/* Results table highlight */
+/* ===== Results Table Highlighting ===== */
 .row-high-pass td { background: rgba(34,197,94,0.03); }
 .row-high-fail td { background: rgba(239,68,68,0.03); }
 
-/* AI generate modal */
+/* ===== AI Generate Progress ===== */
 .ai-gen-progress { text-align: center; padding: 40px; }
 .ai-gen-dots::after { content: ''; animation: dots 1.5s steps(4, end) infinite; }
-@keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } 100% { content: ''; } }
+
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+  100% { content: ''; }
+}
+
+/* ===== Mobile Optimizations ===== */
+@media (max-width: 768px) {
+  .dashboard-header h1 { font-size: 1.5rem; }
+  .exam-grid { grid-template-columns: 1fr; }
+  .student-avatar { width: 32px; height: 32px; font-size: 0.8rem; }
+  .tabs { gap: 2px; }
+  .tab { padding: 8px 12px; font-size: 0.8rem; }
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .score-bar-progress { transition: none; }
+  .exam-card:hover { transform: none; }
+}

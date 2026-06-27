@@ -7,14 +7,15 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech Admin</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html" class="active">Dashboard</a></li>
       <li><a href="users.html">Users</a></li>
-      <li><a href="exams.html">All Exams</a></li>
+      <li><a href="exams.html">Exams</a></li>
       <!-- USER -->
     </ul>
   </nav>
@@ -23,34 +24,26 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html" class="active"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
-        <li><a href="exams.html"><span class="nav-icon">📝</span><span>All Exams</span></a></li>
+        <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header">
+      <div class="dashboard-header" data-aos="fade-up">
         <h1>Admin Dashboard</h1>
         <p>System overview and management</p>
       </div>
       <div id="alert-container"></div>
-      <div class="stats-grid" id="stats-grid">
-        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value" id="stat-users">-</div><div class="stat-label">Total Users</div></div>
-        <div class="stat-card"><div class="stat-icon">🎓</div><div class="stat-value" id="stat-students">-</div><div class="stat-label">Students</div></div>
-        <div class="stat-card"><div class="stat-icon">👨‍🏫</div><div class="stat-value" id="stat-teachers">-</div><div class="stat-label">Teachers</div></div>
-        <div class="stat-card"><div class="stat-icon">📝</div><div class="stat-value" id="stat-exams">-</div><div class="stat-label">Total Exams</div></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3 class="card-title">Welcome to EdTech Admin</h3></div>
-        <div class="card-body">
-          <p>From here you can manage users and view all exams across the platform.</p>
-          <div style="display:flex;gap:12px;margin-top:16px">
-            <a href="users.html" class="btn btn-primary">Manage Users</a>
-            <a href="exams.html" class="btn btn-secondary">View All Exams</a>
-          </div>
-        </div>
+      <div class="stats-grid" id="stats-grid" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-card stagger-1"><div class="stat-icon">👥</div><div class="stat-value" id="stat-users">-</div><div class="stat-label">Total Users</div></div>
+        <div class="stat-card stagger-2"><div class="stat-icon">🎓</div><div class="stat-value" id="stat-students">-</div><div class="stat-label">Students</div></div>
+        <div class="stat-card stagger-3"><div class="stat-icon">👨‍🏫</div><div class="stat-value" id="stat-teachers">-</div><div class="stat-label">Teachers</div></div>
+        <div class="stat-card stagger-4"><div class="stat-icon">📝</div><div class="stat-value" id="stat-exams">-</div><div class="stat-label">Total Exams</div></div>
       </div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true, offset: 50 });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script>
@@ -62,12 +55,34 @@
 
     async function loadStats() {
       try {
-        const res = await api.get('/api/exams?page=1&limit=1');
-        document.getElementById('stat-exams').textContent = res.pagination?.total || 0;
-        document.getElementById('stat-users').textContent = '~';
-        document.getElementById('stat-students').textContent = '~';
-        document.getElementById('stat-teachers').textContent = '~';
-      } catch (e) {}
+        const [usersRes, examsRes] = await Promise.all([
+          api.get('/api/admin/users?page=1&limit=1'),
+          api.get('/api/admin/exams?page=1&limit=1')
+        ]);
+        const users = usersRes.data || [];
+        const exams = examsRes.data || [];
+        animateCounter('stat-users', usersRes.pagination?.total || 0);
+        animateCounter('stat-students', users.filter(u => u.role === 'student').length);
+        animateCounter('stat-teachers', users.filter(u => u.role === 'teacher').length);
+        animateCounter('stat-exams', examsRes.pagination?.total || 0);
+      } catch (e) {
+        document.getElementById('stats-grid').innerHTML = '<div class="alert alert-error">Failed to load stats</div>';
+      }
+    }
+
+    function animateCounter(id, target) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const numTarget = typeof target === 'number' ? target : parseFloat(target) || 0;
+      const duration = 800;
+      const start = performance.now();
+      function update(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * numTarget);
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
     }
   </script>
 </body>

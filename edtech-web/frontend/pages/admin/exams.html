@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>All Exams - EdTech</title>
+  <title>Manage Exams - EdTech</title>
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech Admin</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="users.html">Users</a></li>
-      <li><a href="exams.html" class="active">All Exams</a></li>
+      <li><a href="exams.html" class="active">Exams</a></li>
       <!-- USER -->
     </ul>
   </nav>
@@ -23,47 +24,53 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
-        <li><a href="exams.html" class="active"><span class="nav-icon">📝</span><span>All Exams</span></a></li>
+        <li><a href="exams.html" class="active"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header">
-        <h1>All Exams</h1>
+      <div class="dashboard-header" data-aos="fade-up">
+        <h1>Exams</h1>
         <p>View all exams across the platform</p>
       </div>
       <div id="alert-container"></div>
-      <div id="exam-list"><div class="loading-overlay"><div class="spinner"></div><span>Loading exams...</span></div></div>
+      <div id="exam-list" data-aos="fade-up" data-aos-delay="100">
+        <div class="exam-grid">
+          <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
+          <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
+        </div>
+      </div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
       setupNavbar();
-      loadAllExams();
+      await loadExams();
     });
 
-    async function loadAllExams() {
+    async function loadExams() {
       try {
-        const res = await api.get('/api/exams?page=1&limit=50');
+        const res = await api.get('/api/admin/exams?page=1&limit=20');
         const exams = res.data || [];
         const container = document.getElementById('exam-list');
-        if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No exams created yet</h3></div>'; return; }
-        container.innerHTML = '<div class="exam-grid">' + exams.map(e => `
-          <div class="exam-card">
+        if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No exams found</h3></div>'; return; }
+        container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
+          <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s">
             <div class="exam-card-title">${e.title}</div>
             <div class="exam-card-meta">
               <span>📖 ${e.subject}</span>
               <span>⏱ ${e.duration_minutes} min</span>
               <span>📄 ${e.total_questions} Q</span>
-              <span>👤 ${e.teacher_name || 'Unknown'}</span>
               ${statusBadge(e.status)}
             </div>
             <div class="exam-card-footer">
               <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
-              <span class="badge badge-info">${e.students_attended || 0} attended</span>
+              <span style="font-size:0.8rem;color:var(--text-muted)">Teacher: ${e.teacher_name || 'N/A'}</span>
             </div>
           </div>
         `).join('') + '</div>';

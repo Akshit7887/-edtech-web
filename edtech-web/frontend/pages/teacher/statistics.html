@@ -7,10 +7,11 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">📚 EdTech</div>
+    <div class="navbar-brand">EdTech</div>
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="create-exam.html">Create Exam</a></li>
@@ -28,9 +29,11 @@
     </aside>
     <main class="main-content">
       <div id="alert-container"></div>
-      <div id="stats-content"><div class="loading-overlay"><div class="spinner"></div><span>Loading statistics...</span></div></div>
+      <div id="stats-content" data-aos="fade-up"><div class="loading-overlay"><div class="spinner"></div><span>Loading statistics...</span></div></div>
     </main>
   </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>AOS.init({ once: true });</script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>
