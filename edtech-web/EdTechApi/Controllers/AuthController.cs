@@ -91,6 +91,15 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [HttpDelete("profile")]
+    [EnableRateLimiting("ApiPolicy")]
+    public async Task<IActionResult> DeleteProfile()
+    {
+        var userId = GetUserId();
+        await _authService.DeleteProfileAsync(userId);
+        return Ok(new { success = true, message = "Profile deleted successfully" });
+    }
+
     [HttpPost("supabase-session")]
     [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> SupabaseSession([FromBody] SupabaseSessionRequest request)

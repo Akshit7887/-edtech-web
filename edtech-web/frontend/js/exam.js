@@ -152,26 +152,41 @@ class ExamEngine {
     container.innerHTML = `
       <div class="question-card">
         <div class="question-number">${idx + 1}</div>
-        <div class="question-text">${q.question_text}</div>
-        <div class="options">
+        <div class="question-text">${this._escapeHtml(q.question_text)}</div>
+        <div class="options" data-qid="${q.id}">
           ${opts.map((opt, oi) => {
             const val = letters[oi];
             const selected = this.answers[q.id] === val;
             return `
               <label class="option-label ${selected ? 'selected' : ''}">
-                <input type="radio" name="q_${q.id}" value="${val}" ${selected ? 'checked' : ''} onchange="examEngine.selectAnswer(${q.id}, '${val}')">
+                <input type="radio" name="q_${q.id}" value="${val}" ${selected ? 'checked' : ''}>
                 <span class="option-prefix">${val}.</span>
-                <span>${opt}</span>
+                <span>${this._escapeHtml(opt)}</span>
               </label>
             `;
           }).join('')}
         </div>
       </div>
       <div class="exam-nav" style="display:flex;justify-content:space-between;margin-top:16px;">
-        <button class="btn btn-secondary" onclick="examEngine.prevQuestion()" ${idx === 0 ? 'disabled' : ''}>← Previous</button>
-        <button class="btn btn-secondary" onclick="examEngine.nextQuestion()" ${idx === this.questions.length - 1 ? 'disabled' : ''}>Next →</button>
+        <button class="btn btn-secondary prev-q-btn" ${idx === 0 ? 'disabled' : ''}>← Previous</button>
+        <button class="btn btn-secondary next-q-btn" ${idx === this.questions.length - 1 ? 'disabled' : ''}>Next →</button>
       </div>
     `;
+
+    container.querySelectorAll('.options input[type="radio"]').forEach(input => {
+      input.addEventListener('change', () => {
+        this.selectAnswer(q.id, input.value);
+      });
+    });
+    container.querySelector('.prev-q-btn')?.addEventListener('click', () => this.prevQuestion());
+    container.querySelector('.next-q-btn')?.addEventListener('click', () => this.nextQuestion());
+  }
+
+  _escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
 
   _buildNavigator() {
@@ -179,8 +194,11 @@ class ExamEngine {
     if (!nav) return;
     nav.innerHTML = '<div style="font-size:0.75rem;color:var(--text-dim);text-align:center;margin-bottom:6px;">Questions</div>' +
       this.questions.map((q, i) =>
-        `<button class="q-nav-btn ${this.answers[q.id] ? 'answered' : ''} ${i === this.currentIndex ? 'current' : ''}" onclick="examEngine.goToQuestion(${i})">${i + 1}</button>`
+        `<button class="q-nav-btn ${this.answers[q.id] ? 'answered' : ''} ${i === this.currentIndex ? 'current' : ''}" data-qidx="${i}">${i + 1}</button>`
       ).join('');
+    nav.querySelectorAll('.q-nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => this.goToQuestion(parseInt(btn.dataset.qidx)));
+    });
   }
 
   _updateNavButtons() {

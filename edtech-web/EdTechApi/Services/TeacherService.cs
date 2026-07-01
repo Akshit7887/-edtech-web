@@ -9,7 +9,9 @@ namespace EdTechApi.Services;
 public interface ITeacherService
 {
     Task<object> GetAllStudentsAsync(int teacherId, int page = 1, int limit = 50);
+    Task<object> CreateStudentAsync(int teacherId, string name, string email);
     Task<object> GetStudentDetailAsync(int studentId);
+    Task DeleteStudentAsync(int studentId);
     Task<object> GetQuestionBankAsync(int examId, int teacherId);
     Task<QuestionPool> AddQuestionAsync(int examId, int teacherId, QuestionPool data);
     Task<QuestionPool> UpdateQuestionAsync(int questionId, int teacherId, QuestionPool data);
@@ -89,6 +91,25 @@ public class TeacherService : ITeacherService
         }).ToList();
 
         return new { data, pagination = new { page, limit, total, totalPages = (int)Math.Ceiling((double)total / limit) } };
+    }
+
+    public async Task<object> CreateStudentAsync(int teacherId, string name, string email)
+    {
+        using var conn = _db.CreateConnection();
+
+        var existing = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"email\" = @Email", new { Email = email });
+        if (existing != null)
+            throw new AppException(409, "A user with this email already exists");
+
+        var hash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString());
+        var now = DateTime.UtcNow;
+        var user = await conn.QuerySingleAsync<User>(
+            @"INSERT INTO ""Users"" (""name"", ""role"", ""email"", ""password_hash"", ""created_at"", ""updated_at"")
+              VALUES (@Name, 'student', @Email, @PasswordHash, @Now, @Now) RETURNING *",
+            new { Name = name, Email = email, PasswordHash = hash, Now = now });
+
+        return new { id = user.Id, name = user.Name, email = user.Email, role = user.Role, created_at = user.CreatedAt };
     }
 
     public async Task<object> GetStudentDetailAsync(int studentId)
@@ -448,6 +469,18 @@ public class TeacherService : ITeacherService
         await conn.ExecuteAsync(
             "DELETE FROM \"ParentContacts\" WHERE \"student_id\" = @StudentId",
             new { StudentId = studentId });
+    }
+
+    public async Task DeleteStudentAsync(int studentId)
+    {
+        using var conn = _db.CreateConnection();
+
+        var student = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"id\" = @Id AND \"role\" = 'student'", new { Id = studentId });
+        if (student == null)
+            throw new AppException(404, "Student not found");
+
+        await conn.ExecuteAsync("DELETE FROM \"Users\" WHERE \"id\" = @Id", new { Id = studentId });
     }
 
     public async Task<List<ParentNotification>> GetParentReportHistoryAsync(int examId, int teacherId)

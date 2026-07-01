@@ -17,14 +17,15 @@ public class GoogleAuthController : ControllerBase
     }
 
     [HttpGet("login")]
-    public IActionResult Login()
+    public IActionResult Login([FromQuery] string? role)
     {
-        var url = _googleAuth.GetAuthorizationUrl();
+        var selectedRole = !string.IsNullOrEmpty(role) && (role == "teacher" || role == "student") ? role : "student";
+        var url = _googleAuth.GetAuthorizationUrl(selectedRole);
         return Redirect(url);
     }
 
     [HttpGet("callback")]
-    public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string? error)
+    public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string? error, [FromQuery] string? state)
     {
         var frontendFallback = "http://localhost:8081/supabase-callback.html";
         string GetFrontendUrl()
@@ -46,7 +47,8 @@ public class GoogleAuthController : ControllerBase
 
         try
         {
-            var result = await _googleAuth.HandleCallbackAsync(code);
+            var selectedRole = !string.IsNullOrEmpty(state) && (state == "teacher" || state == "student") ? state : "student";
+            var result = await _googleAuth.HandleCallbackAsync(code, selectedRole);
             var frontendUrl = GetFrontendUrl();
             var redirectUrl = $"{frontendUrl}?token={Uri.EscapeDataString(result.Token)}" +
                               $"&user_id={result.User.Id}" +

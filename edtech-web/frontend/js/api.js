@@ -1,6 +1,13 @@
 const API_BASE = (() => {
   const stored = localStorage.getItem('api_base');
-  if (stored) return stored.replace(/\/+$/, '');
+  if (stored) {
+    const cleaned = stored.replace(/\/+$/, '');
+    if (cleaned !== 'http://localhost:5000') {
+      localStorage.removeItem('api_base');
+    } else {
+      return cleaned;
+    }
+  }
   const host = window.location.hostname;
   if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5000';
   if (host.includes('vercel.app')) return 'https://backend-wine-six-74.vercel.app';
@@ -126,11 +133,17 @@ function formatDate(d) {
 
 function statusBadge(status) {
   const map = {
-    active: 'badge-success', draft: 'badge-warning', closed: 'badge-danger',
-    completed: 'badge-success', in_progress: 'badge-info', not_started: 'badge-muted', disqualified: 'badge-danger',
-    present: 'badge-success', absent: 'badge-danger'
+    active: 'badge-green',
+    draft: 'badge-yellow',
+    closed: 'badge-gray',
+    completed: 'badge-green',
+    in_progress: 'badge-yellow',
+    not_started: 'badge-gray',
+    disqualified: 'badge-red',
+    present: 'badge-green',
+    absent: 'badge-red'
   };
-  const cls = map[status] || 'badge-muted';
+  const cls = map[status] || 'badge-gray';
   return `<span class="badge ${cls}">${status.replace(/_/g, ' ')}</span>`;
 }
 

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Signing in... - EdTech</title>
   <link rel="stylesheet" href="css/main.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/auth.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="auth-page">
   <div class="auth-container">
@@ -14,9 +15,9 @@
         <h1>EdTech</h1>
         <p>Completing sign in...</p>
       </div>
-      <div class="loading-overlay">
-        <div class="spinner"></div>
-        <span>Signing you in with Google...</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-4);padding:var(--space-8) 0;">
+        <div class="spinner-lg" style="border-color: var(--border); border-top-color: var(--accent);"></div>
+        <span style="font-size:var(--text-sm);color:var(--text-muted);">Signing you in with Google...</span>
       </div>
       <div id="alert-container" style="margin-top:16px"></div>
     </div>
@@ -24,6 +25,7 @@
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/supabase.js"></script>
+  <script src="js/animations.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       handleGoogleCallback();

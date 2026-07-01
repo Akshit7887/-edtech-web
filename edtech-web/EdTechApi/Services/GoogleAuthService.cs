@@ -5,8 +5,8 @@ namespace EdTechApi.Services;
 
 public interface IGoogleAuthService
 {
-    string GetAuthorizationUrl();
-    Task<VerifyOtpResponse> HandleCallbackAsync(string code);
+    string GetAuthorizationUrl(string role = "student");
+    Task<VerifyOtpResponse> HandleCallbackAsync(string code, string role = "student");
 }
 
 public class GoogleAuthService : IGoogleAuthService
@@ -31,7 +31,7 @@ public class GoogleAuthService : IGoogleAuthService
         return Environment.GetEnvironmentVariable(envVar) ?? "";
     }
 
-    public string GetAuthorizationUrl()
+    public string GetAuthorizationUrl(string role = "student")
     {
         var clientId = GetGoogleConfig("Google:ClientId", "GOOGLE_CLIENT_ID");
         var redirectUri = GetGoogleConfig("Google:RedirectUri", "GOOGLE_REDIRECT_URI");
@@ -39,11 +39,12 @@ public class GoogleAuthService : IGoogleAuthService
                $"client_id={Uri.EscapeDataString(clientId)}&" +
                $"redirect_uri={Uri.EscapeDataString(redirectUri)}&" +
                "response_type=code&" +
+               $"state={Uri.EscapeDataString(role)}&" +
                "scope=openid%20email%20profile&" +
                "access_type=offline";
     }
 
-    public async Task<VerifyOtpResponse> HandleCallbackAsync(string code)
+    public async Task<VerifyOtpResponse> HandleCallbackAsync(string code, string role = "student")
     {
         var clientId = GetGoogleConfig("Google:ClientId", "GOOGLE_CLIENT_ID");
         var clientSecret = GetGoogleConfig("Google:ClientSecret", "GOOGLE_CLIENT_SECRET");
@@ -88,7 +89,7 @@ public class GoogleAuthService : IGoogleAuthService
         name ??= root.TryGetProperty("given_name", out var gn) ? gn.GetString() : email.Split('@')[0];
         var googleSub = root.GetProperty("sub").GetString() ?? "";
 
-        // Use existing SupabaseSession flow to create/authenticate user
-        return await _auth.SupabaseSessionAsync(email, name, "student", googleSub);
+        // Use the role passed via state param
+        return await _auth.SupabaseSessionAsync(email, name, role, googleSub);
     }
 }

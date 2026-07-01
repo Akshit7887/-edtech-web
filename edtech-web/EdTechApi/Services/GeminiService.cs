@@ -98,10 +98,10 @@ Important rules:
 9. Generate a diverse set of questions covering different aspects of the topic";
 
         var responseText = await CallGeminiApi(prompt);
-        var jsonMatch = Regex.Match(responseText, @"\{[\s\S]*\}");
-        if (!jsonMatch.Success) throw new InvalidOperationException("Failed to parse JSON from AI response");
+        var jsonText = ExtractFirstJsonObject(responseText);
+        if (jsonText == null) throw new InvalidOperationException("Failed to parse JSON from AI response");
 
-        var result = JsonSerializer.Deserialize<GeminiExamResult>(jsonMatch.Value, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var result = JsonSerializer.Deserialize<GeminiExamResult>(jsonText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         if (result == null || string.IsNullOrEmpty(result.title))
             throw new InvalidOperationException("Missing required fields in AI response");
 
@@ -180,8 +180,37 @@ Important rules:
 6. Generate exactly {questionCount} questions";
     }
 
+    private static string? ExtractFirstJsonObject(string text)
+    {
+        var start = text.IndexOf('{');
+        if (start < 0) return null;
+        var depth = 0;
+        for (var i = start; i < text.Length; i++)
+        {
+            if (text[i] == '{') depth++;
+            else if (text[i] == '}') { depth--; if (depth == 0) return text[start..(i + 1)]; }
+        }
+        return null;
+    }
+
+    private static string? ExtractFirstJsonArray(string text)
+    {
+        var start = text.IndexOf('[');
+        if (start < 0) return null;
+        var depth = 0;
+        for (var i = start; i < text.Length; i++)
+        {
+            if (text[i] == '[') depth++;
+            else if (text[i] == ']') { depth--; if (depth == 0) return text[start..(i + 1)]; }
+        }
+        return null;
+    }
+
     private async Task<string> CallGeminiApi(string prompt)
     {
+        if (string.IsNullOrEmpty(_apiKey))
+            throw new InvalidOperationException("GEMINI_API_KEY not configured. Please ask the admin to set it up.");
+
         var lastError = "";
 
         foreach (var (name, version) in Models)
@@ -211,19 +240,22 @@ Important rules:
                     continue;
                 }
 
-                var jsonMatch = Regex.Match(text, @"\[[\s\S]*\]");
-                if (!jsonMatch.Success)
-                {
-                    jsonMatch = Regex.Match(text, @"\{[\s\S]*\}");
-                }
-                if (!jsonMatch.Success)
+                var firstBracket = text.IndexOf('[');
+                var firstBrace = text.IndexOf('{');
+                string? extracted = null;
+                if (firstBracket >= 0 && (firstBrace < 0 || firstBracket < firstBrace))
+                    extracted = ExtractFirstJsonArray(text);
+                else if (firstBrace >= 0)
+                    extracted = ExtractFirstJsonObject(text);
+
+                if (extracted == null)
                 {
                     lastError = "Failed to parse questions from AI response";
                     continue;
                 }
 
                 _logger.LogInformation("[AI] Successfully generated content using {Model}", name);
-                return jsonMatch.Value;
+                return extracted;
             }
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
             {

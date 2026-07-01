@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EdTech - AI-Powered Examination Platform</title>
+  <title>EdTech — AI-Powered Examination Platform</title>
   <link rel="stylesheet" href="css/main.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
-  <nav class="navbar" id="main-nav">
-    <div class="navbar-brand">EdTech</div>
+
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <span class="brand-dot"></span>
+      EdTech
+    </a>
     <ul class="navbar-nav">
       <li><a href="index.html" class="active">Home</a></li>
       <li><a href="login.html">Login</a></li>
@@ -18,132 +21,120 @@
     </ul>
   </nav>
 
-  <section class="hero-section">
-    <div id="particles-bg" style="position:absolute;inset:0;z-index:0"></div>
-    <div class="hero-bg-glow"></div>
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-bg-grid"></div>
+      <div class="hero-bg-gradient"></div>
+    </div>
     <div class="hero-content">
-      <div data-aos="fade-up" data-aos-duration="800">
-        <span class="badge badge-primary" style="font-size:0.85rem">✨ AI-Powered Learning Platform</span>
+      <div class="hero-badge">
+        <span class="badge-pulse"></span>
+        AI-Powered Learning Platform
       </div>
-      <h1 class="hero-title" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
-        <span class="gradient-text">Smart Exams,</span><br>
-        <span style="color:var(--text)">Smarter Learning</span>
+      <h1 class="hero-title">
+        Smart Exams,<br>
+        <span class="accent-text">Smarter Learning</span>
       </h1>
-      <p class="hero-subtitle" data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
-        AI-powered examination platform that adapts to every student. Create, proctor, and analyze exams with intelligent insights.
+      <p class="hero-subtitle">
+        AI-powered examination platform that adapts to every student.
+        Create, proctor, and analyze exams with intelligent insights.
       </p>
-      <div class="hero-cta" data-aos="fade-up" data-aos-duration="800" data-aos-delay="300">
+      <div class="hero-cta">
         <a href="register.html" class="btn btn-primary btn-lg">Get Started Free</a>
-        <a href="login.html" class="btn btn-lg btn-secondary">Sign In</a>
+        <a href="login.html" class="btn btn-secondary btn-lg">Sign In</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-subtle">
+    <div class="container">
+      <div class="text-center" style="margin-bottom: var(--space-12);">
+        <p class="text-sm text-muted font-medium tracking-wide" style="margin-bottom: var(--space-2);">FEATURES</p>
+        <h2 class="text-3xl font-bold" style="margin-bottom: var(--space-2);">Everything You Need</h2>
+        <p class="text-body" style="max-width: 480px; margin: 0 auto;">A complete examination platform for modern education</p>
+      </div>
+      <div class="grid grid-3 stagger-group" style="gap: var(--space-6);">
+        <div class="card card-feature hover-lift">
+          <div class="card-feature-icon">&#x1F4DD;</div>
+          <h3 class="card-feature-title">Smart Exams</h3>
+          <p class="card-feature-text">AI-generated questions with auto-grading and instant feedback. Create comprehensive exams in minutes.</p>
+        </div>
+        <div class="card card-feature hover-lift">
+          <div class="card-feature-icon">&#x1F6E1;&#xFE0F;</div>
+          <h3 class="card-feature-title">Proctored Mode</h3>
+          <p class="card-feature-text">Secure browser-based exam monitoring with real-time violation tracking and auto-disqualification.</p>
+        </div>
+        <div class="card card-feature hover-lift">
+          <div class="card-feature-icon">&#x1F4CA;</div>
+          <h3 class="card-feature-title">Analytics</h3>
+          <p class="card-feature-text">Detailed performance insights with visual breakdowns, trend analysis, and actionable recommendations.</p>
+        </div>
       </div>
     </div>
   </section>
 
   <section class="section">
-    <div class="section-bg-glow" style="background:radial-gradient(ellipse at 50% 100%, rgba(99,102,241,0.08) 0%, transparent 60%)"></div>
-    <div class="section-inner">
-      <div class="section-header" data-aos="fade-up">
-        <h2>Everything You Need</h2>
-        <p>A complete examination platform for modern education</p>
+    <div class="container">
+      <div class="text-center" style="margin-bottom: var(--space-12);">
+        <p class="text-sm text-muted font-medium tracking-wide" style="margin-bottom: var(--space-2);">HOW IT WORKS</p>
+        <h2 class="text-3xl font-bold" style="margin-bottom: var(--space-2);">Simple &amp; Effective</h2>
+        <p class="text-body" style="max-width: 480px; margin: 0 auto;">Three steps to transform your examination process</p>
       </div>
-      <div class="feature-grid">
-        <div class="card feature-card hover-lift" data-aos="fade-up" data-aos-delay="100">
-          <div class="feature-icon" style="background:rgba(99,102,241,0.12);color:var(--primary-light);box-shadow:0 4px 12px rgba(99,102,241,0.2)">📝</div>
-          <h3>Smart Exams</h3>
-          <p>AI-generated questions with auto-grading and instant feedback. Create comprehensive exams in minutes.</p>
+      <div class="stagger-group" style="max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-8);">
+        <div class="card hover-lift" style="display: flex; align-items: center; gap: var(--space-6); padding: var(--space-8);">
+          <div style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--accent-ghost); border-radius: var(--radius-full); font-size: var(--text-xl); font-weight: 700; color: var(--accent); flex-shrink: 0;">1</div>
+          <div>
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-1);">Create Exam</h3>
+            <p style="font-size: var(--text-sm); color: var(--text-muted); line-height: var(--leading-relaxed);">Design your exam manually or let AI generate questions based on your syllabus. Customize settings and publish instantly.</p>
+          </div>
         </div>
-        <div class="card feature-card hover-lift" data-aos="fade-up" data-aos-delay="200">
-          <div class="feature-icon" style="background:rgba(6,182,212,0.12);color:var(--secondary);box-shadow:0 4px 12px rgba(6,182,212,0.2)">🛡️</div>
-          <h3>Proctored Mode</h3>
-          <p>Secure browser-based exam monitoring with real-time violation tracking and auto-disqualification.</p>
+        <div class="card hover-lift" style="display: flex; align-items: center; gap: var(--space-6); padding: var(--space-8);">
+          <div style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--accent-ghost); border-radius: var(--radius-full); font-size: var(--text-xl); font-weight: 700; color: var(--accent); flex-shrink: 0;">2</div>
+          <div>
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-1);">Take Exam</h3>
+            <p style="font-size: var(--text-sm); color: var(--text-muted); line-height: var(--leading-relaxed);">Students access exams through their dashboard. Proctoring mode ensures integrity with real-time monitoring.</p>
+          </div>
         </div>
-        <div class="card feature-card hover-lift" data-aos="fade-up" data-aos-delay="300">
-          <div class="feature-icon" style="background:rgba(34,197,94,0.12);color:var(--success);box-shadow:0 4px 12px rgba(34,197,94,0.2)">📊</div>
-          <h3>Analytics</h3>
-          <p>Detailed performance insights with visual breakdowns, trend analysis, and actionable recommendations.</p>
+        <div class="card hover-lift" style="display: flex; align-items: center; gap: var(--space-6); padding: var(--space-8);">
+          <div style="width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; background: var(--accent-ghost); border-radius: var(--radius-full); font-size: var(--text-xl); font-weight: 700; color: var(--accent); flex-shrink: 0;">3</div>
+          <div>
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-1);">Get Results</h3>
+            <p style="font-size: var(--text-sm); color: var(--text-muted); line-height: var(--leading-relaxed);">Instant grading with detailed analytics. Track student progress and identify areas for improvement.</p>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section section-tint">
-    <div class="section-inner">
-      <div class="section-header" data-aos="fade-up">
-        <h2>How It Works</h2>
-        <p>Simple steps to get started with EdTech</p>
-      </div>
-      <div class="steps-row">
-        <div class="step-item" data-aos="fade-up" data-aos-delay="100">
-          <div class="step-number">1</div>
-          <div class="step-body">
-            <h3>Create Exam</h3>
-            <p>Design your exam manually or let AI generate questions based on your syllabus. Customize settings and publish instantly.</p>
-          </div>
-        </div>
-        <div class="step-item" data-aos="fade-up" data-aos-delay="200">
-          <div class="step-number">2</div>
-          <div class="step-body">
-            <h3>Take Exam</h3>
-            <p>Students access exams through their dashboard. Proctoring mode ensures integrity with real-time monitoring.</p>
-          </div>
-        </div>
-        <div class="step-item" data-aos="fade-up" data-aos-delay="300">
-          <div class="step-number">3</div>
-          <div class="step-body">
-            <h3>Get Results</h3>
-            <p>Instant grading with detailed analytics. Track student progress and identify areas for improvement.</p>
-          </div>
-        </div>
+  <section class="section bg-subtle text-center">
+    <div class="container">
+      <div style="max-width: 600px; margin: 0 auto;">
+        <h2 class="text-3xl font-bold" style="margin-bottom: var(--space-4);">Ready to Get Started?</h2>
+        <p class="text-body" style="margin-bottom: var(--space-8);">Join thousands of educators and students already using EdTech.</p>
+        <a href="register.html" class="btn btn-primary btn-lg">Create Free Account</a>
       </div>
     </div>
   </section>
 
   <footer class="site-footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <h2>EdTech</h2>
-        <p>AI-powered examination platform</p>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <h2>EdTech</h2>
+          <p>AI-powered examination platform</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="login.html">Login</a>
+          <a href="register.html">Register</a>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 EdTech. All rights reserved.</p>
       </div>
-      <div class="footer-links">
-        <a href="index.html">Home</a>
-        <a href="login.html">Login</a>
-        <a href="register.html">Register</a>
-        <a href="#">Privacy</a>
-        <a href="#">Terms</a>
-      </div>
-      <p>&copy; 2026 EdTech. All rights reserved.</p>
     </div>
   </footer>
 
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
-  <script>
-    AOS.init({ once: true, offset: 100 });
-
-    window.addEventListener('scroll', () => {
-      const nav = document.getElementById('main-nav');
-      if (window.scrollY > 40) nav.classList.add('scrolled');
-      else nav.classList.remove('scrolled');
-    });
-
-    if (typeof tsParticles !== 'undefined') {
-      tsParticles.load('particles-bg', {
-        fpsLimit: 30,
-        particles: {
-          number: { value: 30, density: { enable: true } },
-          color: { value: '#6366f1' },
-          opacity: { value: 0.15, random: true },
-          size: { value: 2, random: true },
-          move: { enable: true, speed: 0.3, direction: 'none', outModes: 'bounce' },
-          links: { enable: true, distance: 150, color: '#6366f1', opacity: 0.08, width: 1 }
-        },
-        interactivity: {
-          events: { onHover: { enable: true, mode: 'repulse' } },
-          modes: { repulse: { distance: 80, duration: 0.4 } }
-        },
-        background: { color: 'transparent' }
-      }).catch(() => {});
-    }
-  </script>
+  <script src="js/animations.js"></script>
 </body>
 </html>

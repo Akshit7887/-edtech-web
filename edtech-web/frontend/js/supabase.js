@@ -1,8 +1,7 @@
-// Google OAuth via Backend
-const GOOGLE_AUTH_URL = `${typeof API_BASE !== 'undefined' ? API_BASE.replace('/api', '') : 'http://localhost:5000'}/auth/google/login`;
+const GOOGLE_AUTH_URL = API_BASE + '/auth/google/login';
 
-function signInWithGoogle() {
-  window.location.href = GOOGLE_AUTH_URL;
+function signInWithGoogle(role) {
+  window.location.href = GOOGLE_AUTH_URL + '?role=' + role;
 }
 
 function handleGoogleCallback() {

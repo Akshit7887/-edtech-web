@@ -28,11 +28,6 @@ async function resetPassword(identifier, otpCode, newPassword) {
   return res;
 }
 
-async function getProfile() {
-  const res = await api.get('/api/auth/me');
-  return res.data;
-}
-
 async function updateProfile(data) {
   const res = await api.put('/api/auth/profile', data);
   return res.data;
@@ -40,6 +35,11 @@ async function updateProfile(data) {
 
 async function changePassword(currentPassword, newPassword) {
   const res = await api.post('/api/auth/change-password', { current_password: currentPassword, new_password: newPassword });
+  return res.data;
+}
+
+async function deleteProfile() {
+  const res = await api.del('/api/auth/profile');
   return res;
 }
 

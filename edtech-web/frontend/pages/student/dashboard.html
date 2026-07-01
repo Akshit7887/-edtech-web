@@ -6,147 +6,111 @@
   <title>Student Dashboard - EdTech</title>
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand">EdTech</div>
+    <a href="dashboard.html" class="navbar-brand">
+      <span class="brand-dot"></span>
+      EdTech
+    </a>
     <ul class="navbar-nav" id="student-nav">
       <li><a href="dashboard.html" class="active">Dashboard</a></li>
       <li><a href="results.html">My Results</a></li>
       <li><a href="notifications.html">Notifications</a></li>
       <li><a href="profile.html">Profile</a></li>
-      <!-- USER -->
     </ul>
     <div class="navbar-user">
-      <div class="avatar" id="user-avatar" onclick="goTo('profile.html')">?</div>
+      <div class="student-avatar" id="user-avatar" onclick="goTo('profile.html')" style="cursor:pointer;">?</div>
     </div>
   </nav>
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html" class="active"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="results.html"><span class="nav-icon">📝</span><span>My Results</span></a></li>
-        <li><a href="notifications.html"><span class="nav-icon">🔔</span><span>Notifications</span></a></li>
-        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html" class="active"><span class="nav-icon">&#x1F4CA;</span><span>Dashboard</span></a></li>
+        <li><a href="results.html"><span class="nav-icon">&#x1F4DD;</span><span>My Results</span></a></li>
+        <li><a href="notifications.html"><span class="nav-icon">&#x1F514;</span><span>Notifications</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">&#x1F464;</span><span>Profile</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">&#x1F6AA;</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" data-aos="fade-up">
-        <h1>Welcome back, <span id="student-name" class="gradient-text"></span></h1>
+      <div class="dashboard-header">
+        <h1>Welcome back, <span id="student-name" style="color:var(--accent)"></span></h1>
         <p>Student Dashboard</p>
       </div>
       <div id="alert-container"></div>
-      <div class="stats-grid" id="stats-grid" data-aos="fade-up" data-aos-delay="100">
-        <div class="stat-card stagger-1">
-          <div class="stat-icon">📝</div>
-          <div class="stat-value" id="stat-total">-</div>
-          <div class="stat-label">Total Exams</div>
+      <div class="stats-row" id="stats-grid">
+        <div class="stat-card reveal">
+          <p class="stat-card-label">Total Exams</p>
+          <p class="stat-card-value" id="stat-total">-</p>
         </div>
-        <div class="stat-card stagger-2">
-          <div class="stat-icon">✅</div>
-          <div class="stat-value" id="stat-completed">-</div>
-          <div class="stat-label">Completed</div>
+        <div class="stat-card reveal">
+          <p class="stat-card-label">Completed</p>
+          <p class="stat-card-value accent" id="stat-completed">-</p>
         </div>
-        <div class="stat-card stagger-3">
-          <div class="stat-icon">📊</div>
-          <div class="stat-value" id="stat-avg">-</div>
-          <div class="stat-label">Average Score</div>
+        <div class="stat-card reveal">
+          <p class="stat-card-label">Avg Score</p>
+          <p class="stat-card-value" id="stat-avg">-</p>
         </div>
-        <div class="stat-card stagger-4">
-          <div class="stat-icon">🏆</div>
-          <div class="stat-value" id="stat-highest">-</div>
-          <div class="stat-label">Highest Score</div>
+        <div class="stat-card reveal">
+          <p class="stat-card-label">Pending</p>
+          <p class="stat-card-value" id="stat-pending">-</p>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px" data-aos="fade-up" data-aos-delay="200">
-        <h2>Available Exams</h2>
-        <button class="btn btn-primary" onclick="goTo('../../exam-list.html')">Browse Exams</button>
-      </div>
-      <div id="exam-list" data-aos="fade-up" data-aos-delay="250">
-        <div class="exam-grid">
-          <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
-          <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
-        </div>
-      </div>
+      <h2 style="margin-bottom:var(--space-4);font-size:var(--text-xl);">My Exams</h2>
+      <div id="exam-list"></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>AOS.init({ once: true, offset: 50 });</script>
+
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
+  <script src="../../js/animations.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
-      document.getElementById('student-name').textContent = getUserName();
+      const name = getUserName();
+      if (name) document.getElementById('student-name').textContent = name;
       setupNavbar();
-      await loadAnalytics();
-      await loadExams();
+      await loadData();
     });
 
-    async function loadAnalytics() {
+    async function loadData() {
       try {
-        const res = await api.get(`/api/students/analytics/${getUserId()}`);
-        const d = res.data;
-        animateCounter('stat-total', d.total_exams || 0);
-        animateCounter('stat-completed', d.completed_exams || 0);
-        animateCounter('stat-avg', (d.average_score || 0).toFixed(1));
-        animateCounter('stat-highest', d.highest_score || 0);
-      } catch (e) {
-        document.getElementById('stats-grid').innerHTML = '<div class="alert alert-error">Failed to load analytics</div>';
-      }
-    }
-
-    function animateCounter(id, target) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const isString = typeof target === 'string';
-      const numTarget = parseFloat(target) || 0;
-      const duration = 800;
-      const start = performance.now();
-      function update(now) {
-        const progress = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const current = eased * numTarget;
-        el.textContent = isString ? current.toFixed(1) : Math.round(current);
-        if (progress < 1) requestAnimationFrame(update);
-      }
-      requestAnimationFrame(update);
-    }
-
-    async function loadExams() {
-      try {
-        const res = await api.get(`/api/exams?page=1&limit=10`);
-        const exams = res.data || [];
+        const [examRes, analyticsRes] = await Promise.all([
+          api.get('/api/exams?page=1&limit=50'),
+          api.get('/api/students/analytics/' + getUserId()).catch(() => null)
+        ]);
+        const exams = examRes.data || [];
+        document.getElementById('stat-total').textContent = exams.length;
+        const analytics = analyticsRes?.data;
+        if (analytics) {
+          document.getElementById('stat-completed').textContent = analytics.completed_exams || 0;
+          document.getElementById('stat-avg').textContent = (analytics.average_score || 0) + '%';
+          document.getElementById('stat-pending').textContent = analytics.pending_exams || 0;
+        }
         const container = document.getElementById('exam-list');
         if (!exams.length) {
-          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><h3>No exams available</h3><p>Check back later when your teacher assigns exams.</p></div>';
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F4DA;</div><h3>No exams assigned yet</h3><p>Exams assigned to you will appear here.</p></div>';
           return;
         }
         container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
-          <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.08}s" onclick="startExam(${e.id})">
+          <div class="exam-card reveal" onclick="goTo('exam.html?id=${e.id}')">
             <div class="exam-card-title">${e.title}</div>
             <div class="exam-card-meta">
-              <span>📖 ${e.subject}</span>
-              <span>⏱ ${e.duration_minutes} min</span>
-              <span>📄 ${e.total_questions} questions</span>
+              <span>&#x1F4D6; ${e.subject}</span>
+              <span>&#x23F1; ${e.duration_minutes} min</span>
               ${statusBadge(e.status)}
             </div>
             <div class="exam-card-footer">
               <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
-              <button class="btn btn-sm btn-primary">Take Exam</button>
+              <span class="btn btn-sm btn-primary">Start &#x2192;</span>
             </div>
           </div>
         `).join('') + '</div>';
       } catch (e) {
-        document.getElementById('exam-list').innerHTML = '<div class="alert alert-error">Failed to load exams</div>';
+        document.getElementById('exam-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
       }
-    }
-
-    function startExam(examId) {
-      goTo(`exam.html?id=${examId}`);
     }
   </script>
 </body>

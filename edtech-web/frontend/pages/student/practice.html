@@ -65,12 +65,12 @@
               <span>📄 ${e.total_questions} questions</span>
             </div>
             <div class="exam-card-footer">
-              <span class="btn btn-sm btn-success">Practice</span>
+              <span class="btn btn-sm btn-primary">Practice</span>
             </div>
           </div>
         `).join('') + '</div>';
       } catch (e) {
-        document.getElementById('practice-exams').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        document.getElementById('practice-exams').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
       }
     }
 
@@ -98,22 +98,28 @@
     function renderPracticeQuestions(questions) {
       const container = document.getElementById('practice-questions');
       if (!questions.length) { container.innerHTML = '<div class="empty-state">No questions available</div>'; return; }
+      const esc = s => { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
       container.innerHTML = questions.map((q, i) => {
         const opts = [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean);
         const letters = ['A', 'B', 'C', 'D'];
         return `
           <div class="question-card">
             <div class="question-number">${i + 1}</div>
-            <div class="question-text">${q.question_text}</div>
+            <div class="question-text">${esc(q.question_text)}</div>
             <div class="options">
-              ${opts.map((o, oi) => `<label class="option-label" onclick="selectPracticeAnswer(${q.id}, '${letters[oi]}')">
+              ${opts.map((o, oi) => `<label class="option-label" data-qid="${q.id}" data-val="${letters[oi]}">
                 <input type="radio" name="pq_${q.id}" value="${letters[oi]}">
-                <span class="option-prefix">${letters[oi]}.</span><span>${o}</span>
+                <span class="option-prefix">${letters[oi]}.</span><span>${esc(o)}</span>
               </label>`).join('')}
             </div>
           </div>
         `;
       }).join('');
+      container.querySelectorAll('.option-label').forEach(label => {
+        const qid = parseInt(label.dataset.qid);
+        const val = label.dataset.val;
+        label.addEventListener('click', () => selectPracticeAnswer(qid, val));
+      });
     }
 
     function selectPracticeAnswer(qId, answer) {
@@ -130,11 +136,11 @@
         const data = res.data;
         const container = document.getElementById('practice-container');
         container.innerHTML = '<div style="text-align:center;padding:40px"><h2>Practice Results</h2>' +
-          `<p style="font-size:2.5rem;font-weight:800;color:var(--primary-light);margin:20px 0">${data.score} / ${data.total_questions}</p>` +
+          `<p style="font-size:2.5rem;font-weight:800;color:var(--accent);margin:20px 0">${data.score} / ${data.total_questions}</p>` +
           `<p style="color:var(--text-muted)">${data.total_questions ? ((data.score / data.total_questions) * 100).toFixed(1) : 0}%</p>` +
           '<div style="margin-top:24px;max-width:500px;margin-left:auto;margin-right:auto">' +
           (data.results || []).map(r => `
-            <div style="padding:10px 14px;margin:6px 0;border-radius:var(--radius-sm);background:${r.is_correct ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)'};border-left:3px solid ${r.is_correct ? 'var(--success)' : 'var(--danger)'}">
+            <div style="padding:10px 14px;margin:6px 0;border-radius:var(--radius-sm);background:${r.is_correct ? 'rgba(34,197,94,0.1)' : 'rgba(220,38,38,0.1)'};border-left:3px solid ${r.is_correct ? 'var(--success)' : 'var(--error)'}">
               <strong>Q${r.question_id}:</strong> ${r.is_correct ? 'Correct' : 'Incorrect'} <span style="color:var(--text-dim)">(Your: ${r.student_answer}, Correct: ${r.correct_answer})</span>
             </div>
           `).join('') +

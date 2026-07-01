@@ -1,7 +1,7 @@
 async function loadStudents(page = 1, limit = 20) {
   try {
     const res = await api.get(`/api/teacher/students?page=${page}&limit=${limit}`);
-    return res;
+    return { data: res.data.data, pagination: res.data.pagination };
   } catch (e) {
     showAlert(e.message || 'Failed to load students');
     return { data: [], pagination: { page, limit, total: 0, total_pages: 0 } };
@@ -170,6 +170,16 @@ async function scheduleExam(examId, scheduledAt) {
 
 async function sendAnnouncement(title, message) {
   const res = await api.post('/api/teacher/announcement', { title, message });
+  return res;
+}
+
+async function createStudent(name, email) {
+  const res = await api.post('/api/teacher/students', { name, email });
+  return res.data;
+}
+
+async function deleteStudent(studentId) {
+  const res = await api.del(`/api/teacher/students/${studentId}`);
   return res;
 }
 

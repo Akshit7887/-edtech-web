@@ -6,36 +6,51 @@
   <title>Browse Exams - EdTech</title>
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+
   <nav class="navbar">
-    <div class="navbar-brand">EdTech</div>
+    <a href="index.html" class="navbar-brand">
+      <span class="brand-dot"></span>
+      EdTech
+    </a>
     <ul class="navbar-nav">
       <li><a href="index.html">Home</a></li>
       <li><a href="login.html">Login</a></li>
-      <!-- USER -->
     </ul>
   </nav>
-  <div class="container" style="margin-top:40px" data-aos="fade-up">
-    <div class="exam-list-header">
+
+  <div class="container" style="padding-top: 96px;">
+    <div class="dashboard-header">
       <h1>Available Exams</h1>
       <p>Browse and take exams assigned to you</p>
     </div>
     <div id="alert-container"></div>
     <div id="exam-list">
       <div class="exam-grid">
-        <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
-        <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
-        <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
+        <div class="card" style="padding: var(--space-6);">
+          <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
+          <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
+          <div class="skeleton" style="height: 14px; width: 40%;"></div>
+        </div>
+        <div class="card" style="padding: var(--space-6);">
+          <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
+          <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
+          <div class="skeleton" style="height: 14px; width: 40%;"></div>
+        </div>
+        <div class="card" style="padding: var(--space-6);">
+          <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
+          <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
+          <div class="skeleton" style="height: 14px; width: 40%;"></div>
+        </div>
       </div>
     </div>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>AOS.init({ once: true });</script>
+
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/animations.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const token = api.getToken();
@@ -48,24 +63,27 @@
         const res = await api.get('/api/exams?page=1&limit=20');
         const exams = res.data || [];
         const container = document.getElementById('exam-list');
-        if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📚</div><h3>No exams available</h3></div>'; return; }
+        if (!exams.length) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F4DA;</div><h3>No exams available</h3></div>';
+          return;
+        }
         container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
-          <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${e.id}')` : `goTo('login.html')`}">
+          <div class="exam-card anim-fade-up" style="animation-delay:${i * 0.05}s" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${e.id}')` : `goTo('login.html')`}">
             <div class="exam-card-title">${e.title}</div>
             <div class="exam-card-meta">
-              <span>📖 ${e.subject}</span>
-              <span>⏱ ${e.duration_minutes} min</span>
-              <span>📄 ${e.total_questions} Q</span>
+              <span>&#x1F4D6; ${e.subject}</span>
+              <span>&#x23F1; ${e.duration_minutes} min</span>
+              <span>&#x1F4C4; ${e.total_questions} Q</span>
               ${statusBadge(e.status)}
             </div>
             <div class="exam-card-footer">
               <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
-              <span class="btn btn-sm ${api.getToken() ? 'btn-primary' : 'btn-secondary'}">${api.getToken() ? 'Take Exam →' : 'Login to Take'}</span>
+              <span class="btn btn-sm ${api.getToken() ? 'btn-primary' : 'btn-secondary'}">${api.getToken() ? 'Take Exam \u2192' : 'Login to Take'}</span>
             </div>
           </div>
         `).join('') + '</div>';
       } catch (e) {
-        document.getElementById('exam-list').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        document.getElementById('exam-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
       }
     }
   </script>

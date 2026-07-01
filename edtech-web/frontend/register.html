@@ -6,25 +6,30 @@
   <title>Register - EdTech</title>
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/auth.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body class="auth-page">
-  <div class="auth-container" data-aos="fade-up" data-aos-duration="500">
+
+  <div class="auth-container">
     <div class="auth-card">
       <div class="auth-logo">
         <h1>EdTech</h1>
         <p>Create your account</p>
       </div>
+
       <div id="alert-container"></div>
-      <div class="auth-role-selector" id="role-selector">
+
+      <div class="auth-role-selector">
         <button class="role-option selected" data-role="student" onclick="selectRole('student')">
-          <span class="role-icon">🎓</span> Student
+          <span class="role-icon">&#x1F393;</span>
+          Student
         </button>
         <button class="role-option" data-role="teacher" onclick="selectRole('teacher')">
-          <span class="role-icon">👨‍🏫</span> Teacher
+          <span class="role-icon">&#x1F468;&#x200D;&#x1F3EB;</span>
+          Teacher
         </button>
       </div>
+
       <form id="register-form" onsubmit="handleRegister(event)">
         <div class="form-group form-floating">
           <input type="text" class="form-input" id="name" placeholder=" " required>
@@ -36,16 +41,9 @@
         </div>
         <div class="form-group form-floating">
           <div class="password-input-wrap">
-            <input type="password" class="form-input" id="password" placeholder=" " minlength="6" required>
+            <input type="password" class="form-input" id="password" placeholder=" " required minlength="6">
             <label class="form-label">Password</label>
-            <button type="button" class="toggle-password" onclick="togglePassword('password')">👁️</button>
-          </div>
-        </div>
-        <div class="form-group form-floating">
-          <div class="password-input-wrap">
-            <input type="password" class="form-input" id="confirm-password" placeholder=" " minlength="6" required>
-            <label class="form-label">Confirm Password</label>
-            <button type="button" class="toggle-password" onclick="togglePassword('confirm-password')">👁️</button>
+            <button type="button" class="toggle-password" onclick="togglePassword('password')" aria-label="Toggle password">&#x1F441;&#xFE0F;</button>
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn">
@@ -53,23 +51,24 @@
           <span id="register-spinner" class="spinner spinner-sm" style="display:none"></span>
         </button>
       </form>
-      <div class="auth-divider">or sign up with</div>
-      <button class="btn btn-block btn-lg" onclick="signInWithGoogle()" style="background:#fff;color:#333;border:1px solid #ddd;margin-bottom:16px">
-        <span style="display:flex;align-items:center;justify-content:center;gap:8px">
-          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.94 23.94 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.98-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg>
-          Sign up with Google
-        </span>
+
+      <div class="auth-divider">or register with</div>
+
+      <button class="btn-google" onclick="signInWithGoogle(selectedRole)">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.94 23.94 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.98-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg>
+        Register with Google as <span id="google-role-label">Student</span>
       </button>
+
       <div class="auth-footer">
         <p>Already have an account? <a href="login.html">Sign in</a></p>
       </div>
     </div>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>AOS.init({ once: true });</script>
+
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/supabase.js"></script>
+  <script src="js/animations.js"></script>
   <script>
     let selectedRole = 'student';
 
@@ -78,6 +77,8 @@
       document.querySelectorAll('.role-option').forEach(el => {
         el.classList.toggle('selected', el.dataset.role === role);
       });
+      const label = document.getElementById('google-role-label');
+      if (label) label.textContent = role.charAt(0).toUpperCase() + role.slice(1);
     }
 
     async function handleRegister(e) {
@@ -86,16 +87,10 @@
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const confirm = document.getElementById('confirm-password').value;
-
-      if (password !== confirm) {
-        showAlert('Passwords do not match', 'error', document.getElementById('alert-container'));
-        return;
-      }
-
       const btn = document.getElementById('register-btn');
       const text = document.getElementById('register-text');
       const spinner = document.getElementById('register-spinner');
+
       btn.disabled = true; text.textContent = 'Registering...'; spinner.style.display = 'inline-block';
 
       try {
@@ -103,7 +98,7 @@
         showAlert(res.message || 'OTP sent to your email', 'success', document.getElementById('alert-container'));
         sessionStorage.setItem('otp_identifier', email);
         sessionStorage.setItem('otp_registration', 'true');
-        setTimeout(() => goTo('otp-verify.html'), 1500);
+        setTimeout(() => goTo('otp-verify.html'), 4000);
       } catch (e) {
         showAlert(e.message, 'error', document.getElementById('alert-container'));
         btn.disabled = false; text.textContent = 'Register'; spinner.style.display = 'none';

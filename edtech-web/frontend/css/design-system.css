@@ -1,0 +1,281 @@
+/* ============================================================
+   EdTech Web - White & Red Minimal Design System
+   Unified color palette, typography, and spacing
+   ============================================================ */
+
+:root {
+  /* ── Brand Colors ── */
+  --red-50:  #fef2f2;
+  --red-100: #fee2e2;
+  --red-200: #fecaca;
+  --red-300: #fca5a5;
+  --red-400: #f87171;
+  --red-500: #ef4444;
+  --red-600: #dc2626;
+  --red-700: #b91c1c;
+  --red-800: #991b1b;
+  --red-900: #7f1d1d;
+
+  /* ── Neutral Colors ── */
+  --white: #ffffff;
+  --gray-50:  #fafafa;
+  --gray-100: #f4f4f5;
+  --gray-200: #e4e4e7;
+  --gray-300: #d4d4d8;
+  --gray-400: #a1a1aa;
+  --gray-500: #71717a;
+  --gray-600: #52525b;
+  --gray-700: #3f3f46;
+  --gray-800: #27272a;
+  --gray-900: #18181b;
+
+  /* ── Semantic Colors ── */
+  --bg:           var(--white);
+  --bg-subtle:    var(--gray-50);
+  --bg-card:      var(--white);
+  --bg-muted:     var(--gray-100);
+  --bg-hover:     var(--gray-100);
+  --bg-active:    var(--red-100);
+
+  --text:         var(--gray-900);
+  --text-heading: var(--gray-900);
+  --text-body:    var(--gray-600);
+  --text-muted:   var(--gray-500);
+  --text-dim:     var(--gray-400);
+
+  --border:       var(--gray-200);
+  --border-light: var(--gray-100);
+  --border-strong:var(--gray-300);
+
+  /* Accent - Deeper/Darker Red */
+  --accent:       var(--red-700);
+  --accent-light: var(--red-600);
+  --accent-dark:  var(--red-800);
+  --accent-ghost: var(--red-100);
+
+  /* Semantic Status Colors */
+  --success:       #22c55e;
+  --success-light: #22c55e20;
+  --success-dark:  #16a34a;
+  --warning:       #f59e0b;
+  --warning-light: #f59e0b20;
+  --warning-dark:  #ca8a04;
+  --error:         var(--accent);
+  --error-light:   var(--accent-ghost);
+  --error-dark:    var(--accent-dark);
+
+  /* ── Shadows (Minimal, soft) ── */
+  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow:      0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:   0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-lg:   0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.02);
+  --shadow-xl:   0 20px 25px rgba(0, 0, 0, 0.04), 0 10px 10px rgba(0, 0, 0, 0.02);
+  --shadow-red:  0 4px 14px rgba(153, 27, 27, 0.25);
+
+  /* ── Radius ── */
+  --radius-sm:  4px;
+  --radius:     8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full:9999px;
+
+  /* ── Transitions ── */
+  --ease:            cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out:        cubic-bezier(0, 0, 0.2, 1);
+  --ease-in:         cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce:     cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast:   150ms;
+  --duration-normal: 250ms;
+  --duration-slow:   400ms;
+
+  /* ── Spacing Scale ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ── Typography ── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'Fira Code', monospace;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+
+  --leading-tight: 1.25;
+  --leading-normal:1.5;
+  --leading-relaxed:1.625;
+
+  /* ── Z-Index Scale ── */
+  --z-dropdown:  100;
+  --z-sticky:    200;
+  --z-fixed:     300;
+  --z-overlay:   400;
+  --z-modal:     500;
+  --z-toast:     600;
+}
+
+/* ============================================================
+   Base Reset
+   ============================================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+}
+
+input, button, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease);
+}
+
+a:hover {
+  color: var(--accent-dark);
+  text-decoration: underline;
+}
+
+/* ============================================================
+   Typography Utilities
+   ============================================================ */
+.text-xs   { font-size: var(--text-xs); }
+.text-sm   { font-size: var(--text-sm); }
+.text-base { font-size: var(--text-base); }
+.text-lg   { font-size: var(--text-lg); }
+.text-xl   { font-size: var(--text-xl); }
+.text-2xl  { font-size: var(--text-2xl); }
+.text-3xl  { font-size: var(--text-3xl); }
+.text-4xl  { font-size: var(--text-4xl); }
+.text-5xl  { font-size: var(--text-5xl); }
+
+.font-normal    { font-weight: 400; }
+.font-medium    { font-weight: 500; }
+.font-semibold  { font-weight: 600; }
+.font-bold      { font-weight: 700; }
+.font-extrabold { font-weight: 800; }
+
+.leading-tight   { line-height: var(--leading-tight); }
+.leading-normal  { line-height: var(--leading-normal); }
+.leading-relaxed { line-height: var(--leading-relaxed); }
+
+.tracking-tight  { letter-spacing: -0.025em; }
+.tracking-wide   { letter-spacing: 0.02em; }
+
+.text-heading { color: var(--text-heading); }
+.text-body    { color: var(--text-body); }
+.text-muted   { color: var(--text-muted); }
+.text-dim     { color: var(--text-dim); }
+.text-accent  { color: var(--accent); }
+
+/* ============================================================
+   Layout Utilities
+   ============================================================ */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-6);
+  padding-right: var(--space-6);
+}
+
+.section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-24);
+}
+
+.section-sm {
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-16);
+}
+
+.section-lg {
+  padding-top: var(--space-32);
+  padding-bottom: var(--space-32);
+}
+
+/* ============================================================
+   Background Utilities
+   ============================================================ */
+.bg-white      { background-color: var(--white); }
+.bg-subtle     { background-color: var(--bg-subtle); }
+.bg-muted      { background-color: var(--bg-muted); }
+.bg-card       { background-color: var(--bg-card); }
+.bg-accent     { background-color: var(--accent); }
+.bg-accent-ghost { background-color: var(--accent-ghost); }
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* ============================================================
+   Selection
+   ============================================================ */
+::selection {
+  background: var(--accent-light);
+  color: var(--gray-900);
+}

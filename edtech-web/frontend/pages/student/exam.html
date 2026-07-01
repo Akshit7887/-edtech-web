@@ -76,10 +76,10 @@
         document.getElementById('exam-title').textContent = data.exam?.title || 'Exam';
         document.getElementById('exam-subject').textContent = data.exam?.subject || '';
         document.getElementById('exam-total-q').textContent = examEngine.questions.length;
-      } catch (e) {
-        document.getElementById('exam-header').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
-      }
-    });
+       } catch (e) {
+         document.getElementById('exam-header').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
+       }
+     });
 
     function handleSubmit() {
       document.getElementById('modal-answered').textContent = examEngine.getAnsweredCount();

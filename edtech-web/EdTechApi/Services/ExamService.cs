@@ -34,10 +34,11 @@ public class ExamService : IExamService
         { "active", "closed" }
     };
 
-    public ExamService(IDbConnectionFactory db, ILogger<ExamService> logger)
+    public ExamService(IDbConnectionFactory db, ILogger<ExamService> logger, IConfiguration config)
     {
         _db = db;
         _logger = logger;
+        _config = config;
     }
 
     public async Task<ExamListResponse> GetAllExamsAsync(int userId, string role, int page = 1, int limit = 20)
@@ -319,9 +320,7 @@ public class ExamService : IExamService
         return $"{prefix}{exam.DeepLinkCode}";
     }
 
-    private IConfiguration? _config;
-
-    public void SetConfig(IConfiguration config) => _config = config;
+    private readonly IConfiguration _config;
 
     public async Task<object> ResolveDeepLinkAsync(string deepLinkCode)
     {

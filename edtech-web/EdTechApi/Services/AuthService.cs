@@ -18,6 +18,7 @@ public interface IAuthService
     Task<UserInfo> UpdateProfileAsync(int userId, UpdateProfileRequest updates);
     Task<object> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
     Task<VerifyOtpResponse> SupabaseSessionAsync(string email, string name, string role, string supabaseUserId);
+    Task DeleteProfileAsync(int userId);
 }
 
 public class AuthService : IAuthService
@@ -452,6 +453,13 @@ public class AuthService : IAuthService
                   VALUES (@Name, @Role, @Email, @PasswordHash, @CreatedAt, @UpdatedAt) RETURNING *",
                 user);
         }
+        else if (user.Role != role)
+        {
+            var now = DateTime.UtcNow;
+            user = await conn.QuerySingleAsync<User>(
+                @"UPDATE ""Users"" SET ""role"" = @Role, ""name"" = @Name, ""token_version"" = ""token_version"" + 1, ""updated_at"" = @Now WHERE ""id"" = @Id RETURNING *",
+                new { Role = role, Name = name, Now = now, Id = user.Id });
+        }
 
         var token = _jwt.GenerateToken(user.Id, user.Role, user.TokenVersion);
 
@@ -467,5 +475,17 @@ public class AuthService : IAuthService
                 Email = user.Email
             }
         };
+    }
+
+    public async Task DeleteProfileAsync(int userId)
+    {
+        using var conn = _db.CreateConnection();
+
+        var user = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"id\" = @Id", new { Id = userId });
+        if (user == null)
+            throw new AppException(404, "User not found");
+
+        await conn.ExecuteAsync("DELETE FROM \"Users\" WHERE \"id\" = @Id", new { Id = userId });
     }
 }

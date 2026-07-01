@@ -56,11 +56,10 @@
     async function loadStats() {
       try {
         const [usersRes, examsRes] = await Promise.all([
-          api.get('/api/admin/users?page=1&limit=1'),
+          api.get('/api/admin/users?page=1&limit=1000'),
           api.get('/api/admin/exams?page=1&limit=1')
         ]);
         const users = usersRes.data || [];
-        const exams = examsRes.data || [];
         animateCounter('stat-users', usersRes.pagination?.total || 0);
         animateCounter('stat-students', users.filter(u => u.role === 'student').length);
         animateCounter('stat-teachers', users.filter(u => u.role === 'teacher').length);

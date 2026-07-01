@@ -26,12 +26,32 @@ public class TeacherController : ControllerBase
         return Ok(new { success = true, data = result });
     }
 
+    [HttpPost("students")]
+    public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request)
+    {
+        var teacherId = RequireTeacher();
+        if (string.IsNullOrEmpty(request.Email) || !request.Email.Contains('@'))
+            return BadRequest(new { success = false, error = "Valid email is required" });
+        if (string.IsNullOrEmpty(request.Name))
+            return BadRequest(new { success = false, error = "Name is required" });
+        var result = await _teacherService.CreateStudentAsync(teacherId, request.Name, request.Email);
+        return Created(string.Empty, new { success = true, data = result });
+    }
+
     [HttpGet("students/{studentId:int}")]
     public async Task<IActionResult> GetStudentDetail(int studentId)
     {
         RequireTeacher();
         var detail = await _teacherService.GetStudentDetailAsync(studentId);
         return Ok(new { success = true, data = detail });
+    }
+
+    [HttpDelete("students/{studentId:int}")]
+    public async Task<IActionResult> DeleteStudent(int studentId)
+    {
+        RequireTeacher();
+        await _teacherService.DeleteStudentAsync(studentId);
+        return Ok(new { success = true, message = "Student deleted" });
     }
 
     [HttpGet("questions/{examId:int}")]
@@ -172,4 +192,10 @@ public class TeacherController : ControllerBase
 public class ScheduleBody
 {
     public string ScheduledAt { get; set; } = "";
+}
+
+public class CreateStudentRequest
+{
+    public string Name { get; set; } = "";
+    public string Email { get; set; } = "";
 }

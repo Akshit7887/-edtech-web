@@ -50,6 +50,9 @@
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>
   <script>
+    function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function escAttr(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
       setupNavbar();
@@ -66,33 +69,39 @@
         }
         tbody.innerHTML = contacts.map(c => `
           <tr>
-            <td><strong>${c.student_name}</strong></td>
-            <td>${c.parent_name}</td>
-            <td>${c.parent_email || '-'}</td>
-            <td>${c.parent_phone || '-'}</td>
-            <td>${c.relationship || '-'}</td>
-            <td>
-              <button class="btn btn-sm btn-ghost" onclick="editContact(${c.student_id}, '${c.parent_name}', '${c.parent_email || ''}', '${c.parent_phone || ''}', '${c.relationship || ''}')">✏️</button>
-              <button class="btn btn-sm btn-danger" onclick="handleDeleteContact(${c.student_id})">🗑️</button>
+            <td><strong>${escHtml(c.student_name)}</strong></td>
+            <td>${escHtml(c.parent_name)}</td>
+            <td>${escHtml(c.parent_email || '-')}</td>
+            <td>${escHtml(c.parent_phone || '-')}</td>
+            <td>${escHtml(c.relationship || '-')}</td>
+            <td data-sid="${c.student_id}" data-pname="${escAttr(c.parent_name)}" data-pemail="${escAttr(c.parent_email || '')}" data-pphone="${escAttr(c.parent_phone || '')}" data-prel="${escAttr(c.relationship || '')}">
+              <button class="btn btn-sm btn-ghost edit-contact-btn">✏️</button>
+              <button class="btn btn-sm btn-danger delete-contact-btn">🗑️</button>
             </td>
           </tr>
         `).join('');
+        tbody.querySelectorAll('tr').forEach(row => {
+          const td = row.querySelector('td:last-child');
+          if (!td) return;
+          const sid = parseInt(td.dataset.sid);
+          row.querySelector('.edit-contact-btn')?.addEventListener('click', () => editContact(sid, td.dataset.pname, td.dataset.pemail, td.dataset.pphone, td.dataset.prel));
+          row.querySelector('.delete-contact-btn')?.addEventListener('click', () => handleDeleteContact(sid));
+        });
       } catch (e) {
         document.getElementById('contacts-tbody').innerHTML = `<tr><td colspan="6"><div class="alert alert-error">${e.message}</div></td></tr>`;
       }
     }
 
     function editContact(studentId, parentName, parentEmail, parentPhone, relationship) {
-      const html = `
-        <div class="form-group form-floating"><input class="form-input" id="pc-name" value="${parentName}" placeholder=" "><label class="form-label">Parent Name</label></div>
-        <div class="form-group form-floating"><input class="form-input" id="pc-email" value="${parentEmail}" placeholder=" "><label class="form-label">Parent Email</label></div>
-        <div class="form-group form-floating"><input class="form-input" id="pc-phone" value="${parentPhone}" placeholder=" "><label class="form-label">Parent Phone</label></div>
-        <div class="form-group form-floating"><input class="form-input" id="pc-rel" value="${relationship}" placeholder=" "><label class="form-label">Relationship</label></div>
-      `;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'pc-modal';
       overlay.innerHTML = `
         <div class="modal"><div class="modal-header"><h3>Edit Parent Contact</h3><button class="modal-close" onclick="closePcModal()">×</button></div>
-        <div class="modal-body">${html}</div>
+        <div class="modal-body">
+          <div class="form-group form-floating"><input class="form-input" id="pc-name" value="${escAttr(parentName)}" placeholder=" "><label class="form-label">Parent Name</label></div>
+          <div class="form-group form-floating"><input class="form-input" id="pc-email" value="${escAttr(parentEmail)}" placeholder=" "><label class="form-label">Parent Email</label></div>
+          <div class="form-group form-floating"><input class="form-input" id="pc-phone" value="${escAttr(parentPhone)}" placeholder=" "><label class="form-label">Parent Phone</label></div>
+          <div class="form-group form-floating"><input class="form-input" id="pc-rel" value="${escAttr(relationship)}" placeholder=" "><label class="form-label">Relationship</label></div>
+        </div>
         <div class="modal-footer"><button class="btn btn-secondary" onclick="closePcModal()">Cancel</button><button class="btn btn-primary" onclick="handleSaveContact(${studentId})">Save</button></div></div>
       `;
       document.body.appendChild(overlay);

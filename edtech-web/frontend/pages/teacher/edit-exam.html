@@ -49,9 +49,10 @@
       examId = parseInt(getQueryParam('id'));
       if (!examId) { showAlert('No exam ID specified', 'error'); return; }
 
-      document.querySelectorAll('#questions-link, #stats-link, #attendance-link, #reports-link').forEach(l => {
-        l.href = l.href.replace('examId', `examId=${examId}`);
-      });
+      document.getElementById('questions-link').href = `questions.html?examId=${examId}`;
+      document.getElementById('stats-link').href = `statistics.html?id=${examId}`;
+      document.getElementById('attendance-link').href = `attendance.html?id=${examId}`;
+      document.getElementById('reports-link').href = `reports.html?id=${examId}`;
 
       await loadExam();
     });

@@ -48,6 +48,7 @@
   </script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
+  <script src="../../js/exam.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
@@ -63,7 +64,7 @@
     function triggerConfetti() {
       const duration = 4000;
       const end = Date.now() + duration;
-      const colors = ['#6366f1', '#06b6d4', '#22c55e', '#f59e0b', '#ef4444'];
+        const colors = ['#b91c1c', '#dc2626', '#ef4444', '#991b1b', '#7f1d1d'];
       (function frame() {
         confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
         confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
@@ -112,7 +113,7 @@
                   <td>${formatDate(r.submitted_at)}</td>
                   <td>${r.time_used ? r.time_used + 's' : '-'}</td>
                   <td>
-                    ${r.status === 'completed' ? `<button class="btn btn-sm btn-info" onclick="goTo('review.html?session=${r.session_id}')">Review</button>` : '-'}
+                    ${r.status === 'completed' ? `<button class="btn btn-sm btn-primary" onclick="goTo('review.html?session=${r.session_id}')">Review</button>` : '-'}
                   </td>
                 </tr>
               `).join('')}
@@ -120,9 +121,9 @@
           </table>
           ${passCount > 0 ? '<div style="margin-top:16px;text-align:center"><button class="btn btn-primary" onclick="triggerConfetti()">🎉 Celebrate!</button></div>' : ''}
         `;
-      } catch (e) {
-        document.getElementById('results-container').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
-      }
+       } catch (e) {
+        document.getElementById('results-container').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
+       }
     }
   </script>
 </body>
