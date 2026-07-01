@@ -67,12 +67,19 @@
   <script src="../../js/auth.js"></script>
   <script src="../../js/animations.js"></script>
   <script>
+    let refreshInterval = null;
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
       const name = getUserName();
       if (name) document.getElementById('student-name').textContent = name;
       setupNavbar();
       await loadData();
+      refreshInterval = setInterval(loadData, 30000);
+    });
+
+    window.addEventListener('beforeunload', () => {
+      if (refreshInterval) clearInterval(refreshInterval);
     });
 
     async function loadData() {

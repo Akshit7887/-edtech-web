@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile - EdTech</title>
   <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,9 +19,6 @@
       <li><a href="profile.html" class="active">Profile</a></li>
       <!-- USER -->
     </ul>
-    <div class="navbar-user">
-      <div class="avatar" id="user-avatar" onclick="goTo('profile.html')">?</div>
-    </div>
   </nav>
   <div class="layout">
     <aside class="sidebar">
@@ -33,45 +31,85 @@
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" data-aos="fade-up">
-        <h1>My Profile</h1>
-        <p>Manage your account settings</p>
-      </div>
       <div id="alert-container"></div>
+
+      <div class="page-header" data-aos="fade-up">
+        <div style="display:flex;align-items:center;gap:var(--space-5)">
+          <div class="profile-avatar" id="profile-avatar">?</div>
+          <div>
+            <h1 id="profile-display-name">My Profile</h1>
+            <p style="color:var(--text-muted);font-size:var(--text-sm)">Manage your account settings</p>
+          </div>
+        </div>
+      </div>
+
       <div class="row" data-aos="fade-up" data-aos-delay="100">
         <div class="col-2">
-          <div class="card" style="margin-bottom:20px">
-            <div class="card-header"><h3 class="card-title">Profile Information</h3></div>
-            <div class="card-body">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Profile Information</h3>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:var(--space-5)">
               <div class="form-group form-floating">
                 <input type="text" class="form-input" id="profile-name" placeholder=" ">
-                <label class="form-label">Name</label>
+                <label class="form-label">Full Name</label>
               </div>
               <div class="form-group form-floating">
                 <input type="email" class="form-input" id="profile-email" placeholder=" ">
-                <label class="form-label">Email</label>
+                <label class="form-label">Email Address</label>
               </div>
               <div class="form-group form-floating">
                 <input type="tel" class="form-input" id="profile-phone" placeholder=" ">
-                <label class="form-label">Phone</label>
+                <label class="form-label">Phone Number</label>
               </div>
-              <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+              <div style="display:flex;gap:var(--space-3)">
+                <button class="btn btn-primary" id="save-btn" onclick="saveProfile()">
+                  <span id="save-text">Save Changes</span>
+                  <span id="save-spinner" class="spinner spinner-sm" style="display:none"></span>
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+              </div>
             </div>
           </div>
         </div>
         <div class="col-2">
           <div class="card">
-            <div class="card-header"><h3 class="card-title">Change Password</h3></div>
-            <div class="card-body">
+            <div class="card-header">
+              <h3 class="card-title">Change Password</h3>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:var(--space-5)">
               <div class="form-group form-floating">
                 <input type="password" class="form-input" id="current-password" placeholder=" ">
                 <label class="form-label">Current Password</label>
               </div>
               <div class="form-group form-floating">
                 <input type="password" class="form-input" id="new-password" minlength="6" placeholder=" ">
-                <label class="form-label">New Password</label>
+                <label class="form-label">New Password (min 6 chars)</label>
               </div>
-              <button class="btn btn-warning" onclick="changePwd()">Update Password</button>
+              <button class="btn btn-warning" id="pwd-btn" onclick="changePwd()">
+                <span id="pwd-text">Update Password</span>
+                <span id="pwd-spinner" class="spinner spinner-sm" style="display:none"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:var(--space-6)">
+            <div class="card-header">
+              <h3 class="card-title">Account Info</h3>
+            </div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:var(--space-3)">
+              <div style="display:flex;justify-content:space-between;padding:var(--space-2) 0;border-bottom:1px solid var(--border-light)">
+                <span style="color:var(--text-muted);font-size:var(--text-sm)">Role</span>
+                <span class="user-badge" id="profile-role">Student</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:var(--space-2) 0;border-bottom:1px solid var(--border-light)">
+                <span style="color:var(--text-muted);font-size:var(--text-sm)">User ID</span>
+                <span style="font-size:var(--text-sm);font-family:var(--font-mono)" id="profile-id">-</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:var(--space-2) 0">
+                <span style="color:var(--text-muted);font-size:var(--text-sm)">Account</span>
+                <span style="font-size:var(--text-sm);color:var(--success)">Active</span>
+              </div>
             </div>
           </div>
         </div>
@@ -86,13 +124,29 @@
     document.addEventListener('DOMContentLoaded', () => {
       if (!requireRole('student')) return;
       setupNavbar();
-      const user = getUser();
-      if (user) {
-        document.getElementById('profile-name').value = user.name || '';
-        document.getElementById('profile-email').value = user.email || '';
-        document.getElementById('profile-phone').value = user.phone || '';
-      }
+      loadProfile();
     });
+
+    function loadProfile() {
+      const user = getUser();
+      if (!user) return;
+      document.getElementById('profile-display-name').textContent = user.name || 'My Profile';
+      document.getElementById('profile-name').value = user.name || '';
+      document.getElementById('profile-email').value = user.email || '';
+      document.getElementById('profile-phone').value = user.phone || '';
+      document.getElementById('profile-role').textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Student';
+      document.getElementById('profile-id').textContent = user.id || '-';
+
+      const avatar = document.getElementById('profile-avatar');
+      if (user.name) {
+        avatar.textContent = user.name.charAt(0).toUpperCase();
+      }
+    }
+
+    function resetForm() {
+      loadProfile();
+      clearAlerts();
+    }
 
     async function saveProfile() {
       clearAlerts();
@@ -101,12 +155,29 @@
         email: document.getElementById('profile-email').value.trim(),
         phone: document.getElementById('profile-phone').value.trim()
       };
+      if (!data.name) { showAlert('Name is required', 'error'); return; }
+      if (!data.email) { showAlert('Email is required', 'error'); return; }
+
+      const btn = document.getElementById('save-btn');
+      const text = document.getElementById('save-text');
+      const spinner = document.getElementById('save-spinner');
+      btn.disabled = true; text.textContent = 'Saving...'; spinner.style.display = 'inline-block';
+
       try {
-        const result = await updateProfile(data);
+        await updateProfile(data);
         const user = getUser();
-        if (user) { user.name = data.name; user.email = data.email; user.phone = data.phone; localStorage.setItem('user', JSON.stringify(user)); localStorage.setItem('user_name', data.name); }
+        if (user) {
+          user.name = data.name; user.email = data.email; user.phone = data.phone;
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('user_name', data.name);
+        }
+        loadProfile();
         showAlert('Profile updated successfully', 'success');
-      } catch (e) { showAlert(e.message, 'error'); }
+      } catch (e) {
+        showAlert(e.message, 'error');
+      } finally {
+        btn.disabled = false; text.textContent = 'Save Changes'; spinner.style.display = 'none';
+      }
     }
 
     async function changePwd() {
@@ -115,12 +186,22 @@
       const newPwd = document.getElementById('new-password').value;
       if (!current || !newPwd) { showAlert('Fill all fields', 'error'); return; }
       if (newPwd.length < 6) { showAlert('New password must be at least 6 characters', 'error'); return; }
+
+      const btn = document.getElementById('pwd-btn');
+      const text = document.getElementById('pwd-text');
+      const spinner = document.getElementById('pwd-spinner');
+      btn.disabled = true; text.textContent = 'Updating...'; spinner.style.display = 'inline-block';
+
       try {
         await changePassword(current, newPwd);
         showAlert('Password changed successfully', 'success');
         document.getElementById('current-password').value = '';
         document.getElementById('new-password').value = '';
-      } catch (e) { showAlert(e.message, 'error'); }
+      } catch (e) {
+        showAlert(e.message, 'error');
+      } finally {
+        btn.disabled = false; text.textContent = 'Update Password'; spinner.style.display = 'none';
+      }
     }
   </script>
 </body>

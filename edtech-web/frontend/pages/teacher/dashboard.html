@@ -68,25 +68,37 @@
   <script src="../../js/auth.js"></script>
   <script src="../../js/animations.js"></script>
   <script>
+    let refreshInterval = null;
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
       const name = getUserName();
       if (name) document.getElementById('teacher-name').textContent = name;
       setupNavbar();
-      await loadStats();
-      await loadExams();
+      await refreshDashboard();
+      refreshInterval = setInterval(refreshDashboard, 30000);
     });
+
+    window.addEventListener('beforeunload', () => {
+      if (refreshInterval) clearInterval(refreshInterval);
+    });
+
+    async function refreshDashboard() {
+      await Promise.all([loadStats(), loadExams()]);
+    }
 
     async function loadStats() {
       try {
-        const res = await api.get('/api/exams?page=1&limit=100');
-        const exams = res.data || [];
+        const [examsRes, studentsRes, classesRes] = await Promise.all([
+          api.get('/api/exams?page=1&limit=100'),
+          api.get('/api/teacher/students'),
+          api.get('/api/teacher/classes')
+        ]);
+        const exams = examsRes.data || [];
         document.getElementById('stat-exams').textContent = exams.length;
         document.getElementById('stat-active').textContent = exams.filter(e => e.status === 'active').length;
-        const studentsRes = await api.get('/api/teacher/students');
         const students = studentsRes.data || [];
         document.getElementById('stat-students').textContent = students.length;
-        const classesRes = await api.get('/api/teacher/classes');
         const classes = classesRes.data || [];
         document.getElementById('stat-classes').textContent = classes.length;
       } catch (e) {
@@ -118,6 +130,12 @@
             </div>
           </div>
         `).join('') + '</div>';
+        requestAnimationFrame(() => {
+          document.querySelectorAll('.exam-card.reveal').forEach(el => {
+            el.style.opacity = '0';
+            el.style.animation = 'fadeInUp 0.4s ease forwards';
+          });
+        });
       } catch (e) {
         document.getElementById('exam-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
       }
