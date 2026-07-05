@@ -1,16 +1,6 @@
 const API_BASE = (() => {
   const stored = localStorage.getItem('api_base');
-  if (stored) {
-    const cleaned = stored.replace(/\/+$/, '');
-    if (cleaned !== 'http://localhost:5000') {
-      localStorage.removeItem('api_base');
-    } else {
-      return cleaned;
-    }
-  }
-  const host = window.location.hostname;
-  if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:5000';
-  if (host.includes('vercel.app')) return 'https://backend-wine-six-74.vercel.app';
+  if (stored) return stored.replace(/\/+$/, '');
   return 'http://localhost:5000';
 })();
 

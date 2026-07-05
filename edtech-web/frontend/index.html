@@ -27,8 +27,12 @@
       <div class="hero-bg-gradient"></div>
     </div>
     <div class="hero-content">
+      <div class="hero-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>
+      </div>
       <div class="hero-badge">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <span class="badge-pulse"></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>
         AI-Powered Learning Platform
       </div>
       <h1 class="hero-title">
@@ -46,30 +50,110 @@
     </div>
   </section>
 
+  <section class="section carousel-section">
+    <div class="container">
+      <div class="text-center" style="margin-bottom: var(--space-10);">
+        <p class="text-sm text-muted font-medium tracking-wide" style="margin-bottom: var(--space-2);">KNOWLEDGE HUB</p>
+        <h2 class="text-3xl font-bold">Explore &amp; Learn Together</h2>
+      </div>
+      <div class="carousel-wrapper">
+        <button class="carousel-arrow carousel-arrow-left" onclick="slideCarousel(-1, 'knowledge')" aria-label="Previous">&#x276E;</button>
+        <div class="carousel-viewport">
+          <div class="carousel-track" data-carousel="knowledge">
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <h3 class="carousel-card-title">Upload &amp; Share Knowledge</h3>
+              <p class="carousel-card-text">Upload PDFs, documents, and syllabus materials. AI organizes and indexes your content for instant student access.</p>
+            </div>
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+              <h3 class="carousel-card-title">Browse &amp; Search</h3>
+              <p class="carousel-card-text">Search through exams, questions, and learning materials with AI-powered smart search. Find what you need instantly.</p>
+            </div>
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <h3 class="carousel-card-title">Collaborative Access</h3>
+              <p class="carousel-card-text">Teachers and students collaborate in real-time. Share feedback, track progress, and learn together seamlessly.</p>
+            </div>
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+              <h3 class="carousel-card-title">AI Auto-Grading</h3>
+              <p class="carousel-card-text">Automated grading with intelligent feedback. AI evaluates answers, detects patterns, and provides personalized recommendations.</p>
+            </div>
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h3 class="carousel-card-title">Smart Analytics</h3>
+              <p class="carousel-card-text">Detailed performance insights with visual breakdowns, trend analysis, and actionable recommendations for every student.</p>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-arrow carousel-arrow-right" onclick="slideCarousel(1, 'knowledge')" aria-label="Next">&#x276F;</button>
+      </div>
+      <div class="carousel-dots" data-dots="knowledge"></div>
+    </div>
+  </section>
+
   <section class="section bg-subtle">
     <div class="container">
-      <div class="text-center" style="margin-bottom: var(--space-12);">
+      <div class="text-center" style="margin-bottom: var(--space-10);">
         <p class="text-sm text-muted font-medium tracking-wide" style="margin-bottom: var(--space-2);">FEATURES</p>
         <h2 class="text-3xl font-bold" style="margin-bottom: var(--space-2);">Everything You Need</h2>
         <p class="text-body" style="max-width: 480px; margin: 0 auto;">A complete examination platform for modern education</p>
       </div>
-      <div class="grid grid-3 stagger-group" style="gap: var(--space-6);">
-        <div class="card card-feature hover-lift">
-          <div class="card-feature-icon">&#x1F4DD;</div>
-          <h3 class="card-feature-title">Smart Exams</h3>
-          <p class="card-feature-text">AI-generated questions with auto-grading and instant feedback. Create comprehensive exams in minutes.</p>
+      <div class="carousel-wrapper">
+        <button class="carousel-arrow carousel-arrow-left" onclick="slideCarousel(-1, 'features')" aria-label="Previous">&#x276E;</button>
+        <div class="carousel-viewport">
+          <div class="carousel-track" data-carousel="features">
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <h3 class="carousel-card-title">Smart Exams</h3>
+              <p class="carousel-card-text">AI-generated questions with auto-grading and instant feedback. Create comprehensive exams in minutes.</p>
+            </div>
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <h3 class="carousel-card-title">Proctored Mode</h3>
+              <p class="carousel-card-text">Secure browser-based exam monitoring with real-time violation tracking and auto-disqualification.</p>
+            </div>
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </div>
+              <h3 class="carousel-card-title">Analytics</h3>
+              <p class="carousel-card-text">Detailed performance insights with visual breakdowns, trend analysis, and actionable recommendations.</p>
+            </div>
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              </div>
+              <h3 class="carousel-card-title">AI Question Bank</h3>
+              <p class="carousel-card-text">Vast question library with AI-powered generation. Create custom exams from scratch or let AI build them from your syllabus.</p>
+            </div>
+            <div class="carousel-card">
+              <div class="carousel-card-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              </div>
+              <h3 class="carousel-card-title">Instant Feedback</h3>
+              <p class="carousel-card-text">Students get immediate results and personalized feedback. AI analyzes answers and suggests improvement areas.</p>
+            </div>
+          </div>
         </div>
-        <div class="card card-feature hover-lift">
-          <div class="card-feature-icon">&#x1F6E1;&#xFE0F;</div>
-          <h3 class="card-feature-title">Proctored Mode</h3>
-          <p class="card-feature-text">Secure browser-based exam monitoring with real-time violation tracking and auto-disqualification.</p>
-        </div>
-        <div class="card card-feature hover-lift">
-          <div class="card-feature-icon">&#x1F4CA;</div>
-          <h3 class="card-feature-title">Analytics</h3>
-          <p class="card-feature-text">Detailed performance insights with visual breakdowns, trend analysis, and actionable recommendations.</p>
-        </div>
+        <button class="carousel-arrow carousel-arrow-right" onclick="slideCarousel(1, 'features')" aria-label="Next">&#x276F;</button>
       </div>
+      <div class="carousel-dots" data-dots="features"></div>
     </div>
   </section>
 
