@@ -1,8 +1,12 @@
+using System.Reflection;
+using System.Text.Json.Serialization;
+using Dapper;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using EdTechApi.Data;
 using EdTechApi.Middleware;
 using EdTechApi.Services;
+using EdTechApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +31,13 @@ builder.Configuration["Gemini:ApiKey"] = geminiApiKey;
 builder.Configuration["SendGrid:ApiKey"] = sendGridApiKey;
 builder.Configuration["ConnectionStrings:Supabase"] = dbConnectionString;
 
+// ── Dapper type maps ──
+SqlMapper.SetTypeMap(typeof(SyllabusFile), new CustomPropertyTypeMap(
+    typeof(SyllabusFile),
+    (type, columnName) => type.GetProperties().FirstOrDefault(p =>
+        p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name == columnName)
+        ?? throw new InvalidOperationException($"No property mapped to column '{columnName}'")));
+
 // ── Database ──
 builder.Services.AddSingleton<IDbConnectionFactory>(new DbConnectionFactory(dbConnectionString));
 
@@ -42,6 +53,9 @@ builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<ITeacherService, TeacherService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IReportsService, ReportsService>();
+builder.Services.AddScoped<ISyllabusService, SyllabusService>();
+builder.Services.AddScoped<IMigrationService, MigrationService>();
+builder.Services.AddHttpContextAccessor();
 
 // ── CORS ──
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
@@ -113,6 +127,10 @@ app.UseRequestId();
 app.UseRateLimiter();
 app.UseCors();
 app.UseErrorHandler();
+app.UseStaticFiles(new StaticFileOptions
+{
+    ServeUnknownFileTypes = true,
+});
 
 if (app.Environment.IsDevelopment())
 {
@@ -133,6 +151,13 @@ app.MapGet("/api/health", (HttpContext context) =>
         requestId = context.Items["RequestId"]?.ToString()
     });
 });
+
+// ── Run migrations ──
+using (var scope = app.Services.CreateScope())
+{
+    var migration = scope.ServiceProvider.GetRequiredService<IMigrationService>();
+    await migration.ApplyMigrationsAsync();
+}
 
 // ── Startup info ──
 app.Logger.LogInformation("EdTech API starting on {Urls}", string.Join(", ", app.Urls));

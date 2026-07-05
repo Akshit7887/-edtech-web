@@ -171,6 +171,8 @@
 .btn-google:hover {
   border-color: var(--border-strong);
   background: var(--bg-muted);
+  transform: scale(1.03);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ── Password Toggle ── */

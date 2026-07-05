@@ -67,9 +67,15 @@ class ApiClient {
   put(path, body = {}) { return this.request('PUT', path, body); }
   del(path) { return this.request('DELETE', path); }
 
-  uploadFile(path, formData) {
+  async uploadFile(path, formData) {
     const opts = { method: 'POST', headers: this.getHeaders(true), body: formData };
-    return fetch(`${API_BASE}${path}`, opts).then(r => r.json());
+    const r = await fetch(`${API_BASE}${path}`, opts);
+    const data = await r.json();
+    if (!r.ok) {
+      const err = (data && data.message) || (data && data.error) || `Upload failed (${r.status})`;
+      throw new ApiError(err, r.status, data);
+    }
+    return data;
   }
 
   downloadPdf(path) {

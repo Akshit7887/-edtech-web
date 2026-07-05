@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Syllabus - EdTech AI Test &amp; Learning App</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .syllabus-upload { margin-bottom: var(--space-6); padding: var(--space-6); background: var(--bg-card); border: 2px dashed var(--border-strong); border-radius: var(--radius-lg); text-align: center; transition: border-color var(--duration-normal) var(--ease); }
+    .syllabus-upload.dragover { border-color: var(--accent); background: var(--accent-ghost); }
+    .syllabus-upload input[type="file"] { display: none; }
+    .syllabus-search { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); }
+    .syllabus-search input { flex: 1; }
+    .syllabus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
+    .syllabus-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); transition: all var(--duration-normal) var(--ease); display: flex; flex-direction: column; }
+    .syllabus-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+    .syllabus-card-icon { font-size: 2rem; margin-bottom: var(--space-3); }
+    .syllabus-card h3 { font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-1); color: var(--text-heading); }
+    .syllabus-card p { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3); flex: 1; }
+    .syllabus-card-meta { font-size: var(--text-xs); color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-3); border-top: 1px solid var(--border-light); }
+    .syllabus-card-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+    .file-type-badge { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-ghost); color: var(--accent); }
+    .empty-state { text-align: center; padding: var(--space-12); color: var(--text-muted); }
+    .empty-state-icon { font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="dashboard.html" class="navbar-brand">
+      <span class="brand-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></span>
+      EdTech AI Test &amp; Learning App
+    </a>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="create-exam.html">Create Exam</a></li>
+      <li><a href="students.html">Students</a></li>
+      <li><a href="classes.html">Classes</a></li>
+      <li><a href="syllabus.html" class="active">Syllabus</a></li>
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">&#x1F4CA;</span><span>Dashboard</span></a></li>
+        <li><a href="create-exam.html"><span class="nav-icon">&#x2795;</span><span>Create Exam</span></a></li>
+        <li><a href="students.html"><span class="nav-icon">&#x1F465;</span><span>Students</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">&#x1F3EB;</span><span>Classes</span></a></li>
+        <li><a href="parent-contacts.html"><span class="nav-icon">&#x1F46A;</span><span>Parent Contacts</span></a></li>
+        <li><a href="syllabus.html" class="active"><span class="nav-icon">&#x1F4DA;</span><span>Syllabus</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">&#x1F6AA;</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>Syllabus</h1>
+          <p class="text-muted">Manage course syllabus files</p>
+        </div>
+        <button class="btn btn-primary" id="upload-btn" onclick="document.getElementById('file-input').click()">+ Upload Syllabus</button>
+      </div>
+      <div id="alert-container"></div>
+
+      <div class="syllabus-upload" id="drop-zone">
+        <p style="font-size:2rem;margin-bottom:var(--space-2);">&#x1F4C1;</p>
+        <p style="font-weight:600;margin-bottom:var(--space-1);">Drop syllabus files here</p>
+        <p class="text-muted text-sm">or click the button above to browse</p>
+        <p class="text-muted text-xs" style="margin-top:var(--space-2);">PDF, DOC, DOCX, PPT, PPTX, TXT &mdash; Max 20MB</p>
+      </div>
+
+      <form id="upload-form" style="display:none">
+        <input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" required>
+        <div id="file-preview" style="display:none;margin-bottom:var(--space-3);padding:var(--space-4);background:var(--accent-ghost);border-radius:var(--radius-lg);"></div>
+        <div class="form-group" style="margin-top:var(--space-3);display:flex;gap:var(--space-3);align-items:end;">
+          <div style="flex:1;">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-input" id="file-title" placeholder="e.g. Mathematics Syllabus" required>
+          </div>
+          <div style="flex:1;">
+            <label class="form-label">Description (optional)</label>
+            <input type="text" class="form-input" id="file-desc" placeholder="e.g. Unit 1 topics">
+          </div>
+          <button type="submit" class="btn btn-primary" id="upload-submit-btn">Upload</button>
+          <button type="button" class="btn btn-secondary" onclick="cancelUpload()">Cancel</button>
+        </div>
+      </form>
+
+      <div class="syllabus-search">
+        <input type="text" class="form-input" id="search-input" placeholder="Search syllabus files..." oninput="searchFiles()">
+      </div>
+
+      <div id="syllabus-grid" class="syllabus-grid"></div>
+    </main>
+  </div>
+
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script>
+    let currentFile = null;
+    let refreshInterval = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('teacher')) return;
+      loadFiles();
+      refreshInterval = setInterval(loadFiles, 15000);
+      window.addEventListener('beforeunload', () => { if (refreshInterval) clearInterval(refreshInterval); });
+
+      const dropZone = document.getElementById('drop-zone');
+      dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) handleFileSelect(files[0]);
+      });
+
+      document.getElementById('file-input').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
+      });
+
+      document.getElementById('upload-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('file-title').value.trim();
+        const desc = document.getElementById('file-desc').value.trim();
+        if (!title || !currentFile) return;
+
+        const sizeStr = currentFile.size > 1024 * 1024 ? (currentFile.size / 1024 / 1024).toFixed(1) + ' MB' : (currentFile.size / 1024).toFixed(0) + ' KB';
+        if (!confirm('Upload this file?\n\nFile: ' + currentFile.name + '\nSize: ' + sizeStr + '\nType: ' + (currentFile.type || 'Unknown') + '\nTitle: ' + title + '\n\nClick OK to confirm upload.')) return;
+
+        const btn = document.getElementById('upload-submit-btn');
+        btn.disabled = true; btn.textContent = 'Uploading...';
+
+        try {
+          const fd = new FormData();
+          fd.append('title', title);
+          if (desc) fd.append('description', desc);
+          fd.append('file', currentFile);
+          await api.uploadFile('/api/syllabus/upload', fd);
+          cancelUpload();
+          alert('✅ File uploaded successfully!');
+          showAlert('File uploaded successfully', 'success');
+          loadFiles();
+        } catch (e) {
+          showAlert(e.message || 'Upload failed', 'error');
+          btn.disabled = false; btn.textContent = 'Upload';
+        }
+      });
+    });
+
+    function handleFileSelect(file) {
+      if (file.size > 20 * 1024 * 1024) {
+        showAlert('File too large. Maximum size is 20MB.', 'error');
+        return;
+      }
+      var ext = file.name.split('.').pop().toLowerCase();
+      var allowed = ['pdf','doc','docx','ppt','pptx','txt'];
+      if (allowed.indexOf(ext) === -1) {
+        showAlert('Invalid file type. Allowed: PDF, DOC, DOCX, PPT, PPTX, TXT', 'error');
+        return;
+      }
+      currentFile = file;
+      document.getElementById('file-title').value = file.name.replace(/\.[^.]+$/, '');
+      document.getElementById('file-desc').value = '';
+      document.getElementById('upload-form').style.display = 'flex';
+      document.getElementById('upload-form').style.flexDirection = 'column';
+      document.getElementById('upload-btn').disabled = true;
+
+      var sizeStr = file.size > 1024 * 1024 ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : (file.size / 1024).toFixed(0) + ' KB';
+      var icon = ext === 'pdf' ? '&#x1F4C4;' : ext === 'doc' || ext === 'docx' ? '&#x1F4DD;' : ext === 'ppt' || ext === 'pptx' ? '&#x1F4CA;' : '&#x1F4C1;';
+      document.getElementById('file-preview').innerHTML = '<div style="display:flex;align-items:center;gap:var(--space-3);"><span style="font-size:2rem;">' + icon + '</span><div><strong>' + escHtml(file.name) + '</strong><br><span class="text-muted text-sm">' + sizeStr + ' &middot; ' + ext.toUpperCase() + '</span></div></div>';
+      document.getElementById('file-preview').style.display = 'block';
+    }
+
+    function cancelUpload() {
+      currentFile = null;
+      document.getElementById('upload-form').style.display = 'none';
+      document.getElementById('file-input').value = '';
+      document.getElementById('file-preview').style.display = 'none';
+      document.getElementById('file-preview').innerHTML = '';
+      document.getElementById('upload-btn').disabled = false;
+    }
+
+    async function loadFiles() {
+      const grid = document.getElementById('syllabus-grid');
+      grid.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading files...</p></div>';
+      try {
+        const res = await api.get('/api/syllabus');
+        renderFiles(res.data || []);
+      } catch (e) {
+        grid.innerHTML = '<div class="empty-state"><p>Failed to load syllabus files</p></div>';
+      }
+    }
+
+    async function searchFiles() {
+      const q = document.getElementById('search-input').value.trim();
+      const grid = document.getElementById('syllabus-grid');
+      grid.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Searching...</p></div>';
+      try {
+        const res = await api.get('/api/syllabus' + (q ? '?search=' + encodeURIComponent(q) : ''));
+        renderFiles(res.data || []);
+      } catch (e) {
+        grid.innerHTML = '<div class="empty-state"><p>Search failed</p></div>';
+      }
+    }
+
+    function renderFiles(files) {
+      const grid = document.getElementById('syllabus-grid');
+      if (!files.length) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F4DA;</div><p>No syllabus files available</p></div>';
+        return;
+      }
+      grid.innerHTML = files.map(f => {
+        const ext = (f.file_name || '').split('.').pop().toUpperCase();
+        const icon = ext === 'PDF' ? '&#x1F4C4;' : ext === 'DOC' || ext === 'DOCX' ? '&#x1F4DD;' : ext === 'PPT' || ext === 'PPTX' ? '&#x1F4CA;' : '&#x1F4C1;';
+        const size = f.file_size > 1024 * 1024 ? (f.file_size / 1024 / 1024).toFixed(1) + ' MB' : (f.file_size / 1024).toFixed(0) + ' KB';
+        const url = `http://localhost:5000${f.file_path}`;
+        return `<div class="syllabus-card">
+          <div class="syllabus-card-icon">${icon}</div>
+          <h3>${escHtml(f.title)}</h3>
+          <p>${f.description ? escHtml(f.description) : 'No description'}</p>
+          <div class="syllabus-card-meta">
+            <span class="file-type-badge">${ext}</span>
+            <span>${size}</span>
+          </div>
+          <div class="syllabus-card-meta">
+            <span>by ${escHtml(f.uploader_name || 'Unknown')}</span>
+            <span>${formatDate(f.created_at)}</span>
+          </div>
+          <div class="syllabus-card-actions">
+            <a href="${url}" class="btn btn-sm btn-primary" target="_blank" download>Download</a>
+            <button class="btn btn-sm btn-secondary" onclick="deleteFile(${f.id})">Delete</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function deleteFile(id) {
+      if (!confirm('Delete this syllabus file?')) return;
+      try {
+        await api.del('/api/syllabus/' + id);
+        showAlert('File deleted', 'success');
+        loadFiles();
+      } catch (e) {
+        showAlert(e.message || 'Delete failed', 'error');
+      }
+    }
+
+    function escHtml(s) {
+      if (!s) return '';
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+  </script>
+  <script src="../../js/animations.js"></script>
+</body>
+</html>

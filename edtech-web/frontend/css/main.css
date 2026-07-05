@@ -33,25 +33,28 @@
 }
 
 .navbar-brand {
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: 800;
   color: var(--accent);
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   display: flex;
   align-items: center;
   gap: var(--space-2);
   transition: transform var(--duration-fast) var(--ease);
+  text-decoration: none;
 }
 
 .navbar-brand:hover {
   transform: scale(1.02);
 }
 
-.navbar-brand .brand-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  border-radius: var(--radius-full);
+.navbar-brand .brand-logo {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
 }
 
 .navbar-nav {
@@ -241,8 +244,8 @@
 
 .btn-primary:hover {
   background: var(--accent-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.2);
+  transform: scale(1.03);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
 }
 
 .btn-primary:active {
@@ -258,6 +261,8 @@
 .btn-secondary:hover {
   border-color: var(--border-strong);
   background: var(--bg-muted);
+  transform: scale(1.03);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-ghost {
@@ -268,6 +273,7 @@
 
 .btn-ghost:hover {
   background: var(--bg-muted);
+  transform: scale(1.03);
 }
 
 .btn-ghost-red {
@@ -277,6 +283,7 @@
 
 .btn-ghost-red:hover {
   background: var(--accent-ghost);
+  transform: scale(1.03);
 }
 
 .btn-lg {
@@ -614,6 +621,8 @@
 
 .btn-info:hover {
   background: var(--bg-hover);
+  transform: scale(1.03);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-success {
@@ -623,7 +632,8 @@
 
 .btn-success:hover {
   background: var(--success-dark);
-  transform: translateY(-1px);
+  transform: scale(1.03);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.3);
 }
 
 .btn-danger {
@@ -633,7 +643,8 @@
 
 .btn-danger:hover {
   background: var(--error-dark);
-  transform: translateY(-1px);
+  transform: scale(1.03);
+  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
 }
 
 .btn-warning {
@@ -646,8 +657,8 @@
 }
 
 .btn-warning:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+  transform: scale(1.03);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
 }
 
 .btn-warning:active {
