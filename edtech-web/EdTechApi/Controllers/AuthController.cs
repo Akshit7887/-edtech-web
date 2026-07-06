@@ -100,11 +100,11 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, message = "Profile deleted successfully" });
     }
 
-    [HttpPost("supabase-session")]
+    [HttpPost("external-session")]
     [EnableRateLimiting("AuthPolicy")]
-    public async Task<IActionResult> SupabaseSession([FromBody] SupabaseSessionRequest request)
+    public async Task<IActionResult> ExternalSession([FromBody] ExternalAuthRequest request)
     {
-        var result = await _authService.SupabaseSessionAsync(request.Email, request.Name, request.Role, request.SupabaseUserId);
+        var result = await _authService.ExternalAuthSessionAsync(request.Email, request.Name, request.Role, request.ExternalUserId);
         return Ok(result);
     }
 

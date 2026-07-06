@@ -1,6 +1,6 @@
 # EdTech Web
 
-> AI-powered examination platform built with ASP.NET Core and Supabase/PostgreSQL.
+> AI-powered examination platform built with ASP.NET Core and Neon/PostgreSQL.
 
 ## Overview
 
@@ -11,7 +11,7 @@ EdTech is a production-grade web application for creating, managing, and taking 
 | Layer | Technology |
 |-------|-----------|
 | Backend | ASP.NET Core 10, C# |
-| Database | PostgreSQL 16 (Supabase) |
+| Database | PostgreSQL 16 (Neon) |
 | ORM | Dapper + Npgsql |
 | Auth | JWT + OTP (ZeptoMail/SMTP) |
 | AI | Google Gemini API |
@@ -110,7 +110,7 @@ The database uses PostgreSQL with the following tables:
 
 ### Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- PostgreSQL 16 (or Supabase account)
+- PostgreSQL 16 (or Neon account)
 
 ### Setup
 
@@ -120,7 +120,7 @@ git clone https://github.com/Akshit7887/-edtech-web.git
 cd -edtech-web/edtech-web/EdTechApi
 
 # Configure appsettings.json with your credentials
-# (Supabase connection string, JWT secret, Gemini API key, SMTP settings)
+# (Neon connection string, JWT secret, Gemini API key, SMTP settings)
 
 # Restore and run
 dotnet restore
@@ -133,7 +133,7 @@ Edit `edtech-web/EdTechApi/appsettings.json`:
 
 | Key | Description |
 |-----|-------------|
-| `ConnectionStrings:Supabase` | PostgreSQL connection string |
+| `ConnectionStrings:Neon` | PostgreSQL connection string (Neon) |
 | `Jwt:Secret` | JWT signing key (min 32 chars) |
 | `Gemini:ApiKey` | Google Gemini API key |
 | `Email:SmtpHost` | SMTP server for OTP emails |

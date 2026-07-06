@@ -17,7 +17,7 @@ public interface IAuthService
     Task<RefreshTokenResponse> RefreshTokenAsync(string oldToken);
     Task<UserInfo> UpdateProfileAsync(int userId, UpdateProfileRequest updates);
     Task<object> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
-    Task<VerifyOtpResponse> SupabaseSessionAsync(string email, string name, string role, string supabaseUserId);
+    Task<VerifyOtpResponse> ExternalAuthSessionAsync(string email, string name, string role, string externalUserId);
     Task DeleteProfileAsync(int userId);
 }
 
@@ -427,7 +427,7 @@ public class AuthService : IAuthService
         return new { success = true, message = "Password updated successfully. Please log in again." };
     }
 
-    public async Task<VerifyOtpResponse> SupabaseSessionAsync(string email, string name, string role, string supabaseUserId)
+    public async Task<VerifyOtpResponse> ExternalAuthSessionAsync(string email, string name, string role, string externalUserId)
     {
         using var conn = _db.CreateConnection();
 
@@ -437,7 +437,7 @@ public class AuthService : IAuthService
         if (user == null)
         {
             var jwtSecret = _config["Jwt:Secret"] ?? "";
-            var hash = BCrypt.Net.BCrypt.HashPassword(supabaseUserId + jwtSecret);
+            var hash = BCrypt.Net.BCrypt.HashPassword(externalUserId + jwtSecret);
             var now = DateTime.UtcNow;
             user = new User
             {

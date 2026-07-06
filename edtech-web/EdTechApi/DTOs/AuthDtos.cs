@@ -12,7 +12,6 @@ public class GenerateOtpRequest
     public string Identifier { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Password is required")]
-    [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
     [MaxLength(128, ErrorMessage = "Password must be at most 128 characters")]
     [JsonPropertyName("password")]
     public string? Password { get; set; }
@@ -210,7 +209,7 @@ public class ChangePasswordRequest
     public string NewPassword { get; set; } = string.Empty;
 }
 
-public class SupabaseSessionRequest
+public class ExternalAuthRequest
 {
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid email format")]
@@ -227,7 +226,7 @@ public class SupabaseSessionRequest
     [JsonPropertyName("role")]
     public string Role { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Supabase user ID is required")]
-    [JsonPropertyName("supabase_user_id")]
-    public string SupabaseUserId { get; set; } = string.Empty;
+    [Required(ErrorMessage = "External user ID is required")]
+    [JsonPropertyName("external_user_id")]
+    public string ExternalUserId { get; set; } = string.Empty;
 }

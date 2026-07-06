@@ -86,10 +86,9 @@ public class GoogleAuthService : IGoogleAuthService
 
         var email = root.GetProperty("email").GetString() ?? "";
         var name = root.TryGetProperty("name", out var n) ? n.GetString() : null;
-        name ??= root.TryGetProperty("given_name", out var gn) ? gn.GetString() : email.Split('@')[0];
+        name ??= root.TryGetProperty("given_name", out var gn) ? gn.GetString() ?? "User" : email.Split('@')[0];
         var googleSub = root.GetProperty("sub").GetString() ?? "";
 
-        // Use the role passed via state param
-        return await _auth.SupabaseSessionAsync(email, name, role, googleSub);
+        return await _auth.ExternalAuthSessionAsync(email, name, role, googleSub);
     }
 }

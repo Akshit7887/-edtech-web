@@ -1,5 +1,5 @@
--- EdTechApp Supabase Migration
--- Run this in Supabase SQL Editor to set up the database
+-- EdTechApp Neon Migration
+-- Run this in Neon SQL Editor to set up the database
 
 -- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -24,10 +24,9 @@ CREATE TYPE parent_sent_via AS ENUM ('sms', 'email');
 -- TABLES
 -- ============================================================
 
--- Users table (extends Supabase auth.users)
+-- Users table
 CREATE TABLE public.users (
     id SERIAL PRIMARY KEY,
-    auth_uid UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     role user_role NOT NULL,
     phone VARCHAR(20) UNIQUE,
@@ -191,7 +190,6 @@ CREATE TABLE public.otp_tokens (
 -- Pending registrations
 CREATE TABLE public.pending_registrations (
     id SERIAL PRIMARY KEY,
-    auth_uid UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     identifier VARCHAR(255) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -243,32 +241,6 @@ BEGIN
     END LOOP;
 END;
 $$;
-
--- ============================================================
--- ROW LEVEL SECURITY (Supabase)
--- ============================================================
-ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.exams ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.question_pool ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.student_exam_assignments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.exam_sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.attendance ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.parent_contacts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.parent_notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.classes ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.class_students ENABLE ROW LEVEL SECURITY;
-
--- Users: can read own record
-CREATE POLICY users_select_own ON public.users FOR SELECT USING (auth_uid = auth.uid());
-CREATE POLICY users_insert_own ON public.users FOR INSERT WITH CHECK (auth_uid = auth.uid());
-CREATE POLICY users_update_own ON public.users FOR UPDATE USING (auth_uid = auth.uid());
-
--- Exams: teachers can CRUD their own, students can read assigned
-CREATE POLICY exams_teacher_all ON public.exams FOR ALL USING (teacher_id IN (SELECT id FROM public.users WHERE auth_uid = auth.uid()));
-CREATE POLICY exams_student_read ON public.exams FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.student_exam_assignments WHERE exam_id = exams.id AND student_id IN (SELECT id FROM public.users WHERE auth_uid = auth.uid()))
-);
 
 -- ============================================================
 -- FUNCTIONS

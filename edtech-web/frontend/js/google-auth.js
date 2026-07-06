@@ -23,5 +23,9 @@ function handleGoogleCallback() {
 
     saveSession(token, { id: parseInt(userId), name, role, email, phone: '' });
     redirectToDashboard();
+    return;
   }
+
+  showAlert('No sign-in data received. Redirecting to login...', 'error');
+  setTimeout(() => goTo('login.html'), 3000);
 }

@@ -9,11 +9,13 @@ public class GoogleAuthController : ControllerBase
 {
     private readonly IGoogleAuthService _googleAuth;
     private readonly IConfiguration _config;
+    private readonly ILogger<GoogleAuthController> _logger;
 
-    public GoogleAuthController(IGoogleAuthService googleAuth, IConfiguration config)
+    public GoogleAuthController(IGoogleAuthService googleAuth, IConfiguration config, ILogger<GoogleAuthController> logger)
     {
         _googleAuth = googleAuth;
         _config = config;
+        _logger = logger;
     }
 
     [HttpGet("login")]
@@ -27,7 +29,7 @@ public class GoogleAuthController : ControllerBase
     [HttpGet("callback")]
     public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string? error, [FromQuery] string? state)
     {
-        var frontendFallback = "http://localhost:8081/supabase-callback.html";
+        var frontendFallback = "http://localhost:8081/google-callback.html";
         string GetFrontendUrl()
         {
             var val = _config["Google:FrontendRedirect"];
@@ -59,8 +61,14 @@ public class GoogleAuthController : ControllerBase
         }
         catch (AppException ex)
         {
-            var frontend = _config["Google:FrontendRedirect"] ?? "http://localhost:8081/supabase-callback.html";
+            var frontend = _config["Google:FrontendRedirect"] ?? "http://localhost:8081/google-callback.html";
             return Redirect($"{frontend}?error={Uri.EscapeDataString(ex.Message)}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error in Google OAuth callback");
+            var frontend = _config["Google:FrontendRedirect"] ?? "http://localhost:8081/google-callback.html";
+            return Redirect($"{frontend}?error={Uri.EscapeDataString("An unexpected error occurred during Google sign-in")}");
         }
     }
 }

@@ -20,16 +20,20 @@ string GetConfigOrEnv(string configKey, string envKey, string? defaultValue = nu
     return defaultValue ?? throw new InvalidOperationException($"Missing configuration: set {envKey} env var or {configKey} in config.");
 }
 
-var dbConnectionString = GetConfigOrEnv("ConnectionStrings:Supabase", "SUPABASE_CONNECTION_STRING");
+var dbConnectionString = GetConfigOrEnv("ConnectionStrings:Neon", "NEON_CONNECTION_STRING");
 var jwtSecret = GetConfigOrEnv("Jwt:Secret", "JWT_SECRET");
 var geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? builder.Configuration["Gemini:ApiKey"] ?? "";
 var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY") ?? builder.Configuration["SendGrid:ApiKey"] ?? "";
+var googleClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? builder.Configuration["Google:ClientId"] ?? "";
+var googleClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET") ?? builder.Configuration["Google:ClientSecret"] ?? "";
 
 // Override config with env var values for downstream services
 builder.Configuration["Jwt:Secret"] = jwtSecret;
 builder.Configuration["Gemini:ApiKey"] = geminiApiKey;
 builder.Configuration["SendGrid:ApiKey"] = sendGridApiKey;
-builder.Configuration["ConnectionStrings:Supabase"] = dbConnectionString;
+builder.Configuration["ConnectionStrings:Neon"] = dbConnectionString;
+builder.Configuration["Google:ClientId"] = googleClientId;
+builder.Configuration["Google:ClientSecret"] = googleClientSecret;
 
 // ── Dapper type maps ──
 SqlMapper.SetTypeMap(typeof(SyllabusFile), new CustomPropertyTypeMap(
@@ -127,10 +131,7 @@ app.UseRequestId();
 app.UseRateLimiter();
 app.UseCors();
 app.UseErrorHandler();
-app.UseStaticFiles(new StaticFileOptions
-{
-    ServeUnknownFileTypes = true,
-});
+app.UseStaticFiles();
 
 if (app.Environment.IsDevelopment())
 {

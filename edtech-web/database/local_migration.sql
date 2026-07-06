@@ -1,18 +1,11 @@
--- Local Dev Migration (PascalCase tables matching C# code)
+-- Local Dev Migration for Neon (PascalCase tables matching C# code)
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Create stub auth schema for FK compatibility
-CREATE SCHEMA IF NOT EXISTS auth;
-CREATE TABLE IF NOT EXISTS auth.users (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid()
-);
-
 -- TABLES (PascalCase to match C# SQL queries, VARCHAR instead of enums for simpler dev)
 CREATE TABLE "Users" (
     "id" SERIAL PRIMARY KEY,
-    "auth_uid" UUID UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
     "name" VARCHAR(255) NOT NULL,
     "role" VARCHAR(20) NOT NULL DEFAULT 'student',
     "phone" VARCHAR(20) UNIQUE,
@@ -164,7 +157,6 @@ CREATE TABLE "OtpTokens" (
 
 CREATE TABLE "PendingRegistrations" (
     "id" SERIAL PRIMARY KEY,
-    "auth_uid" UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     "name" VARCHAR(255) NOT NULL,
     "identifier" VARCHAR(255) NOT NULL,
     "password_hash" VARCHAR(255) NOT NULL,
