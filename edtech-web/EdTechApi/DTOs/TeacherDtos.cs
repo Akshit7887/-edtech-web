@@ -63,6 +63,13 @@ public class AnnouncementRequest
     [MaxLength(5000, ErrorMessage = "Message must be at most 5000 characters")]
     [JsonPropertyName("message")]
     public string Message { get; set; } = string.Empty;
+
+    [JsonPropertyName("user_ids")]
+    public List<int>? UserIds { get; set; }
+
+    [RegularExpression("^(student|teacher|all)$", ErrorMessage = "Role must be 'student', 'teacher', or 'all'")]
+    [JsonPropertyName("role")]
+    public string? Role { get; set; }
 }
 
 public class ParentContactRequest

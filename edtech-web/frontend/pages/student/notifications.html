@@ -55,7 +55,7 @@
     async function loadNotifications() {
       try {
         const res = await api.get('/api/students/notifications?page=1&limit=50');
-        const items = res.data || [];
+        const items = (res.data && res.data.notifications) || [];
         const container = document.getElementById('notifications-container');
         if (!items.length) {
           container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔔</div><h3>No notifications</h3><p>You\'re all caught up!</p></div>';

@@ -168,8 +168,11 @@ async function scheduleExam(examId, scheduledAt) {
   return res;
 }
 
-async function sendAnnouncement(title, message) {
-  const res = await api.post('/api/teacher/announcement', { title, message });
+async function sendAnnouncement(title, message, userIds, role) {
+  const body = { title, message };
+  if (userIds && userIds.length) body.user_ids = userIds;
+  if (role) body.role = role;
+  const res = await api.post('/api/teacher/announcement', body);
   return res;
 }
 

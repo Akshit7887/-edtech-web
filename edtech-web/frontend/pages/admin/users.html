@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
@@ -15,8 +14,8 @@
     <ul class="navbar-nav">
       <li><a href="dashboard.html">Dashboard</a></li>
       <li><a href="users.html" class="active">Users</a></li>
+      <li><a href="departments.html">Departments</a></li>
       <li><a href="exams.html">Exams</a></li>
-      <!-- USER -->
     </ul>
   </nav>
   <div class="layout">
@@ -24,58 +23,99 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html" class="active"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
         <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" data-aos="fade-up">
-        <h1>Users</h1>
-        <p>Manage all platform users</p>
+      <div class="page-header">
+        <div>
+          <h1>Users</h1>
+          <p class="text-muted">Manage all platform users</p>
+        </div>
+        <div style="display:flex;gap:var(--space-3)">
+          <select id="role-filter" class="form-input" style="width:auto" onchange="loadUsers()">
+            <option value="">All Roles</option>
+            <option value="student">Students</option>
+            <option value="teacher">Teachers</option>
+            <option value="admin">Admins</option>
+          </select>
+        </div>
       </div>
       <div id="alert-container"></div>
-      <div class="table-container" data-aos="fade-up" data-aos-delay="100">
-        <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Created</th></tr></thead>
-          <tbody id="users-tbody">
-            <tr><td colspan="5"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
-          </tbody>
-        </table>
+      <div class="dashboard-section">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Phone</th><th>Created</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="7"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="users-pagination"></div>
       </div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>AOS.init({ once: true });</script>
+
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script>
+    let currentPage = 1;
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
       setupNavbar();
       await loadUsers();
     });
 
-    async function loadUsers() {
+    async function loadUsers(page) {
+      currentPage = page || currentPage;
       try {
-        const res = await api.get('/api/admin/users?page=1&limit=100');
+        const role = document.getElementById('role-filter').value;
+        const url = `/api/admin/users?page=${currentPage}&limit=50${role ? '&role=' + role : ''}`;
+        const res = await api.get(url);
         const users = res.data || [];
+        const pagination = res.pagination || { page: 1, total: 0, total_pages: 1 };
         const tbody = document.getElementById('users-tbody');
         if (!users.length) {
-          tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">👥</div><h3>No users found</h3></div></td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">👥</div><h3>No users found</h3></div></td></tr>';
         } else {
           tbody.innerHTML = users.map(u => `
             <tr>
               <td><div class="student-row"><div class="student-avatar">${(u.name || '?').charAt(0).toUpperCase()}</div><strong>${u.name}</strong></div></td>
               <td>${u.email || '-'}</td>
               <td>${statusBadge(u.role)}</td>
+              <td>${u.department_name || '-'}</td>
               <td>${u.phone || '-'}</td>
               <td>${formatDate(u.created_at)}</td>
+              <td><button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id}, '${(u.name || '').replace(/'/g, "\\'")}')">Delete</button></td>
             </tr>
           `).join('');
         }
+        renderPagination(pagination);
       } catch (e) {
-        document.getElementById('users-tbody').innerHTML = `<tr><td colspan="5"><div class="alert alert-error">${e.message}</div></td></tr>`;
+        document.getElementById('users-tbody').innerHTML = `<tr><td colspan="7"><div class="alert alert-error">${e.message}</div></td></tr>`;
       }
+    }
+
+    function renderPagination(p) {
+      const el = document.getElementById('users-pagination');
+      if (p.total_pages <= 1) { el.innerHTML = ''; return; }
+      let html = `<button onclick="loadUsers(1)" ${p.page <= 1 ? 'disabled' : ''}>«</button>`;
+      html += `<button onclick="loadUsers(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>‹</button>`;
+      html += `<span class="pagination-info">Page ${p.page} of ${p.total_pages}</span>`;
+      html += `<button onclick="loadUsers(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>›</button>`;
+      html += `<button onclick="loadUsers(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>»</button>`;
+      el.innerHTML = html;
+    }
+
+    function deleteUser(id, name) {
+      if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
+      api.del(`/api/admin/users/${id}`).then(() => {
+        showAlert('User deleted', 'success');
+        loadUsers(currentPage);
+      }).catch(e => showAlert(e.message, 'error'));
     }
   </script>
 </body>

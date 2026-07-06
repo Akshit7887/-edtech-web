@@ -368,28 +368,51 @@ public class TeacherService : ITeacherService
     public async Task<object> SendAnnouncementAsync(int teacherId, AnnouncementRequest data)
     {
         using var conn = _db.CreateConnection();
-
-        var classes = (await conn.QueryAsync<ClassEntity>(
-            "SELECT * FROM \"Classes\" WHERE \"teacher_id\" = @TeacherId",
-            new { TeacherId = teacherId })).ToList();
-
-        var classIds = classes.Select(c => c.Id).ToList();
-        if (classIds.Count == 0) return new { sentCount = 0 };
-
-        var studentIds = (await conn.QueryAsync<int>(
-            "SELECT DISTINCT \"student_id\" FROM \"ClassStudents\" WHERE \"class_id\" = ANY(@Ids)",
-            new { Ids = classIds })).ToList();
-
         var now = DateTime.UtcNow;
-        foreach (var sid in studentIds)
+        List<int> targetIds;
+
+        if (data.UserIds != null && data.UserIds.Count > 0)
+        {
+            targetIds = data.UserIds;
+        }
+        else if (!string.IsNullOrEmpty(data.Role))
+        {
+            if (data.Role == "all")
+            {
+                var ids = await conn.QueryAsync<int>("SELECT \"id\" FROM \"Users\" WHERE \"role\" IN ('student', 'teacher')");
+                targetIds = ids.ToList();
+            }
+            else
+            {
+                var ids = await conn.QueryAsync<int>("SELECT \"id\" FROM \"Users\" WHERE \"role\" = @Role",
+                    new { Role = data.Role });
+                targetIds = ids.ToList();
+            }
+        }
+        else
+        {
+            var classes = (await conn.QueryAsync<ClassEntity>(
+                "SELECT * FROM \"Classes\" WHERE \"teacher_id\" = @TeacherId",
+                new { TeacherId = teacherId })).ToList();
+
+            var classIds = classes.Select(c => c.Id).ToList();
+            if (classIds.Count == 0) return new { sentCount = 0 };
+
+            var ids = await conn.QueryAsync<int>(
+                "SELECT DISTINCT \"student_id\" FROM \"ClassStudents\" WHERE \"class_id\" = ANY(@Ids)",
+                new { Ids = classIds });
+            targetIds = ids.ToList();
+        }
+
+        foreach (var uid in targetIds)
         {
             await conn.ExecuteAsync(
                 @"INSERT INTO ""Notifications"" (""user_id"", ""title"", ""message"", ""type"", ""created_at"")
                   VALUES (@UserId, @Title, @Message, 'announcement', @CreatedAt)",
-                new { UserId = sid, Title = data.Title, Message = data.Message, CreatedAt = now });
+                new { UserId = uid, Title = data.Title, Message = data.Message, CreatedAt = now });
         }
 
-        return new { sentCount = studentIds.Count };
+        return new { sentCount = targetIds.Count };
     }
 
     public async Task<Exam> ScheduleExamAsync(int examId, int teacherId, string scheduledAt)

@@ -18,6 +18,7 @@ public interface IQuestionService
     Task<object> CreateExamSessionAsync(int studentId, int examId, string ipAddress, string userAgent);
     Task<object> SubmitExamAnswersAsync(int sessionId, List<AnswerDto> answers);
     Task<object> GetExamSessionAsync(int studentId, int examId);
+    Task<List<MyResultItem>> GetStudentResultsAsync(int studentId);
     Task<object> DisqualifySessionAsync(int sessionId, string reason);
 }
 
@@ -376,6 +377,22 @@ public class QuestionService : IQuestionService
             correctAnswer = newCorrect,
             originalQuestionId = question.Id
         };
+    }
+
+    public async Task<List<MyResultItem>> GetStudentResultsAsync(int studentId)
+    {
+        using var conn = _db.CreateConnection();
+        var results = await conn.QueryAsync<MyResultItem>(
+            @"SELECT s.""id"" AS ""session_id"", e.""id"" AS ""exam_id"", e.""title"" AS ""exam_title"",
+                     e.""subject"", COALESCE(s.""score"", 0) AS ""score"",
+                     s.""total_questions"", s.""status"", s.""submitted_at"",
+                     s.""time_remaining_seconds"" AS ""time_used""
+              FROM ""ExamSessions"" s
+              JOIN ""Exams"" e ON e.""id"" = s.""exam_id""
+              WHERE s.""student_id"" = @StudentId
+              ORDER BY s.""created_at"" DESC",
+            new { StudentId = studentId });
+        return results.AsList();
     }
 
     private async Task TriggerParentNotification(int studentId, int examId, string eventType, int score)

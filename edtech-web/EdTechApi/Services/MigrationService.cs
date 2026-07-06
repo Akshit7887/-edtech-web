@@ -67,6 +67,17 @@ CREATE TABLE IF NOT EXISTS ""SyllabusFiles"" (
 );
 CREATE INDEX IF NOT EXISTS idx_syllabus_files_uploaded_by ON ""SyllabusFiles""(""uploaded_by"");
 CREATE INDEX IF NOT EXISTS idx_syllabus_files_created_at ON ""SyllabusFiles""(""created_at"" DESC);",
+            ["007_create_departments"] = @"
+CREATE TABLE IF NOT EXISTS ""Departments"" (
+    ""id"" SERIAL PRIMARY KEY,
+    ""name"" VARCHAR(255) NOT NULL UNIQUE,
+    ""description"" TEXT,
+    ""head_id"" INTEGER REFERENCES ""Users""(""id"") ON DELETE SET NULL,
+    ""created_at"" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    ""updated_at"" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""department_id"" INTEGER REFERENCES ""Departments""(""id"") ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_users_department_id ON ""Users""(""department_id"");",
             ["005_syllabus_files_nullable_uploaded_by"] = @"
 ALTER TABLE ""SyllabusFiles"" ALTER COLUMN ""uploaded_by"" DROP NOT NULL;
 ALTER TABLE ""SyllabusFiles"" DROP CONSTRAINT IF EXISTS ""SyllabusFiles_uploaded_by_fkey"";

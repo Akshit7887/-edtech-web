@@ -6,8 +6,7 @@
   <title>Admin Dashboard - EdTech AI Test &amp; Learning App</title>
   <link rel="stylesheet" href="../../css/main.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
@@ -15,8 +14,8 @@
     <ul class="navbar-nav">
       <li><a href="dashboard.html" class="active">Dashboard</a></li>
       <li><a href="users.html">Users</a></li>
+      <li><a href="departments.html">Departments</a></li>
       <li><a href="exams.html">Exams</a></li>
-      <!-- USER -->
     </ul>
   </nav>
   <div class="layout">
@@ -24,55 +23,177 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html" class="active"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
         <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" data-aos="fade-up">
-        <h1>Admin Dashboard</h1>
-        <p>System overview and management</p>
+      <div class="page-header">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p class="text-muted" id="current-date"></p>
+        </div>
       </div>
       <div id="alert-container"></div>
-      <div class="stats-grid" id="stats-grid" data-aos="fade-up" data-aos-delay="100">
-        <div class="stat-card stagger-1"><div class="stat-icon">👥</div><div class="stat-value" id="stat-users">-</div><div class="stat-label">Total Users</div></div>
-        <div class="stat-card stagger-2"><div class="stat-icon">🎓</div><div class="stat-value" id="stat-students">-</div><div class="stat-label">Students</div></div>
-        <div class="stat-card stagger-3"><div class="stat-icon">👨‍🏫</div><div class="stat-value" id="stat-teachers">-</div><div class="stat-label">Teachers</div></div>
-        <div class="stat-card stagger-4"><div class="stat-icon">📝</div><div class="stat-value" id="stat-exams">-</div><div class="stat-label">Total Exams</div></div>
+
+      <div class="dashboard-section" data-section="stats">
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card anim-fade-up stagger-1">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="stat-users">-</div>
+            <div class="stat-label">Total Users</div>
+          </div>
+          <div class="stat-card anim-fade-up stagger-2">
+            <div class="stat-icon">🎓</div>
+            <div class="stat-value" id="stat-students">-</div>
+            <div class="stat-label">Students</div>
+          </div>
+          <div class="stat-card anim-fade-up stagger-3">
+            <div class="stat-icon">👨‍🏫</div>
+            <div class="stat-value" id="stat-teachers">-</div>
+            <div class="stat-label">Teachers</div>
+          </div>
+          <div class="stat-card anim-fade-up stagger-4">
+            <div class="stat-icon">📝</div>
+            <div class="stat-value" id="stat-exams">-</div>
+            <div class="stat-label">Total Exams</div>
+          </div>
+          <div class="stat-card anim-fade-up stagger-5">
+            <div class="stat-icon">🏛️</div>
+            <div class="stat-value" id="stat-departments">-</div>
+            <div class="stat-label">Departments</div>
+          </div>
+          <div class="stat-card anim-fade-up stagger-6">
+            <div class="stat-icon">🏫</div>
+            <div class="stat-value" id="stat-classes">-</div>
+            <div class="stat-label">Classes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-section" data-section="quick-actions">
+        <div class="section-header">
+          <h2>⚡ Quick Actions</h2>
+        </div>
+        <div class="quick-actions">
+          <div class="quick-action-card anim-fade-up stagger-1" onclick="goTo('users.html')">
+            <div class="qa-icon" style="background:#eef2ff;color:#4f46e5">👥</div>
+            <div class="qa-label">Manage Users</div>
+            <div class="qa-desc">View and manage all platform users</div>
+          </div>
+          <div class="quick-action-card anim-fade-up stagger-2" onclick="goTo('departments.html')">
+            <div class="qa-icon" style="background:#f0fdf4;color:#16a34a">🏛️</div>
+            <div class="qa-label">Departments</div>
+            <div class="qa-desc">Create and manage departments</div>
+          </div>
+          <div class="quick-action-card anim-fade-up stagger-3" onclick="goTo('exams.html')">
+            <div class="qa-icon" style="background:#fff7ed;color:#d97706">📝</div>
+            <div class="qa-label">View Exams</div>
+            <div class="qa-desc">Browse all exams across departments</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-grid-2">
+        <div class="dashboard-section" data-section="recent-users">
+          <div class="section-header">
+            <h2>👤 Recent Users</h2>
+            <a href="users.html" class="section-link">View all →</a>
+          </div>
+          <div id="recent-users-list"></div>
+        </div>
+        <div class="dashboard-section" data-section="recent-depts">
+          <div class="section-header">
+            <h2>🏛️ Departments</h2>
+            <a href="departments.html" class="section-link">Manage →</a>
+          </div>
+          <div id="recent-depts-list"></div>
+        </div>
       </div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>AOS.init({ once: true, offset: 50 });</script>
+
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
+  <script src="../../js/animations.js"></script>
   <script>
     let refreshInterval = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
+      document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       setupNavbar();
-      await loadStats();
-      refreshInterval = setInterval(loadStats, 30000);
+      await refreshDashboard();
+      refreshInterval = setInterval(refreshDashboard, 30000);
     });
 
-    window.addEventListener('beforeunload', () => {
-      if (refreshInterval) clearInterval(refreshInterval);
-    });
+    window.addEventListener('beforeunload', () => { if (refreshInterval) clearInterval(refreshInterval); });
+
+    async function refreshDashboard() {
+      await Promise.all([loadStats(), loadRecentUsers(), loadRecentDepts()]);
+    }
 
     async function loadStats() {
       try {
-        const [usersRes, examsRes] = await Promise.all([
-          api.get('/api/admin/users?page=1&limit=1000'),
-          api.get('/api/admin/exams?page=1&limit=1')
-        ]);
-        const users = usersRes.data || [];
-        animateCounter('stat-users', usersRes.pagination?.total || 0);
-        animateCounter('stat-students', users.filter(u => u.role === 'student').length);
-        animateCounter('stat-teachers', users.filter(u => u.role === 'teacher').length);
-        animateCounter('stat-exams', examsRes.pagination?.total || 0);
+        const res = await api.get('/api/admin/stats');
+        const d = res.data || {};
+        animateCounter('stat-users', d.totalUsers || 0);
+        animateCounter('stat-students', d.totalStudents || 0);
+        animateCounter('stat-teachers', d.totalTeachers || 0);
+        animateCounter('stat-exams', d.totalExams || 0);
+        animateCounter('stat-departments', d.totalDepartments || 0);
+        animateCounter('stat-classes', d.totalClasses || 0);
       } catch (e) {
         document.getElementById('stats-grid').innerHTML = '<div class="alert alert-error">Failed to load stats</div>';
+      }
+    }
+
+    async function loadRecentUsers() {
+      try {
+        const res = await api.get('/api/admin/users?page=1&limit=5');
+        const users = res.data || [];
+        const container = document.getElementById('recent-users-list');
+        if (!users.length) {
+          container.innerHTML = '<div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">👥</div><h3>No users</h3></div>';
+          return;
+        }
+        container.innerHTML = '<div class="mini-student-list">' + users.map(u => `
+          <div class="mini-student-item anim-fade-right">
+            <div class="student-avatar-sm">${(u.name || '?').charAt(0).toUpperCase()}</div>
+            <div class="student-info">
+              <strong>${u.name}</strong>
+              <span>${u.email || '-'}</span>
+            </div>
+            <span class="student-class-badge">${u.role || 'N/A'}</span>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        document.getElementById('recent-users-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
+      }
+    }
+
+    async function loadRecentDepts() {
+      try {
+        const res = await api.get('/api/departments');
+        const depts = res.data || [];
+        const container = document.getElementById('recent-depts-list');
+        if (!depts.length) {
+          container.innerHTML = '<div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">🏛️</div><h3>No departments</h3><p>Create your first department.</p></div>';
+          return;
+        }
+        container.innerHTML = '<div class="mini-student-list">' + depts.slice(0, 5).map(d => `
+          <div class="mini-student-item anim-fade-right">
+            <div class="student-avatar-sm" style="background:#fff7ed;color:#d97706">${d.name.charAt(0).toUpperCase()}</div>
+            <div class="student-info">
+              <strong>${d.name}</strong>
+              <span>${d.head_name ? 'Head: ' + d.head_name : 'No head assigned'}</span>
+            </div>
+            <span class="student-class-badge">${(d.teacher_count || 0) + (d.student_count || 0)} members</span>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        document.getElementById('recent-depts-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
       }
     }
 

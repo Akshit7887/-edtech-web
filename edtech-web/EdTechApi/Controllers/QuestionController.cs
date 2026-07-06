@@ -52,7 +52,6 @@ public class QuestionController : ControllerBase
         return Ok(new { success = true, message = "Session created", data = session });
     }
 
-    [AllowAnonymous]
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitExam([FromBody] SubmitExamRequest request)
     {
@@ -102,8 +101,8 @@ public class QuestionController : ControllerBase
     public async Task<IActionResult> GetMyResults(int studentId)
     {
         var userId = GetUserId();
-        var session = await _questionService.GetExamSessionAsync(studentId, 0);
-        return Ok(new { success = true, data = session });
+        var results = await _questionService.GetStudentResultsAsync(studentId);
+        return Ok(new { success = true, data = results });
     }
 
     private int GetUserId()

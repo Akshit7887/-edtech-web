@@ -19,63 +19,112 @@
       <li><a href="create-exam.html">Create Exam</a></li>
       <li><a href="students.html">Students</a></li>
       <li><a href="classes.html">Classes</a></li>
-      <li><a href="syllabus.html">Syllabus</a></li>
     </ul>
   </nav>
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html" class="active"><span class="nav-icon">&#x1F4CA;</span><span>Dashboard</span></a></li>
-        <li><a href="create-exam.html"><span class="nav-icon">&#x2795;</span><span>Create Exam</span></a></li>
-        <li><a href="students.html"><span class="nav-icon">&#x1F465;</span><span>Students</span></a></li>
-        <li><a href="classes.html"><span class="nav-icon">&#x1F3EB;</span><span>Classes</span></a></li>
-        <li><a href="parent-contacts.html"><span class="nav-icon">&#x1F46A;</span><span>Parent Contacts</span></a></li>
-        <li><a href="syllabus.html"><span class="nav-icon">&#x1F4DA;</span><span>Syllabus</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">&#x1F6AA;</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html" class="active"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="create-exam.html"><span class="nav-icon">📝</span><span>Create Exam</span></a></li>
+        <li><a href="students.html"><span class="nav-icon">👥</span><span>Students</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
+        <li><a href="parent-contacts.html"><span class="nav-icon">👪</span><span>Parent Contacts</span></a></li>
+        <li><a href="syllabus.html"><span class="nav-icon">📚</span><span>Syllabus</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
       <div class="page-header">
         <div>
           <h1>Welcome, <span id="teacher-name" style="color:var(--accent)"></span></h1>
-          <p class="text-muted">Teacher Dashboard</p>
+          <p class="text-muted" id="current-date"></p>
         </div>
         <button class="btn btn-primary" onclick="goTo('create-exam.html')">+ New Exam</button>
       </div>
       <div id="alert-container"></div>
-      <div class="stats-row" id="stats-grid">
-        <div class="stat-card reveal">
-          <p class="stat-card-label">Total Exams</p>
-          <p class="stat-card-value" id="stat-exams">-</p>
-        </div>
-        <div class="stat-card reveal">
-          <p class="stat-card-label">Active Exams</p>
-          <p class="stat-card-value accent" id="stat-active">-</p>
-        </div>
-        <div class="stat-card reveal">
-          <p class="stat-card-label">Students</p>
-          <p class="stat-card-value" id="stat-students">-</p>
-        </div>
-        <div class="stat-card reveal">
-          <p class="stat-card-label">Classes</p>
-          <p class="stat-card-value" id="stat-classes">-</p>
+
+      <div class="dashboard-section" data-section="stats">
+        <div class="stats-row" id="stats-grid">
+          <div class="stat-card reveal stagger-1">
+            <p class="stat-card-label">Total Exams</p>
+            <p class="stat-card-value" id="stat-exams">-</p>
+          </div>
+          <div class="stat-card reveal stagger-2">
+            <p class="stat-card-label">Active Exams</p>
+            <p class="stat-card-value accent" id="stat-active">-</p>
+          </div>
+          <div class="stat-card reveal stagger-3">
+            <p class="stat-card-label">Total Students</p>
+            <p class="stat-card-value" id="stat-students">-</p>
+          </div>
+          <div class="stat-card reveal stagger-4">
+            <p class="stat-card-label">Total Classes</p>
+            <p class="stat-card-value" id="stat-classes">-</p>
+          </div>
         </div>
       </div>
-      <h2 style="margin-bottom:var(--space-4);font-size:var(--text-xl);">Your Exams</h2>
-      <div id="exam-list"></div>
+
+      <div class="dashboard-section" data-section="quick-actions">
+        <div class="section-header">
+          <h2>⚡ Quick Actions</h2>
+        </div>
+        <div class="quick-actions">
+          <div class="quick-action-card anim-fade-up stagger-1" onclick="goTo('create-exam.html')">
+            <div class="qa-icon" style="background:#eef2ff;color:#4f46e5">📝</div>
+            <div class="qa-label">Create Exam</div>
+            <div class="qa-desc">Design a new exam with AI or manually</div>
+          </div>
+          <div class="quick-action-card anim-fade-up stagger-2" onclick="goTo('students.html')">
+            <div class="qa-icon" style="background:#f0fdf4;color:#16a34a">👥</div>
+            <div class="qa-label">Manage Students</div>
+            <div class="qa-desc">Add, view, or remove students</div>
+          </div>
+          <div class="quick-action-card anim-fade-up stagger-3" onclick="goTo('classes.html')">
+            <div class="qa-icon" style="background:#fff7ed;color:#d97706">🏫</div>
+            <div class="qa-label">Manage Classes</div>
+            <div class="qa-desc">Organize students into classes</div>
+          </div>
+          <div class="quick-action-card anim-fade-up stagger-4" onclick="goTo('students.html')">
+            <div class="qa-icon" style="background:#fef2f2;color:#dc2626">📢</div>
+            <div class="qa-label">Send Announcement</div>
+            <div class="qa-desc">Notify all students instantly</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-grid-2">
+        <div class="dashboard-section" data-section="recent-exams">
+          <div class="section-header">
+            <h2>📋 Recent Exams</h2>
+            <a href="create-exam.html" class="section-link">View all →</a>
+          </div>
+          <div id="recent-exams-list"></div>
+        </div>
+
+        <div class="dashboard-section" data-section="recent-students">
+          <div class="section-header">
+            <h2>👤 Recent Students</h2>
+            <a href="students.html" class="section-link">View all →</a>
+          </div>
+          <div id="recent-students-list"></div>
+        </div>
+      </div>
     </main>
   </div>
 
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
+  <script src="../../js/teacher.js"></script>
   <script src="../../js/animations.js"></script>
   <script>
     let refreshInterval = null;
+    let cachedStudents = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
       const name = getUserName();
       if (name) document.getElementById('teacher-name').textContent = name;
+      document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       setupNavbar();
       await refreshDashboard();
       refreshInterval = setInterval(refreshDashboard, 30000);
@@ -86,7 +135,7 @@
     });
 
     async function refreshDashboard() {
-      await Promise.all([loadStats(), loadExams()]);
+      await Promise.all([loadStats(), loadRecentExams(), loadRecentStudents()]);
     }
 
     async function loadStats() {
@@ -99,7 +148,8 @@
         const exams = examsRes.data || [];
         document.getElementById('stat-exams').textContent = exams.length;
         document.getElementById('stat-active').textContent = exams.filter(e => e.status === 'active').length;
-        const students = studentsRes.data || [];
+        const students = studentsRes.data?.data || [];
+        cachedStudents = students;
         document.getElementById('stat-students').textContent = students.length;
         const classes = classesRes.data || [];
         document.getElementById('stat-classes').textContent = classes.length;
@@ -108,40 +158,60 @@
       }
     }
 
-    async function loadExams() {
+    async function loadRecentExams() {
       try {
         const res = await api.get('/api/exams?page=1&limit=20');
-        const exams = res.data || [];
-        const container = document.getElementById('exam-list');
+        const exams = (res.data || []).slice(0, 4);
+        const container = document.getElementById('recent-exams-list');
         if (!exams.length) {
-          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F4DA;</div><h3>No exams yet</h3><p>Create your first exam to get started.</p></div>';
+          container.innerHTML = '<div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">📋</div><h3>No exams yet</h3><p>Create your first exam to get started.</p></div>';
           return;
         }
-        container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
-          <div class="exam-card reveal" onclick="goTo('edit-exam.html?id=${e.id}')">
-            <div class="exam-card-title">${e.title}</div>
-            <div class="exam-card-meta">
-              <span>&#x1F4D6; ${e.subject}</span>
-              <span>&#x23F1; ${e.duration_minutes} min</span>
-              <span>&#x1F4C4; ${e.total_questions} Q</span>
+        container.innerHTML = '<div class="exam-grid" style="grid-template-columns:1fr">' + exams.map((e, i) => `
+          <div class="exam-card anim-fade-up stagger-${i+1}" onclick="goTo('edit-exam.html?id=${e.id}')" style="cursor:pointer">
+            <div style="display:flex;justify-content:space-between;align-items:start">
+              <div>
+                <div class="exam-card-title" style="font-size:var(--text-base)">${e.title}</div>
+                <div class="exam-card-meta" style="margin-bottom:0">
+                  <span>📖 ${e.subject}</span>
+                  <span>⏱ ${e.duration_minutes} min</span>
+                  <span>📄 ${e.total_questions} Q</span>
+                </div>
+              </div>
               ${statusBadge(e.status)}
-            </div>
-            <div class="exam-card-footer">
-              <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
-              <span class="btn btn-sm btn-ghost-red">Edit &#x2192;</span>
             </div>
           </div>
         `).join('') + '</div>';
-        requestAnimationFrame(() => {
-          document.querySelectorAll('.exam-card.reveal').forEach(el => {
-            el.style.opacity = '0';
-            el.style.animation = 'fadeInUp 0.4s ease forwards';
-          });
-        });
       } catch (e) {
-        document.getElementById('exam-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
+        document.getElementById('recent-exams-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
       }
     }
+
+    async function loadRecentStudents() {
+      try {
+        const res = await api.get('/api/teacher/students');
+        const students = (res.data?.data || []).slice(0, 5);
+        const container = document.getElementById('recent-students-list');
+        if (!students.length) {
+          container.innerHTML = '<div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">👤</div><h3>No students yet</h3><p>Add students from the Students page.</p></div>';
+          return;
+        }
+        container.innerHTML = '<div class="mini-student-list">' + students.map(s => `
+          <div class="mini-student-item anim-fade-right">
+            <div class="student-avatar-sm">${s.name.charAt(0).toUpperCase()}</div>
+            <div class="student-info">
+              <strong>${s.name}</strong>
+              <span>${s.email || '-'}</span>
+            </div>
+            <span class="student-class-badge">${s.class_name || 'Unassigned'}</span>
+          </div>
+        `).join('') + '</div>';
+      } catch (e) {
+        document.getElementById('recent-students-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
+      }
+    }
+
+
   </script>
 </body>
 </html>

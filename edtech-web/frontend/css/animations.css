@@ -98,6 +98,23 @@
   100% { opacity: 1; transform: translateX(0) scale(1); }
 }
 
+@keyframes pop-success {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.15); }
+  70% { transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(80px) rotate(720deg); opacity: 0; }
+}
+
+@keyframes check-stroke {
+  0% { stroke-dashoffset: 100; }
+  100% { stroke-dashoffset: 0; }
+}
+
 @keyframes pulse-glow {
   0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
   50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
@@ -115,6 +132,7 @@
 .anim-bounce     { animation: bounce 2s ease-in-out infinite; }
 .anim-pulse      { animation: pulse-soft 2s ease-in-out infinite; }
 .anim-ring       { animation: ring-pulse 2s ease-in-out infinite; }
+.anim-pop        { animation: pop-success 0.6s var(--ease-bounce) both; }
 
 /* ── Animation Durations ── */
 .anim-fast    { animation-duration: 0.2s !important; }

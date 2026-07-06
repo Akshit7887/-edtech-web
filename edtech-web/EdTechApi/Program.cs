@@ -65,6 +65,7 @@ builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IReportsService, ReportsService>();
 builder.Services.AddScoped<ISyllabusService, SyllabusService>();
 builder.Services.AddScoped<IMigrationService, MigrationService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddHttpContextAccessor();
 
 // ── CORS ──

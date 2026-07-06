@@ -155,26 +155,174 @@
     }
 
     function showAnnounceModal() {
-      const html = `
-        <div class="form-group form-floating"><input class="form-input" id="ann-title" placeholder=" "><label class="form-label">Title</label></div>
-        <div class="form-group form-floating"><textarea class="form-textarea" id="ann-message" placeholder=" " style="min-height:80px"></textarea><label class="form-label">Message</label></div>
-      `;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'ann-modal';
       overlay.innerHTML = `
-        <div class="modal"><div class="modal-header"><h3>Send Announcement</h3><button class="modal-close" onclick="closeAnnModal()">×</button></div>
-        <div class="modal-body">${html}</div>
-        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeAnnModal()">Cancel</button><button class="btn btn-primary" onclick="handleAnnounce()">Send</button></div></div>
+        <div class="modal ann-modal">
+          <div class="modal-header"><h3>📢 Send Announcement</h3><button class="modal-close" onclick="closeAnnModal()">×</button></div>
+          <div class="modal-body">
+            <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
+              <input class="form-input" id="ann-title" placeholder=" " oninput="updatePreview()">
+              <label class="form-label">Announcement Title</label>
+            </div>
+            <div class="form-group form-floating" style="margin-bottom:var(--space-6)">
+              <textarea class="form-textarea" id="ann-message" placeholder=" " style="min-height:100px" oninput="updatePreview()"></textarea>
+              <label class="form-label">Message</label>
+            </div>
+            <div class="ann-confirm-section" id="ann-teacher-confirm" onclick="toggleConfirm('teacher')">
+              <div class="ann-confirm-header">
+                <div class="confirm-icon teacher-icon">👨‍🏫</div>
+                <div class="ann-confirm-info">
+                  <strong>Teacher's Confirmation</strong>
+                  <span>I confirm the content is accurate and appropriate for students</span>
+                </div>
+                <span class="ann-confirm-badge" id="teacher-badge">Pending</span>
+              </div>
+            </div>
+            <div class="ann-confirm-section" id="ann-student-confirm" onclick="toggleConfirm('student')">
+              <div class="ann-confirm-header">
+                <div class="confirm-icon student-icon">👩‍🎓</div>
+                <div class="ann-confirm-info">
+                  <strong>Student Notification</strong>
+                  <span>Notify all students in my classes about this announcement</span>
+                </div>
+                <span class="ann-confirm-badge" id="student-badge">Pending</span>
+              </div>
+              <div class="ann-student-preview" id="student-preview">
+                <div class="ann-preview-header">📋 Student's View Preview</div>
+                <div class="ann-preview-card">
+                  <h4 id="preview-title">Announcement Title</h4>
+                  <p id="preview-message">Your announcement message will appear here...</p>
+                </div>
+              </div>
+            </div>
+            <div class="ann-target-section">
+              <label style="font-size:0.9rem;font-weight:600;color:var(--text-muted)">Send to:</label>
+              <div class="ann-target-options" style="display:flex;gap:var(--space-2);margin-top:var(--space-2)">
+                <label class="ann-target-option selected" id="target-classes" onclick="selectTarget('classes')" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
+                  <input type="radio" name="target" value="classes" checked hidden> 📚 My Classes
+                </label>
+                <label class="ann-target-option" id="target-students" onclick="selectTarget('students')" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
+                  <input type="radio" name="target" value="students" hidden> 👩‍🎓 All Students
+                </label>
+                <label class="ann-target-option" id="target-teachers" onclick="selectTarget('teachers')" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
+                  <input type="radio" name="target" value="teachers" hidden> 👨‍🏫 All Teachers
+                </label>
+                <label class="ann-target-option" id="target-all" onclick="selectTarget('all')" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
+                  <input type="radio" name="target" value="all" hidden> 🌐 Everyone
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="flex-direction:column;gap:var(--space-3)">
+            <button class="ann-send-btn" id="ann-send-btn" onclick="handleAnnounce()" disabled>
+              <span class="btn-content">📨 Send Announcement</span>
+              <span class="btn-spinner"></span>
+            </button>
+            <div style="display:flex;gap:var(--space-3);width:100%">
+              <button class="btn btn-secondary" onclick="closeAnnModal()" style="flex:1">Cancel</button>
+              <button class="btn btn-primary" onclick="document.getElementById('ann-title').value='';document.getElementById('ann-message').value='';updatePreview();confirmTeacher=false;confirmStudent=false;updateConfirmState()" style="flex:1">Reset</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      setTimeout(() => document.getElementById('ann-title')?.focus(), 100);
+    }
+
+    let confirmTeacher = false;
+    let confirmStudent = false;
+    let selectedTarget = 'classes';
+
+    function selectTarget(target) {
+      selectedTarget = target;
+      document.querySelectorAll('.ann-target-option').forEach(el => el.classList.remove('selected'));
+      document.getElementById('target-' + target).classList.add('selected');
+    }
+
+    function toggleConfirm(type) {
+      if (type === 'teacher') {
+        confirmTeacher = !confirmTeacher;
+        const section = document.getElementById('ann-teacher-confirm');
+        const badge = document.getElementById('teacher-badge');
+        section.classList.toggle('confirmed', confirmTeacher);
+        badge.textContent = confirmTeacher ? 'Confirmed ✓' : 'Pending';
+      } else {
+        confirmStudent = !confirmStudent;
+        const section = document.getElementById('ann-student-confirm');
+        const badge = document.getElementById('student-badge');
+        const preview = document.getElementById('student-preview');
+        section.classList.toggle('confirmed', confirmStudent);
+        badge.textContent = confirmStudent ? 'Confirmed ✓' : 'Pending';
+        preview.classList.toggle('visible', confirmStudent);
+      }
+      updateConfirmState();
+    }
+
+    function updateConfirmState() {
+      const btn = document.getElementById('ann-send-btn');
+      const title = document.getElementById('ann-title').value.trim();
+      const msg = document.getElementById('ann-message').value.trim();
+      btn.disabled = !(confirmTeacher && confirmStudent && title && msg);
+    }
+
+    function updatePreview() {
+      const title = document.getElementById('ann-title').value.trim() || 'Announcement Title';
+      const msg = document.getElementById('ann-message').value.trim() || 'Your announcement message will appear here...';
+      document.getElementById('preview-title').textContent = title;
+      document.getElementById('preview-message').textContent = msg;
+      updateConfirmState();
+    }
+
+    function closeAnnModal() {
+      const m = document.getElementById('ann-modal'); if (m) m.remove();
+      confirmTeacher = false;
+      confirmStudent = false;
+    }
+
+    function showSuccessPop(count) {
+      const overlay = document.createElement('div'); overlay.className = 'success-pop-overlay'; overlay.id = 'success-pop';
+      overlay.innerHTML = `
+        <div class="success-pop">
+          <div class="success-pop-icon">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h3>🎉 Announcement Sent!</h3>
+          <p>Your announcement has been delivered to <strong>${count}</strong> recipient${count !== 1 ? 's' : ''} successfully.</p>
+          <button class="btn btn-primary" onclick="closeSuccessPop()">Done</button>
+        </div>
       `;
       document.body.appendChild(overlay);
     }
 
-    function closeAnnModal() { const m = document.getElementById('ann-modal'); if (m) m.remove(); }
+    function closeSuccessPop() {
+      const m = document.getElementById('success-pop'); if (m) m.remove();
+    }
 
     async function handleAnnounce() {
       const title = document.getElementById('ann-title').value.trim();
       const msg = document.getElementById('ann-message').value.trim();
-      if (!title || !msg) { showAlert('Title and message required', 'error'); return; }
-      try { await sendAnnouncement(title, msg); showAlert('Announcement sent!', 'success'); closeAnnModal(); } catch (e) { showAlert(e.message, 'error'); }
+      if (!confirmTeacher || !confirmStudent) { showAlert('Please confirm both sections before sending', 'error'); return; }
+      if (!title || !msg) { showAlert('Title and message are required', 'error'); return; }
+      const btn = document.getElementById('ann-send-btn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+      try {
+        let role = null;
+        if (selectedTarget === 'students') role = 'student';
+        else if (selectedTarget === 'teachers') role = 'teacher';
+        else if (selectedTarget === 'all') role = 'all';
+        const res = await sendAnnouncement(title, msg, null, role);
+        closeAnnModal();
+        setTimeout(() => {
+          const count = (res && res.data && res.data.sent_count) || 0;
+          showSuccessPop(count);
+        }, 150);
+        loadStudentsPage(currentPage);
+      } catch (e) {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        showAlert(e.message, 'error');
+      }
     }
   </script>
 </body>

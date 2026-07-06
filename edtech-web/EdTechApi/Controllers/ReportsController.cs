@@ -1,3 +1,5 @@
+using Dapper;
+using EdTechApi.Data;
 using EdTechApi.Middleware;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +15,12 @@ namespace EdTechApi.Controllers;
 public class ReportsController : ControllerBase
 {
     private readonly IReportsService _reportsService;
+    private readonly IDbConnectionFactory _db;
 
-    public ReportsController(IReportsService reportsService)
+    public ReportsController(IReportsService reportsService, IDbConnectionFactory db)
     {
         _reportsService = reportsService;
+        _db = db;
     }
 
     [RequireRole("teacher")]
@@ -35,18 +39,30 @@ public class ReportsController : ControllerBase
         return Ok(new { success = true, data = result });
     }
 
-    [AllowAnonymous]
     [HttpPost("test-sms")]
-    public IActionResult TestSms([FromBody] TestSmsBody body)
+    public async Task<IActionResult> TestSms([FromBody] TestSmsBody body)
     {
-        return Ok(new { success = true, message = "SMS logged (no provider configured, use Twilio/ZeptoMail)" });
+        var userId = GetUserId();
+        using var conn = _db.CreateConnection();
+        var now = DateTime.UtcNow;
+        await conn.ExecuteAsync(
+            @"INSERT INTO ""Notifications"" (""user_id"", ""title"", ""message"", ""type"", ""created_at"")
+              VALUES (@UserId, @Title, @Message, @Type, @CreatedAt)",
+            new { UserId = userId, Title = "Test SMS", Message = body.Message, Type = "sms", CreatedAt = now });
+        return Ok(new { success = true, message = "Test SMS notification sent" });
     }
 
-    [AllowAnonymous]
     [HttpPost("test-email")]
-    public IActionResult TestEmail([FromBody] TestEmailBody body)
+    public async Task<IActionResult> TestEmail([FromBody] TestEmailBody body)
     {
-        return Ok(new { success = true, message = "Email logged (no provider configured, use SMTP/Resend)" });
+        var userId = GetUserId();
+        using var conn = _db.CreateConnection();
+        var now = DateTime.UtcNow;
+        await conn.ExecuteAsync(
+            @"INSERT INTO ""Notifications"" (""user_id"", ""title"", ""message"", ""type"", ""created_at"")
+              VALUES (@UserId, @Title, @Message, @Type, @CreatedAt)",
+            new { UserId = userId, Title = "Test Email", Message = body.Message, Type = "email", CreatedAt = now });
+        return Ok(new { success = true, message = "Test email notification sent" });
     }
 
     private int GetUserId()

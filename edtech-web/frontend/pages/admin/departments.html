@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Departments - EdTech AI Test &amp; Learning App</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand"><span class="brand-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></span>EdTech AI Test &amp; Learning App</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="users.html">Users</a></li>
+      <li><a href="departments.html" class="active">Departments</a></li>
+      <li><a href="exams.html">Exams</a></li>
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="departments.html" class="active"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
+        <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1>Departments</h1>
+          <p class="text-muted">Manage departments and assign users</p>
+        </div>
+        <button class="btn btn-primary" onclick="showCreateModal()">+ New Department</button>
+      </div>
+      <div id="alert-container"></div>
+
+      <div class="dashboard-section">
+        <div id="departments-grid" class="exam-grid"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script>
+    let allUsers = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('admin')) return;
+      setupNavbar();
+      await Promise.all([loadDepartments(), loadAllUsers()]);
+    });
+
+    async function loadAllUsers() {
+      try {
+        const res = await api.get('/api/admin/users?page=1&limit=1000');
+        allUsers = res.data || [];
+      } catch (e) { /* ignore */ }
+    }
+
+    async function loadDepartments() {
+      try {
+        const res = await api.get('/api/departments');
+        const depts = res.data || [];
+        const container = document.getElementById('departments-grid');
+        if (!depts.length) {
+          container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🏛️</div><h3>No departments yet</h3><p>Create your first department to organize teachers and students.</p></div>';
+          return;
+        }
+        container.innerHTML = depts.map((d, i) => `
+          <div class="exam-card anim-fade-up stagger-${(i % 4) + 1}" style="cursor:default">
+            <div style="display:flex;justify-content:space-between;align-items:start">
+              <div class="exam-card-title" style="display:flex;align-items:center;gap:var(--space-2)">
+                <span style="font-size:var(--text-lg)">🏛️</span>
+                ${d.name}
+              </div>
+              <div style="display:flex;gap:var(--space-2)">
+                <button class="btn btn-sm btn-info" onclick="editDepartment(${d.id})" title="Edit">✏️</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteDepartment(${d.id}, '${d.name.replace(/'/g, "\\'")}')" title="Delete">🗑️</button>
+              </div>
+            </div>
+            ${d.description ? `<p style="font-size:var(--text-sm);color:var(--text-muted);margin:var(--space-2) 0">${d.description}</p>` : ''}
+            <div class="exam-card-meta" style="margin-top:var(--space-3)">
+              <span>👨‍🏫 ${d.teacher_count || 0} Teachers</span>
+              <span>🎓 ${d.student_count || 0} Students</span>
+              <span>👤 ${d.head_name || 'No Head'}</span>
+            </div>
+            <div class="exam-card-footer" style="justify-content:flex-start;gap:var(--space-2)">
+              <button class="btn btn-sm btn-info" onclick="showAssignModal(${d.id}, '${d.name.replace(/'/g, "\\'")}')">Assign Users</button>
+              <button class="btn btn-sm btn-secondary" onclick="viewDepartment(${d.id}, '${d.name.replace(/'/g, "\\'")}')">View Members</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('departments-grid').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+      }
+    }
+
+    function showCreateModal() {
+      const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'dept-modal';
+      overlay.innerHTML = `
+        <div class="modal">
+          <div class="modal-header"><h3>🏛️ Create Department</h3><button class="modal-close" onclick="closeModal('dept-modal')">×</button></div>
+          <div class="modal-body">
+            <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
+              <input class="form-input" id="dept-name" placeholder=" ">
+              <label class="form-label">Department Name</label>
+            </div>
+            <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
+              <textarea class="form-textarea" id="dept-desc" placeholder=" " style="min-height:80px"></textarea>
+              <label class="form-label">Description (optional)</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Department Head (optional)</label>
+              <select class="form-input" id="dept-head">
+                <option value="">No head assigned</option>
+                ${allUsers.filter(u => u.role === 'teacher').map(u => `<option value="${u.id}">${u.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('dept-modal')">Cancel</button>
+            <button class="btn btn-primary" onclick="handleCreate()">Create</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      setTimeout(() => document.getElementById('dept-name')?.focus(), 100);
+    }
+
+    function closeModal(id) { const m = document.getElementById(id); if (m) m.remove(); }
+
+    async function handleCreate() {
+      const name = document.getElementById('dept-name').value.trim();
+      if (!name) { showAlert('Department name is required', 'error'); return; }
+      const headId = document.getElementById('dept-head').value;
+      try {
+        await api.post('/api/departments', { name, description: document.getElementById('dept-desc').value.trim(), head_id: headId ? parseInt(headId) : null });
+        showAlert('Department created!', 'success');
+        closeModal('dept-modal');
+        loadDepartments();
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function editDepartment(id) {
+      const res = await api.get('/api/departments');
+      const dept = (res.data || []).find(d => d.id === id);
+      if (!dept) return;
+      const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'edit-dept-modal';
+      overlay.innerHTML = `
+        <div class="modal">
+          <div class="modal-header"><h3>✏️ Edit Department</h3><button class="modal-close" onclick="closeModal('edit-dept-modal')">×</button></div>
+          <div class="modal-body">
+            <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
+              <input class="form-input" id="edit-dept-name" placeholder " " value="${dept.name}">
+              <label class="form-label">Department Name</label>
+            </div>
+            <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
+              <textarea class="form-textarea" id="edit-dept-desc" placeholder=" " style="min-height:80px">${dept.description || ''}</textarea>
+              <label class="form-label">Description</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Department Head</label>
+              <select class="form-input" id="edit-dept-head">
+                <option value="">No head assigned</option>
+                ${allUsers.filter(u => u.role === 'teacher').map(u => `<option value="${u.id}" ${dept.head_id === u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('edit-dept-modal')">Cancel</button>
+            <button class="btn btn-primary" onclick="handleUpdate(${id})">Save</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    async function handleUpdate(id) {
+      const name = document.getElementById('edit-dept-name').value.trim();
+      if (!name) { showAlert('Department name is required', 'error'); return; }
+      const headId = document.getElementById('edit-dept-head').value;
+      try {
+        await api.put(`/api/departments/${id}`, { name, description: document.getElementById('edit-dept-desc').value.trim(), head_id: headId ? parseInt(headId) : null });
+        showAlert('Department updated!', 'success');
+        closeModal('edit-dept-modal');
+        loadDepartments();
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    function deleteDepartment(id, name) {
+      if (!confirm(`Delete department "${name}"? Users will be unassigned from this department.`)) return;
+      api.del(`/api/departments/${id}`).then(() => {
+        showAlert('Department deleted', 'success');
+        loadDepartments();
+      }).catch(e => showAlert(e.message, 'error'));
+    }
+
+    function showAssignModal(deptId, deptName) {
+      const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'assign-modal';
+      const unassigned = allUsers.filter(u => !u.department_id || u.department_id !== deptId);
+      overlay.innerHTML = `
+        <div class="modal" style="max-width:600px">
+          <div class="modal-header"><h3>Assign Users to ${deptName}</h3><button class="modal-close" onclick="closeModal('assign-modal')">×</button></div>
+          <div class="modal-body">
+            <div style="margin-bottom:var(--space-4)">
+              <select class="form-input" id="assign-role-filter" style="width:auto" onchange="filterAssignUsers(${deptId})">
+                <option value="">All Roles</option>
+                <option value="teacher">Teachers</option>
+                <option value="student">Students</option>
+              </select>
+            </div>
+            <div id="assign-users-list" style="max-height:300px;overflow-y:auto">
+              ${unassigned.length ? unassigned.map(u => `
+                <div class="mini-student-item" data-role="${u.role || ''}">
+                  <div class="student-avatar-sm">${(u.name || '?').charAt(0).toUpperCase()}</div>
+                  <div class="student-info">
+                    <strong>${u.name}</strong>
+                    <span>${u.email || '-'}</span>
+                  </div>
+                  <span class="student-class-badge">${u.role || 'N/A'}</span>
+                  <button class="btn btn-sm btn-primary" onclick="assignUser(${deptId}, ${u.id}, this)">Assign</button>
+                </div>
+              `).join('') : '<div class="empty-state" style="padding:var(--space-6)"><p>All users are already assigned to this department.</p></div>'}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('assign-modal')">Done</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    function filterAssignUsers(deptId) {
+      const role = document.getElementById('assign-role-filter').value;
+      document.querySelectorAll('#assign-users-list .mini-student-item').forEach(el => {
+        if (!role || el.dataset.role === role) el.style.display = 'flex';
+        else el.style.display = 'none';
+      });
+    }
+
+    async function assignUser(deptId, userId, btn) {
+      btn.disabled = true; btn.textContent = '...';
+      try {
+        await api.post('/api/departments/assign', { user_id: userId, department_id: deptId });
+        btn.textContent = '✓ Assigned';
+        btn.className = 'btn btn-sm btn-success';
+        setTimeout(() => { btn.closest('.mini-student-item')?.remove(); }, 800);
+      } catch (e) {
+        btn.disabled = false; btn.textContent = 'Assign';
+        showAlert(e.message, 'error');
+      }
+    }
+
+    async function viewDepartment(id, name) {
+      try {
+        const res = await api.get(`/api/departments/${id}/users`);
+        const users = res.data || [];
+        const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'view-dept-modal';
+        overlay.innerHTML = `
+          <div class="modal" style="max-width:600px">
+            <div class="modal-header"><h3>👥 ${name} Members</h3><button class="modal-close" onclick="closeModal('view-dept-modal')">×</button></div>
+            <div class="modal-body">
+              ${users.length ? users.map(u => \`
+                <div class="mini-student-item">
+                  <div class="student-avatar-sm">\${(u.name || '?').charAt(0).toUpperCase()}</div>
+                  <div class="student-info">
+                    <strong>\${u.name}</strong>
+                    <span>\${u.email || '-'}</span>
+                  </div>
+                  <span class="student-class-badge">\${u.role || 'N/A'}</span>
+                  <button class="btn btn-sm btn-danger" onclick="removeUser(${id}, ${u.id}, this)">Remove</button>
+                </div>
+              \`).join('') : '<div class="empty-state"><p>No members in this department.</p></div>'}
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" onclick="closeModal('view-dept-modal')">Close</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function removeUser(deptId, userId, btn) {
+      if (!confirm('Remove this user from the department?')) return;
+      btn.disabled = true; btn.textContent = '...';
+      try {
+        await api.post(`/api/departments/remove-user/${userId}`);
+        btn.closest('.mini-student-item')?.remove();
+        showAlert('User removed from department', 'success');
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+  </script>
+</body>
+</html>
