@@ -1,4 +1,5 @@
 using System.Data;
+using System.Text;
 using Dapper;
 using EdTechApi.Data;
 using EdTechApi.DTOs;
@@ -26,7 +27,8 @@ public class ExamService : IExamService
 {
     private readonly IDbConnectionFactory _db;
     private readonly ILogger<ExamService> _logger;
-    private static readonly Random _random = new();
+    private static readonly ThreadLocal<Random> _random = new(() => new Random());
+    private readonly IConfiguration _config;
 
     private static readonly Dictionary<string, string> ValidTransitions = new()
     {
@@ -118,12 +120,50 @@ public class ExamService : IExamService
         var exam = await conn.QueryFirstOrDefaultAsync<Exam>(
             "SELECT * FROM \"Exams\" WHERE \"id\" = @Id", new { Id = examId });
         if (exam == null) throw new AppException(404, "Exam not found");
-        if (role == "teacher" && exam.TeacherId != userId)
-            throw new AppException(403, "Access denied");
 
         var allQuestions = (await conn.QueryAsync<QuestionPool>(
             "SELECT * FROM \"QuestionPool\" WHERE \"exam_id\" = @ExamId ORDER BY \"id\"",
             new { ExamId = examId })).ToList();
+
+        if (role == "teacher")
+        {
+            if (exam.TeacherId != userId)
+                throw new AppException(403, "Access denied");
+
+            var paginatedForTeacher = allQuestions.Skip(questionOffset).Take(questionLimit).ToList();
+
+            return new ExamDetailResponse
+            {
+                Id = exam.Id,
+                Title = exam.Title,
+                Subject = exam.Subject,
+                SyllabusText = exam.SyllabusText,
+                DurationMinutes = exam.DurationMinutes,
+                TotalQuestions = exam.TotalQuestions,
+                DeepLinkCode = exam.DeepLinkCode,
+                Status = exam.Status,
+                ScheduledAt = exam.ScheduledAt,
+                ScheduledEndAt = exam.ScheduledEndAt,
+                AllowReattempt = exam.AllowReattempt,
+                Questions = paginatedForTeacher.Select(q => new QuestionItem
+                {
+                    Id = q.Id,
+                    QuestionText = q.QuestionText,
+                    OptionA = q.OptionA,
+                    OptionB = q.OptionB,
+                    OptionC = q.OptionC,
+                    OptionD = q.OptionD,
+                    CorrectAnswer = q.CorrectAnswer,
+                    Difficulty = q.Difficulty,
+                    Points = q.Points,
+                    Status = q.Status
+                }).ToList(),
+                TotalQuestionsCount = allQuestions.Count,
+                QuestionOffset = questionOffset,
+                HasMore = (questionOffset + questionLimit) < allQuestions.Count,
+                CreatedAt = exam.CreatedAt
+            };
+        }
 
         if (role == "student")
         {
@@ -173,39 +213,7 @@ public class ExamService : IExamService
             };
         }
 
-        var paginatedForTeacher = allQuestions.Skip(questionOffset).Take(questionLimit).ToList();
-
-        return new ExamDetailResponse
-        {
-            Id = exam.Id,
-            Title = exam.Title,
-            Subject = exam.Subject,
-            SyllabusText = exam.SyllabusText,
-            DurationMinutes = exam.DurationMinutes,
-            TotalQuestions = exam.TotalQuestions,
-            DeepLinkCode = exam.DeepLinkCode,
-            Status = exam.Status,
-            ScheduledAt = exam.ScheduledAt,
-            ScheduledEndAt = exam.ScheduledEndAt,
-            AllowReattempt = exam.AllowReattempt,
-            Questions = paginatedForTeacher.Select(q => new QuestionItem
-            {
-                Id = q.Id,
-                QuestionText = q.QuestionText,
-                OptionA = q.OptionA,
-                OptionB = q.OptionB,
-                OptionC = q.OptionC,
-                OptionD = q.OptionD,
-                CorrectAnswer = q.CorrectAnswer,
-                Difficulty = q.Difficulty,
-                Points = q.Points,
-                Status = q.Status
-            }).ToList(),
-            TotalQuestionsCount = allQuestions.Count,
-            QuestionOffset = questionOffset,
-            HasMore = (questionOffset + questionLimit) < allQuestions.Count,
-            CreatedAt = exam.CreatedAt
-        };
+        throw new AppException(403, "Access denied");
     }
 
     public async Task<Exam> CreateExamAsync(CreateExamRequest data, int teacherId)
@@ -320,8 +328,6 @@ public class ExamService : IExamService
         return $"{prefix}{exam.DeepLinkCode}";
     }
 
-    private readonly IConfiguration _config;
-
     public async Task<object> ResolveDeepLinkAsync(string deepLinkCode)
     {
         using var conn = _db.CreateConnection();
@@ -429,13 +435,34 @@ public class ExamService : IExamService
         var studentIds = sessions.Select(s => s.StudentId).Distinct().ToList();
         var students = (await conn.QueryAsync<User>(
             "SELECT \"id\", \"name\" FROM \"Users\" WHERE \"id\" = ANY(@Ids)",
-            new { Ids = studentIds })).ToDictionary(s => s.Id, s => s.Name);
+            new { Ids = studentIds })).ToDictionary(s => s.Id, s => s.Name ?? "Unknown");
 
         var completed = sessions.Where(s => s.Status == "completed").ToList();
         var passThreshold = exam.TotalQuestions * 0.4;
         var passCount = completed.Count(s => s.Score >= (decimal)passThreshold);
 
-        return Array.Empty<byte>();
+        var html = new System.Text.StringBuilder();
+        html.Append("<html><head><meta charset='utf-8'><title>Exam Results</title>");
+        html.Append("<style>body{font-family:Arial,sans-serif;margin:40px}h1{color:#333}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:10px;text-align:left;border-bottom:1px solid #ddd}th{background:#f5f5f5}.pass{color:green}.fail{color:red}</style></head><body>");
+        html.AppendFormat("<h1>{0}</h1><p>Subject: {1} | Total Students: {2} | Passed: {3} | Failed: {4}</p>",
+            System.Net.WebUtility.HtmlEncode(exam.Title ?? "Exam"),
+            System.Net.WebUtility.HtmlEncode(exam.Subject ?? ""),
+            completed.Count, passCount, completed.Count - passCount);
+        html.Append("<table><thead><tr><th>Student</th><th>Score</th><th>Total</th><th>Status</th><th>Submitted</th></tr></thead><tbody>");
+        foreach (var s in sessions)
+        {
+            var name = students.ContainsKey(s.StudentId) ? students[s.StudentId] : "Unknown";
+            var cls = s.Status == "completed" ? (s.Score >= (decimal)passThreshold ? "pass" : "fail") : "";
+            html.AppendFormat("<tr class='{0}'><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td></tr>",
+                cls,
+                System.Net.WebUtility.HtmlEncode(name),
+                s.Score, s.TotalQuestions,
+                System.Net.WebUtility.HtmlEncode(s.Status ?? ""),
+                s.SubmittedAt?.ToString("g") ?? "-");
+        }
+        html.Append("</tbody></table></body></html>");
+
+        return Encoding.UTF8.GetBytes(html.ToString());
     }
 
     public async Task<object> GetAttendanceReportAsync(int examId, int teacherId)
@@ -500,7 +527,7 @@ public class ExamService : IExamService
         var shuffled = new List<T>(list);
         for (int i = shuffled.Count - 1; i > 0; i--)
         {
-            var j = _random.Next(i + 1);
+            var j = _random.Value!.Next(i + 1);
             (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
         }
         return shuffled;

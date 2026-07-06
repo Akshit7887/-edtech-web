@@ -1,4 +1,5 @@
 using EdTechApi.DTOs;
+using EdTechApi.Middleware;
 using EdTechApi.Models;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ namespace EdTechApi.Controllers;
 [ApiController]
 [Route("api/teacher")]
 [EnableRateLimiting("ApiPolicy")]
+[RequireRole("teacher")]
 public class TeacherController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
@@ -21,7 +23,7 @@ public class TeacherController : ControllerBase
     [HttpGet("students")]
     public async Task<IActionResult> GetAllStudents([FromQuery] int page = 1, [FromQuery] int limit = 50)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var result = await _teacherService.GetAllStudentsAsync(teacherId, page, limit);
         return Ok(new { success = true, data = result });
     }
@@ -29,7 +31,7 @@ public class TeacherController : ControllerBase
     [HttpPost("students")]
     public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         if (string.IsNullOrEmpty(request.Email) || !request.Email.Contains('@'))
             return BadRequest(new { success = false, error = "Valid email is required" });
         if (string.IsNullOrEmpty(request.Name))
@@ -41,7 +43,6 @@ public class TeacherController : ControllerBase
     [HttpGet("students/{studentId:int}")]
     public async Task<IActionResult> GetStudentDetail(int studentId)
     {
-        RequireTeacher();
         var detail = await _teacherService.GetStudentDetailAsync(studentId);
         return Ok(new { success = true, data = detail });
     }
@@ -49,7 +50,6 @@ public class TeacherController : ControllerBase
     [HttpDelete("students/{studentId:int}")]
     public async Task<IActionResult> DeleteStudent(int studentId)
     {
-        RequireTeacher();
         await _teacherService.DeleteStudentAsync(studentId);
         return Ok(new { success = true, message = "Student deleted" });
     }
@@ -57,7 +57,7 @@ public class TeacherController : ControllerBase
     [HttpGet("questions/{examId:int}")]
     public async Task<IActionResult> GetQuestionBank(int examId)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var bank = await _teacherService.GetQuestionBankAsync(examId, teacherId);
         return Ok(new { success = true, data = bank });
     }
@@ -65,7 +65,7 @@ public class TeacherController : ControllerBase
     [HttpPost("questions/{examId:int}")]
     public async Task<IActionResult> AddQuestion(int examId, [FromBody] QuestionPool question)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var result = await _teacherService.AddQuestionAsync(examId, teacherId, question);
         return Created(string.Empty, new { success = true, data = result });
     }
@@ -73,7 +73,7 @@ public class TeacherController : ControllerBase
     [HttpPut("questions/{questionId:int}")]
     public async Task<IActionResult> UpdateQuestion(int questionId, [FromBody] QuestionPool question)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var result = await _teacherService.UpdateQuestionAsync(questionId, teacherId, question);
         return Ok(new { success = true, data = result });
     }
@@ -81,7 +81,7 @@ public class TeacherController : ControllerBase
     [HttpDelete("questions/{questionId:int}")]
     public async Task<IActionResult> DeleteQuestion(int questionId)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         await _teacherService.DeleteQuestionAsync(questionId, teacherId);
         return Ok(new { success = true, message = "Question deleted" });
     }
@@ -89,7 +89,7 @@ public class TeacherController : ControllerBase
     [HttpPost("classes")]
     public async Task<IActionResult> CreateClass([FromBody] CreateClassRequest request)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var cls = await _teacherService.CreateClassAsync(teacherId, request);
         return Created(string.Empty, new { success = true, data = cls });
     }
@@ -97,7 +97,7 @@ public class TeacherController : ControllerBase
     [HttpGet("classes")]
     public async Task<IActionResult> GetClasses()
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var classes = await _teacherService.GetClassesAsync(teacherId);
         return Ok(new { success = true, data = classes });
     }
@@ -105,7 +105,7 @@ public class TeacherController : ControllerBase
     [HttpPost("classes/{classId:int}/students")]
     public async Task<IActionResult> AddStudentsToClass(int classId, [FromBody] AddStudentsRequest request)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var result = await _teacherService.AddStudentsToClassAsync(classId, teacherId, request.StudentIds);
         return Ok(new { success = true, data = result });
     }
@@ -113,7 +113,7 @@ public class TeacherController : ControllerBase
     [HttpDelete("classes/{classId:int}/students/{studentId:int}")]
     public async Task<IActionResult> RemoveStudentFromClass(int classId, int studentId)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         await _teacherService.RemoveStudentFromClassAsync(classId, teacherId, studentId);
         return Ok(new { success = true });
     }
@@ -121,7 +121,7 @@ public class TeacherController : ControllerBase
     [HttpDelete("classes/{classId:int}")]
     public async Task<IActionResult> DeleteClass(int classId)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         await _teacherService.DeleteClassAsync(classId, teacherId);
         return Ok(new { success = true });
     }
@@ -129,7 +129,7 @@ public class TeacherController : ControllerBase
     [HttpPost("announcement")]
     public async Task<IActionResult> SendAnnouncement([FromBody] AnnouncementRequest request)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         if (string.IsNullOrEmpty(request.Title) || string.IsNullOrEmpty(request.Message))
             return BadRequest(new { success = false, error = "Title and message are required" });
 
@@ -140,7 +140,7 @@ public class TeacherController : ControllerBase
     [HttpPut("schedule/{examId:int}")]
     public async Task<IActionResult> ScheduleExam(int examId, [FromBody] ScheduleBody body)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         if (string.IsNullOrEmpty(body.ScheduledAt))
             return BadRequest(new { success = false, error = "Scheduled date is required" });
 
@@ -151,7 +151,7 @@ public class TeacherController : ControllerBase
     [HttpGet("parent-contacts")]
     public async Task<IActionResult> GetParentContacts()
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var contacts = await _teacherService.GetParentContactsAsync(teacherId);
         return Ok(new { success = true, data = contacts });
     }
@@ -159,7 +159,7 @@ public class TeacherController : ControllerBase
     [HttpPost("parent-contacts/{studentId:int}")]
     public async Task<IActionResult> CreateParentContact(int studentId, [FromBody] ParentContactRequest request)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var result = await _teacherService.CreateOrUpdateParentContactAsync(studentId, teacherId, request);
         return Ok(new { success = true, data = result });
     }
@@ -167,7 +167,7 @@ public class TeacherController : ControllerBase
     [HttpDelete("parent-contacts/{studentId:int}")]
     public async Task<IActionResult> DeleteParentContact(int studentId)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         await _teacherService.DeleteParentContactAsync(studentId, teacherId);
         return Ok(new { success = true, message = "Parent contact deleted" });
     }
@@ -175,16 +175,13 @@ public class TeacherController : ControllerBase
     [HttpGet("report-history/{examId:int}")]
     public async Task<IActionResult> GetReportHistory(int examId)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var reports = await _teacherService.GetParentReportHistoryAsync(examId, teacherId);
         return Ok(new { success = true, data = reports });
     }
 
-    private int RequireTeacher()
+    private int GetUserId()
     {
-        var role = HttpContext.Items["UserRole"] as string;
-        if (role != "teacher")
-            throw new AppException(403, "Access denied. Teacher role required.");
         return (int)(HttpContext.Items["UserId"] ?? throw new AppException(401, "Authentication required"));
     }
 }

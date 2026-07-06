@@ -60,6 +60,9 @@ CREATE TABLE "StudentExamAssignments" (
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE("student_id", "exam_id")
 );
+-- Ensure no stale single-column unique constraints (Supabase artifact)
+ALTER TABLE "StudentExamAssignments" DROP CONSTRAINT IF EXISTS "StudentExamAssignments_student_id_key";
+ALTER TABLE "StudentExamAssignments" DROP CONSTRAINT IF EXISTS "StudentExamAssignments_exam_id_key";
 
 CREATE TABLE "ExamSessions" (
     "id" SERIAL PRIMARY KEY,
@@ -220,3 +223,22 @@ BEGIN
     RETURN code;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Cleanup: Disable Row Level Security (leftover from Supabase, auth handled in C# layer)
+ALTER TABLE "Users" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "Exams" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "QuestionPool" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "StudentExamAssignments" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "ExamSessions" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "Attendance" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "ParentContacts" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "ParentNotifications" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "Notifications" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "Classes" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "ClassStudents" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "OtpTokens" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "PendingRegistrations" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "SyllabusFiles" DISABLE ROW LEVEL SECURITY;
+
+-- Drop unused auth_uid column (Supabase artifact, not used since migration to Neon)
+ALTER TABLE "Users" DROP COLUMN IF EXISTS "auth_uid";

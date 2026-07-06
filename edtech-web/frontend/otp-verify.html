@@ -54,17 +54,6 @@
 
     if (!identifier) { goTo('login.html'); }
 
-    // Auto-fill OTP in dev mode
-    const devOtp = sessionStorage.getItem('otp_dev_code');
-    if (devOtp && devOtp.length === 6) {
-      setTimeout(function() {
-        const inputs = document.querySelectorAll('.otp-input');
-        devOtp.split('').forEach(function(d, i) { if (inputs[i]) { inputs[i].value = d; inputs[i].classList.add('filled'); } });
-        document.querySelector('.auth-card p').textContent = 'Dev OTP: ' + devOtp + ' — Click Verify to continue';
-        document.querySelector('.auth-card p').style.fontWeight = '600';
-      }, 100);
-    }
-
     function moveNext(input, idx) {
       if (input.value.length === 1 && idx < 5) {
         document.querySelectorAll('.otp-input')[idx + 1].focus();

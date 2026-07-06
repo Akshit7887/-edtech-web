@@ -29,6 +29,29 @@ public class MigrationService : IMigrationService
 
         var migrations = new Dictionary<string, string>
         {
+            ["006_cleanup_supabase_artifacts"] = @"
+-- Fix broken uniqueness on StudentExamAssignments
+ALTER TABLE ""StudentExamAssignments"" DROP CONSTRAINT IF EXISTS ""StudentExamAssignments_student_id_key"";
+ALTER TABLE ""StudentExamAssignments"" DROP CONSTRAINT IF EXISTS ""StudentExamAssignments_exam_id_key"";
+
+-- Disable Row Level Security on all tables (leftover from Supabase)
+ALTER TABLE ""Users"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""Exams"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""QuestionPool"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""StudentExamAssignments"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""ExamSessions"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""Attendance"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""ParentContacts"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""ParentNotifications"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""Notifications"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""Classes"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""ClassStudents"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""OtpTokens"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""PendingRegistrations"" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE ""SyllabusFiles"" DISABLE ROW LEVEL SECURITY;
+
+-- Drop unused auth_uid column from Users
+ALTER TABLE ""Users"" DROP COLUMN IF EXISTS ""auth_uid"";",
             ["004_create_syllabus_files"] = @"
 CREATE TABLE IF NOT EXISTS ""SyllabusFiles"" (
     ""id"" SERIAL PRIMARY KEY,
@@ -47,7 +70,8 @@ CREATE INDEX IF NOT EXISTS idx_syllabus_files_created_at ON ""SyllabusFiles""(""
             ["005_syllabus_files_nullable_uploaded_by"] = @"
 ALTER TABLE ""SyllabusFiles"" ALTER COLUMN ""uploaded_by"" DROP NOT NULL;
 ALTER TABLE ""SyllabusFiles"" DROP CONSTRAINT IF EXISTS ""SyllabusFiles_uploaded_by_fkey"";
-ALTER TABLE ""SyllabusFiles"" ADD CONSTRAINT ""SyllabusFiles_uploaded_by_fkey"" FOREIGN KEY (""uploaded_by"") REFERENCES ""Users""(""id"") ON DELETE SET NULL;"
+ALTER TABLE ""SyllabusFiles"" ADD CONSTRAINT ""SyllabusFiles_uploaded_by_fkey"" FOREIGN KEY (""uploaded_by"") REFERENCES ""Users""(""id"") ON DELETE SET NULL;",
+
         };
 
         foreach (var (name, sql) in migrations)

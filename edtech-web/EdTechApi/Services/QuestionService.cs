@@ -26,7 +26,7 @@ public class QuestionService : IQuestionService
     private readonly IDbConnectionFactory _db;
     private readonly IGeminiService _gemini;
     private readonly ILogger<QuestionService> _logger;
-    private static readonly Random _random = new();
+    private static readonly ThreadLocal<Random> _random = new(() => new Random());
     private static readonly string[] Letters = { "A", "B", "C", "D" };
 
     public QuestionService(IDbConnectionFactory db, IGeminiService gemini, ILogger<QuestionService> logger)
@@ -414,7 +414,7 @@ public class QuestionService : IQuestionService
         var shuffled = new List<T>(list);
         for (int i = shuffled.Count - 1; i > 0; i--)
         {
-            var j = _random.Next(i + 1);
+            var j = _random.Value!.Next(i + 1);
             (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
         }
         return shuffled;

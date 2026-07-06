@@ -7,9 +7,6 @@ public class User
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
-    [JsonPropertyName("auth_uid")]
-    public Guid? AuthUid { get; set; }
-
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 

@@ -259,3 +259,25 @@ BEGIN
     RETURN code;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Cleanup: Fix broken uniqueness (was limiting system to one assignment per student and one per exam)
+ALTER TABLE public.student_exam_assignments DROP CONSTRAINT IF EXISTS student_exam_assignments_student_id_key;
+ALTER TABLE public.student_exam_assignments DROP CONSTRAINT IF EXISTS student_exam_assignments_exam_id_key;
+
+-- Cleanup: Disable Row Level Security (leftover from Supabase, auth handled in C# layer)
+ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exams DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.question_pool DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.student_exam_assignments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.exam_sessions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.attendance DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.parent_contacts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.parent_notifications DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.classes DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.class_students DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.otp_tokens DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pending_registrations DISABLE ROW LEVEL SECURITY;
+
+-- Drop unused auth_uid column (Supabase artifact, not used since migration to Neon)
+ALTER TABLE public.users DROP COLUMN IF EXISTS auth_uid;

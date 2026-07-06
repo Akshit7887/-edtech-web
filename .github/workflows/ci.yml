@@ -6,12 +6,14 @@ on:
     paths:
       - 'backend/**'
       - 'mobile/**'
+      - 'edtech-web/**'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
     paths:
       - 'backend/**'
       - 'mobile/**'
+      - 'edtech-web/**'
 
 jobs:
   backend-test:
@@ -62,6 +64,32 @@ jobs:
           DB_PORT: 5432
           JWT_SECRET: ci-jwt-secret
           GEMINI_API_KEY: ci-test-key
+
+  dotnet-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./edtech-web/EdTechApi
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run tests
+        run: dotnet test ../../tests/EdTechApi.Tests --configuration Release --no-restore
+        env:
+          JWT_SECRET: ci-jwt-secret-that-is-at-least-thirty-two-characters-long!
+          NEON_CONNECTION_STRING: Host=localhost;Database=edtech_test;Username=postgres;Password=test
 
   backend-lint:
     runs-on: ubuntu-latest

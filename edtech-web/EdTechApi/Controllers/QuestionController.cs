@@ -1,5 +1,7 @@
 using EdTechApi.DTOs;
+using EdTechApi.Middleware;
 using EdTechApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -8,6 +10,7 @@ namespace EdTechApi.Controllers;
 [ApiController]
 [Route("api/questions")]
 [EnableRateLimiting("ApiPolicy")]
+[RequireAuth]
 public class QuestionController : ControllerBase
 {
     private readonly IQuestionService _questionService;
@@ -19,18 +22,18 @@ public class QuestionController : ControllerBase
         _geminiService = geminiService;
     }
 
+    [RequireRole("teacher")]
     [HttpPost("generate")]
     public async Task<IActionResult> GenerateQuestions([FromBody] GenerateQuestionsRequest request)
     {
-        RequireTeacher();
         var result = await _geminiService.GenerateQuestionsFromText(request.SyllabusText ?? "", request.QuestionCount, request.Difficulty ?? "medium");
         return Ok(new { success = true, message = "Questions generated successfully", data = new { questions = result, count = result.Count } });
     }
 
+    [RequireRole("teacher")]
     [HttpPost("assign")]
     public async Task<IActionResult> AssignQuestions([FromBody] AssignQuestionsBody request)
     {
-        RequireTeacher();
         if (request.StudentIds == null || request.StudentIds.Count == 0)
             return BadRequest(new { success = false, error = "At least one student ID is required" });
 
@@ -49,6 +52,7 @@ public class QuestionController : ControllerBase
         return Ok(new { success = true, message = "Session created", data = session });
     }
 
+    [AllowAnonymous]
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitExam([FromBody] SubmitExamRequest request)
     {
@@ -59,7 +63,8 @@ public class QuestionController : ControllerBase
     [HttpGet("session/{studentId:int}/{examId:int}")]
     public async Task<IActionResult> GetSession(int studentId, int examId)
     {
-        var (userId, role) = GetUserInfo();
+        var userId = GetUserId();
+        var role = HttpContext.Items["UserRole"] as string ?? "";
         if (studentId != userId && role != "teacher")
             return StatusCode(403, new { success = false, error = "Access denied" });
 
@@ -74,18 +79,20 @@ public class QuestionController : ControllerBase
         return Ok(new { success = true, message = "Session disqualified", data = result });
     }
 
+    [RequireRole("teacher")]
     [HttpGet("statistics/{examId:int}")]
     public async Task<IActionResult> GetStatistics(int examId)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var stats = await _questionService.GetExamStatisticsAsync(examId, teacherId);
         return Ok(new { success = true, data = stats });
     }
 
+    [RequireRole("teacher")]
     [HttpPost("generate-personalized")]
     public async Task<IActionResult> GeneratePersonalized([FromBody] PersonalizedQuestionsRequest request)
     {
-        var teacherId = RequireTeacher();
+        var teacherId = GetUserId();
         var count = request.QuestionCount > 0 ? request.QuestionCount : 10;
         var result = await _questionService.GenerateAndAssignPersonalizedQuestionsAsync(request.ExamId, teacherId, count, request.Difficulty ?? "medium");
         return Ok(new { success = true, message = $"Generated {result} personalized questions", data = result });
@@ -94,26 +101,13 @@ public class QuestionController : ControllerBase
     [HttpGet("my-results/{studentId:int}")]
     public async Task<IActionResult> GetMyResults(int studentId)
     {
-        var (userId, role) = GetUserInfo();
+        var userId = GetUserId();
         var session = await _questionService.GetExamSessionAsync(studentId, 0);
         return Ok(new { success = true, data = session });
     }
 
-    private (int userId, string role) GetUserInfo()
-    {
-        return ((int)(HttpContext.Items["UserId"] ?? 0), HttpContext.Items["UserRole"] as string ?? "");
-    }
-
     private int GetUserId()
     {
-        return (int)(HttpContext.Items["UserId"] ?? throw new AppException(401, "Authentication required"));
-    }
-
-    private int RequireTeacher()
-    {
-        var role = HttpContext.Items["UserRole"] as string;
-        if (role != "teacher")
-            throw new AppException(403, "Access denied. Teacher role required.");
         return (int)(HttpContext.Items["UserId"] ?? throw new AppException(401, "Authentication required"));
     }
 }

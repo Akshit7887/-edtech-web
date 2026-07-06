@@ -1,6 +1,8 @@
 using System.Threading.RateLimiting;
 using EdTechApi.DTOs;
+using EdTechApi.Middleware;
 using EdTechApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -17,6 +19,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    [AllowAnonymous]
     [HttpPost("generate-otp")]
     [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> GenerateOtp([FromBody] GenerateOtpRequest request)
@@ -25,6 +28,7 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, message = result.Message, data = new { result.UserId, result.Identifier, result.OtpCode } });
     }
 
+    [AllowAnonymous]
     [HttpPost("verify-otp")]
     [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
@@ -33,6 +37,7 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, message = "OTP verified successfully", data = result });
     }
 
+    [AllowAnonymous]
     [HttpPost("send-register-otp")]
     [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> SendRegisterOtp([FromBody] RegisterRequest request)
@@ -41,6 +46,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("verify-register-otp")]
     [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> VerifyRegisterOtp([FromBody] VerifyRegisterOtpRequest request)
@@ -49,6 +55,7 @@ public class AuthController : ControllerBase
         return Created(string.Empty, new { success = true, message = "Account created and verified successfully", data = result });
     }
 
+    [AllowAnonymous]
     [HttpPost("forgot-password")]
     [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
@@ -57,6 +64,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("reset-password")]
     [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
@@ -65,6 +73,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpPost("refresh-token")]
     [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
@@ -73,6 +82,7 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, data = result });
     }
 
+    [RequireAuth]
     [HttpPut("profile")]
     [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
@@ -82,6 +92,7 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, message = "Profile updated successfully", data = result });
     }
 
+    [RequireAuth]
     [HttpPost("change-password")]
     [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
@@ -91,6 +102,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    [RequireAuth]
     [HttpDelete("profile")]
     [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> DeleteProfile()
@@ -100,6 +112,7 @@ public class AuthController : ControllerBase
         return Ok(new { success = true, message = "Profile deleted successfully" });
     }
 
+    [AllowAnonymous]
     [HttpPost("external-session")]
     [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> ExternalSession([FromBody] ExternalAuthRequest request)

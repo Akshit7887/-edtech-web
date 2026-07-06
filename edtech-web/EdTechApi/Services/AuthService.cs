@@ -28,15 +28,17 @@ public class AuthService : IAuthService
     private readonly IOtpService _otp;
     private readonly IEmailService _email;
     private readonly IConfiguration _config;
+    private readonly IWebHostEnvironment _env;
     private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IDbConnectionFactory db, IJwtService jwt, IOtpService otp, IEmailService email, IConfiguration config, ILogger<AuthService> logger)
+    public AuthService(IDbConnectionFactory db, IJwtService jwt, IOtpService otp, IEmailService email, IConfiguration config, IWebHostEnvironment env, ILogger<AuthService> logger)
     {
         _db = db;
         _jwt = jwt;
         _otp = otp;
         _email = email;
         _config = config;
+        _env = env;
         _logger = logger;
     }
 
@@ -108,7 +110,7 @@ public class AuthService : IAuthService
 
             var sendResult = await _email.SendEmailAsync(user.Email!, "Your OTP Code - EdTech Examination App", otpEmailHtml);
 
-            var isProduction = _config.GetValue<string>("Environment:Name") == "production";
+            var isProduction = _env.IsProduction();
 
             return new GenerateOtpResponse
             {
@@ -204,7 +206,7 @@ public class AuthService : IAuthService
 
         var sendResult = await _email.SendEmailAsync(identifier, "Your OTP Code - EdTech Examination App", otpEmailHtml);
 
-        var isProduction = _config.GetValue<string>("Environment:Name") == "production";
+        var isProduction = _env.IsProduction();
 
         return new RegisterOtpResponse
         {

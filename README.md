@@ -129,15 +129,18 @@ dotnet run
 
 ### Configuration
 
-Edit `edtech-web/EdTechApi/appsettings.json`:
+Set via environment variables (recommended for production) or `appsettings.json`:
 
-| Key | Description |
-|-----|-------------|
-| `ConnectionStrings:Neon` | PostgreSQL connection string (Neon) |
-| `Jwt:Secret` | JWT signing key (min 32 chars) |
-| `Gemini:ApiKey` | Google Gemini API key |
-| `Email:SmtpHost` | SMTP server for OTP emails |
-| `Cors:AllowedOrigins` | Allowed frontend origins |
+| Variable | Config Key | Description |
+|----------|-----------|-------------|
+| `NEON_CONNECTION_STRING` | `ConnectionStrings:Neon` | PostgreSQL connection string (Neon). Use the `-pooler` hostname for Railway/Neon pooled connections. Set `SSL Mode=Require;Trust Server Certificate=true` for production. |
+| `JWT_SECRET` | `Jwt:Secret` | JWT signing key (min 32 chars) |
+| `GEMINI_API_KEY` | `Gemini:ApiKey` | Google Gemini API key |
+| `SENDGRID_API_KEY` | `SendGrid:ApiKey` | SendGrid API key for email |
+| `GOOGLE_CLIENT_ID` | `Google:ClientId` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | `Google:ClientSecret` | Google OAuth client secret |
+
+Secrets are never committed to `appsettings.json` — placeholder values in the repo are for local dev only.
 
 ## Error Format
 

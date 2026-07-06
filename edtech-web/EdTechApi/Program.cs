@@ -20,7 +20,13 @@ string GetConfigOrEnv(string configKey, string envKey, string? defaultValue = nu
     return defaultValue ?? throw new InvalidOperationException($"Missing configuration: set {envKey} env var or {configKey} in config.");
 }
 
-var dbConnectionString = GetConfigOrEnv("ConnectionStrings:Neon", "NEON_CONNECTION_STRING");
+// Fallback from old Supabase-era env var name for migration period
+var dbConnectionString = GetConfigOrEnv("ConnectionStrings:Neon", "NEON_CONNECTION_STRING", null);
+if (string.IsNullOrEmpty(dbConnectionString))
+{
+    dbConnectionString = Environment.GetEnvironmentVariable("SUPABASE_CONNECTION_STRING")
+        ?? throw new InvalidOperationException("Missing connection string: set NEON_CONNECTION_STRING env var or ConnectionStrings:Neon in config.");
+}
 var jwtSecret = GetConfigOrEnv("Jwt:Secret", "JWT_SECRET");
 var geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? builder.Configuration["Gemini:ApiKey"] ?? "";
 var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY") ?? builder.Configuration["SendGrid:ApiKey"] ?? "";

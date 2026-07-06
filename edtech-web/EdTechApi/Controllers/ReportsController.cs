@@ -1,4 +1,6 @@
+using EdTechApi.Middleware;
 using EdTechApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -7,6 +9,7 @@ namespace EdTechApi.Controllers;
 [ApiController]
 [Route("api/reports")]
 [EnableRateLimiting("ApiPolicy")]
+[RequireAuth]
 public class ReportsController : ControllerBase
 {
     private readonly IReportsService _reportsService;
@@ -16,28 +19,30 @@ public class ReportsController : ControllerBase
         _reportsService = reportsService;
     }
 
+    [RequireRole("teacher")]
     [HttpPost("send/{examId:int}")]
     public async Task<IActionResult> SendReports(int examId)
     {
-        RequireTeacher();
         var result = await _reportsService.SendParentReportsAsync(examId, GetUserId());
         return Ok(new { success = true, message = "Parent reports sent successfully", data = result });
     }
 
+    [RequireRole("teacher")]
     [HttpGet("pending/{examId:int}")]
     public async Task<IActionResult> GetPending(int examId)
     {
-        RequireTeacher();
         var result = await _reportsService.GetPendingParentReportsAsync(examId, GetUserId());
         return Ok(new { success = true, data = result });
     }
 
+    [AllowAnonymous]
     [HttpPost("test-sms")]
     public IActionResult TestSms([FromBody] TestSmsBody body)
     {
         return Ok(new { success = true, message = "SMS logged (no provider configured, use Twilio/ZeptoMail)" });
     }
 
+    [AllowAnonymous]
     [HttpPost("test-email")]
     public IActionResult TestEmail([FromBody] TestEmailBody body)
     {
@@ -47,13 +52,6 @@ public class ReportsController : ControllerBase
     private int GetUserId()
     {
         return (int)(HttpContext.Items["UserId"] ?? throw new AppException(401, "Authentication required"));
-    }
-
-    private void RequireTeacher()
-    {
-        var role = HttpContext.Items["UserRole"] as string;
-        if (role != "teacher")
-            throw new AppException(403, "Access denied. Teacher role required.");
     }
 }
 
