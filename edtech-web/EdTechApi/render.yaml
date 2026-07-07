@@ -8,8 +8,6 @@ services:
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
-      - key: ASPNETCORE_URLS
-        value: http://+:5000
       - key: NEON_CONNECTION_STRING
         sync: false
       - key: JWT_SECRET
