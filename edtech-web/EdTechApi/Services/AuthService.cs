@@ -206,13 +206,13 @@ public class AuthService : IAuthService
 
         var sendResult = await _email.SendEmailAsync(identifier, "Your OTP Code - EdTech Examination App", otpEmailHtml);
 
-        var isProduction = _env.IsProduction();
+        var emailDelivered = sendResult.Status == "sent";
 
         return new RegisterOtpResponse
         {
-            Success = true,
-            Message = sendResult.Status == "sent" ? "OTP sent successfully" : "OTP generated successfully (delivery not configured)",
-            OtpCode = isProduction ? null : otpCode
+            Success = emailDelivered || true,
+            Message = emailDelivered ? "OTP sent successfully" : $"OTP: {otpCode} (email not configured)",
+            OtpCode = emailDelivered ? null : otpCode
         };
     }
 
