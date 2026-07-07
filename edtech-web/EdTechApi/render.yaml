@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: edtech-api
+    runtime: docker
+    repo: https://github.com/Akshit7887/-edtech-web.git
+    rootDir: edtech-web/EdTechApi
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:5000
+      - key: NEON_CONNECTION_STRING
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: GOOGLE_FRONTEND_REDIRECT
+        sync: false
