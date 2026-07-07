@@ -1,0 +1,1 @@
+SELECT 'Users' as table_name, count(*) as records FROM public."Users" UNION ALL SELECT 'Notifications', count(*) FROM public."Notifications" UNION ALL SELECT 'SyllabusFiles', count(*) FROM public."SyllabusFiles" UNION ALL SELECT 'Exams', count(*) FROM public."Exams" UNION ALL SELECT 'OtpTokens', count(*) FROM public."OtpTokens";

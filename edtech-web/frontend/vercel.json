@@ -1,9 +1,15 @@
 {
+  "cleanUrls": true,
   "rewrites": [
     { "source": "/css/(.*)", "destination": "/css/$1" },
     { "source": "/js/(.*)", "destination": "/js/$1" },
     { "source": "/pages/(.*)", "destination": "/pages/$1" },
-    { "source": "/(.*).html", "destination": "/$1.html" },
+    { "source": "/google-callback", "destination": "/google-callback.html" },
+    { "source": "/exam-list", "destination": "/exam-list.html" },
+    { "source": "/forgot-password", "destination": "/forgot-password.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/otp-verify", "destination": "/otp-verify.html" },
+    { "source": "/register", "destination": "/register.html" },
     { "source": "/", "destination": "/index.html" }
   ]
 }

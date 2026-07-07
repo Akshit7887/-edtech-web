@@ -1,0 +1,9 @@
+bin/
+obj/
+*.log
+backend.log
+node_modules/
+.git/
+.github/
+.idea/
+.vscode/
