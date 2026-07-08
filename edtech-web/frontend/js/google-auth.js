@@ -1,6 +1,14 @@
 let googleClientId = '';
 
+let _gisFallbackTimer = null;
+
+function showFallbackButton() {
+  const fallback = document.getElementById('google-fallback-btn');
+  if (fallback) fallback.style.display = 'flex';
+}
+
 async function initGoogleAuth(buttonContainerId = 'google-signin-container') {
+  _gisFallbackTimer = setTimeout(showFallbackButton, 5000);
   try {
     const res = await fetch(`${API_BASE}/auth/google/config`);
     if (!res.ok) throw new Error('Failed to fetch Google config');
@@ -8,6 +16,7 @@ async function initGoogleAuth(buttonContainerId = 'google-signin-container') {
     googleClientId = config.clientId;
     if (!googleClientId) {
       console.warn('[Google Auth] No Google Client ID configured');
+      showFallbackButton();
       return;
     }
     if (typeof google === 'undefined' || !google.accounts) {
@@ -31,8 +40,10 @@ async function initGoogleAuth(buttonContainerId = 'google-signin-container') {
       });
     }
     google.accounts.id.prompt();
+    clearTimeout(_gisFallbackTimer);
   } catch (e) {
     console.error('[Google Auth] Init error:', e);
+    showFallbackButton();
   }
 }
 
