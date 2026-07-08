@@ -10,7 +10,10 @@
     { "source": "/login", "destination": "/login.html" },
     { "source": "/otp-verify", "destination": "/otp-verify.html" },
     { "source": "/register", "destination": "/register.html" },
-    { "source": "/db-monitor", "destination": "/pages/admin/db-monitor.html" },
+    { "source": "/admin", "destination": "/pages/admin/login" },
+    { "source": "/admin/login", "destination": "/pages/admin/login" },
+    { "source": "/db-monitor", "destination": "/pages/admin/db-monitor" },
+    { "source": "/db-monitor.html", "destination": "/pages/admin/db-monitor" },
     { "source": "/", "destination": "/index.html" }
   ]
 }

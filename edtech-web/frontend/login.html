@@ -61,6 +61,7 @@
       <div class="auth-footer">
         <p>Don't have an account? <a href="register.html">Register here</a></p>
         <p><a href="forgot-password.html">Forgot Password?</a></p>
+        <p style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:0.8rem"><a href="/admin">🔐 Admin Login</a></p>
       </div>
     </div>
   </div>
@@ -69,6 +70,11 @@
   <script src="js/auth.js"></script>
   <script src="js/google-auth.js"></script>
   <script>
+    (function() {
+      const role = getUserRole();
+      if (role === 'admin') window.location.href = '/admin';
+    })();
+
     let selectedRole = 'student';
 
     function selectRole(role) {

@@ -70,15 +70,31 @@ function getUserName() { return localStorage.getItem('user_name') || ''; }
 
 function requireAuth() {
   const token = api.getToken();
-  if (!token) { goTo('/login.html'); return false; }
+  if (!token) {
+    const path = window.location.pathname;
+    if (path.includes('/admin/') || path.includes('pages/admin')) goTo('/pages/admin/login.html');
+    else goTo('/login.html');
+    return false;
+  }
   return true;
 }
 
 function requireRole(role) {
   if (!requireAuth()) return false;
   const r = getUserRole();
-  if (r !== role) { goTo(`/pages/${r}/dashboard.html`); return false; }
+  if (r !== role) {
+    if (r === 'admin') goTo('/pages/admin/dashboard.html');
+    else goTo(`/pages/${r}/dashboard.html`);
+    return false;
+  }
   return true;
+}
+
+function redirectToLogin() {
+  const role = getUserRole();
+  if (role === 'admin') { goTo('/pages/admin/login.html'); return true; }
+  goTo('/login.html');
+  return false;
 }
 
 function redirectToDashboard() {
@@ -88,8 +104,10 @@ function redirectToDashboard() {
 }
 
 function logout() {
+  const role = getUserRole();
   clearSession();
-  goTo('/login.html');
+  if (role === 'admin') goTo('/pages/admin/login.html');
+  else goTo('/login.html');
 }
 
 function setupNavbar() {

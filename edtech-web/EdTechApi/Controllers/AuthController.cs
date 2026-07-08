@@ -20,6 +20,15 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    [HttpPost("admin-login")]
+    [EnableRateLimiting("AuthPolicy")]
+    public async Task<IActionResult> AdminLogin([FromBody] AdminLoginRequest request)
+    {
+        var result = await _authService.AdminLoginAsync(request.Email, request.Password);
+        return Ok(new { success = true, message = "Admin login successful", data = result });
+    }
+
+    [AllowAnonymous]
     [HttpPost("generate-otp")]
     [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> GenerateOtp([FromBody] GenerateOtpRequest request)

@@ -6,8 +6,9 @@ using EdTechApi.Models;
 
 namespace EdTechApi.Services;
 
-public interface IAuthService
+    public interface IAuthService
 {
+    Task<VerifyOtpResponse> AdminLoginAsync(string email, string password);
     Task<GenerateOtpResponse> GenerateOtpAsync(string identifier, string? role, string? password);
     Task<VerifyOtpResponse> VerifyOtpAsync(string identifier, string otpCode, string? role);
     Task<RegisterOtpResponse> SendRegisterOtpAsync(string name, string identifier, string password, string role);
@@ -40,6 +41,39 @@ public class AuthService : IAuthService
         _config = config;
         _env = env;
         _logger = logger;
+    }
+
+    public async Task<VerifyOtpResponse> AdminLoginAsync(string email, string password)
+    {
+        if (!email.Contains('@'))
+            throw new AppException(400, "Please enter your email address");
+
+        using var conn = _db.CreateConnection();
+
+        var user = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"email\" = @Email AND \"role\" = 'admin'",
+            new { Email = email });
+
+        if (user == null)
+            throw new AppException(401, "Invalid admin credentials");
+
+        if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            throw new AppException(401, "Invalid admin credentials");
+
+        var token = _jwt.GenerateToken(user.Id, user.Role, user.TokenVersion);
+
+        return new VerifyOtpResponse
+        {
+            Token = token,
+            User = new UserInfo
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Role = user.Role,
+                Phone = user.Phone,
+                Email = user.Email
+            }
+        };
     }
 
     public async Task<GenerateOtpResponse> GenerateOtpAsync(string identifier, string? role, string? password)

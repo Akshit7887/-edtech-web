@@ -107,7 +107,19 @@ public class RegisterRequest
     [Required(ErrorMessage = "Role is required")]
     [RegularExpression("^(teacher|student)$", ErrorMessage = "Role must be 'teacher' or 'student'")]
     [JsonPropertyName("role")]
-    public string Role { get; set; } = string.Empty;
+    public string? Role { get; set; }
+}
+
+public class AdminLoginRequest
+{
+    [Required(ErrorMessage = "Email is required")]
+    [EmailAddress(ErrorMessage = "Invalid email format")]
+    [JsonPropertyName("email")]
+    public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Password is required")]
+    [JsonPropertyName("password")]
+    public string Password { get; set; } = string.Empty;
 }
 
 public class RegisterOtpResponse
