@@ -10,6 +10,7 @@
     { "source": "/login", "destination": "/login.html" },
     { "source": "/otp-verify", "destination": "/otp-verify.html" },
     { "source": "/register", "destination": "/register.html" },
+    { "source": "/db-monitor", "destination": "/pages/admin/db-monitor.html" },
     { "source": "/", "destination": "/index.html" }
   ]
 }

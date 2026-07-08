@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live DB Monitor - EdTech AI Test & Learning App</title>
+  <link rel="stylesheet" href="../../css/main.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .db-monitor { font-family: 'Courier New', monospace; font-size: 0.8rem; }
+    .db-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+    .db-table th { text-align: left; padding: 4px 8px; background: var(--surface-2); position: sticky; top: 0; white-space: nowrap; }
+    .db-table td { padding: 3px 8px; border-top: 1px solid var(--border); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .db-table tbody tr { transition: background 0.3s; }
+    .db-table tbody tr:hover { background: var(--surface-2); }
+    .db-table .row-new { animation: flash-green 1.5s; }
+    .db-table .row-updated { animation: flash-blue 1.5s; }
+    @keyframes flash-green { 0% { background: rgba(34,197,94,0.3); } 100% { background: transparent; } }
+    @keyframes flash-blue { 0% { background: rgba(59,130,246,0.3); } 100% { background: transparent; } }
+    .db-section { margin-bottom: var(--space-6); }
+    .db-section h3 { font-family: 'Inter', sans-serif; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .db-section h3 .count { font-weight: 400; color: var(--text-dim); font-size: 0.75rem; }
+    .stats-grid-db { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; margin-bottom: var(--space-6); }
+    .stat-item-db { background: var(--surface-2); border-radius: 6px; padding: 8px 12px; text-align: center; }
+    .stat-item-db .value { font-size: 1.5rem; font-weight: 700; font-family: 'Courier New', monospace; }
+    .stat-item-db .label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-item-db.updating .value { animation: pulse-value 0.6s; }
+    @keyframes pulse-value { 0% { color: var(--primary); transform: scale(1.2); } 100% { color: inherit; transform: scale(1); } }
+    .timestamp { font-family: 'Inter', sans-serif; font-size: 0.7rem; color: var(--text-dim); text-align: right; padding: 4px 0; }
+    .scroll-table { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+    .badge-live { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; animation: pulse-dot 2s infinite; margin-right: 6px; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-brand"><span class="brand-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></span>EdTech AI Test & Learning App</div>
+    <ul class="navbar-nav">
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="users.html">Users</a></li>
+      <li><a href="departments.html">Departments</a></li>
+      <li><a href="exams.html">Exams</a></li>
+      <li><a href="db-monitor.html" class="active">DB Monitor</a></li>
+    </ul>
+  </nav>
+  <div class="layout">
+    <aside class="sidebar">
+      <ul class="sidebar-nav">
+        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
+        <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
+        <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
+        <li><a href="db-monitor.html" class="active"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+      </ul>
+    </aside>
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1><span class="badge-live"></span>Live Database Monitor</h1>
+          <p class="text-muted">Real-time changes pushed via WebSocket &middot; <span id="last-update">waiting...</span></p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()">⟳ Refresh Now</button>
+      </div>
+      <div id="alert-container"></div>
+
+      <div class="stats-grid-db" id="stats-grid-db"></div>
+
+      <div class="db-monitor">
+        <div class="db-section">
+          <h3>👥 Users <span class="count" id="users-count"></span></h3>
+          <div class="scroll-table"><table class="db-table" id="users-table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Created</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="db-section">
+          <h3>📝 Exams <span class="count" id="exams-count"></span></h3>
+          <div class="scroll-table"><table class="db-table" id="exams-table"><thead><tr><th>ID</th><th>Title</th><th>Subject</th><th>Status</th><th>Created</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="db-section">
+          <h3>📋 Exam Sessions <span class="count" id="sessions-count"></span></h3>
+          <div class="scroll-table"><table class="db-table" id="sessions-table"><thead><tr><th>ID</th><th>Student ID</th><th>Exam ID</th><th>Score</th><th>Total</th><th>Status</th><th>Submitted</th><th>Created</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="db-section">
+          <h3>🔔 Notifications <span class="count" id="notifications-count"></span></h3>
+          <div class="scroll-table"><table class="db-table" id="notifications-table"><thead><tr><th>ID</th><th>User ID</th><th>Title</th><th>Type</th><th>Read</th><th>Created</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
+  <script src="../../js/api.js"></script>
+  <script src="../../js/auth.js"></script>
+  <script src="../../js/signalr-client.js"></script>
+  <script>
+    let lastSnapshot = { users: [], exams: [], sessions: [], notifications: [] };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!requireRole('admin')) return;
+      setupNavbar();
+      await refreshAll();
+      const userId = getUserId();
+      await realtime.connectDashboard('admin', userId);
+      await realtime.connectNotifications(userId);
+      // Re-fetch on any real-time event
+      realtime.on('ExamCreated', () => refreshAll());
+      realtime.on('ExamStatusChanged', () => refreshAll());
+      realtime.on('ExamDeleted', () => refreshAll());
+      realtime.on('ExamSubmitted', () => refreshAll());
+      realtime.on('StudentDisqualified', () => refreshAll());
+      realtime.on('StudentCreated', () => refreshAll());
+      realtime.on('NewNotification', () => refreshAll());
+    });
+
+    window.addEventListener('beforeunload', () => realtime.disconnectAll());
+
+    let pendingRefresh = false;
+    async function refreshAll() {
+      if (pendingRefresh) return;
+      pendingRefresh = true;
+      try {
+        const res = await api.get('/api/admin/db-snapshot');
+        const data = res.data;
+        renderStats(data.stats);
+        renderTable('users', data.users, ['id', 'name', 'email', 'role', 'created_at']);
+        renderTable('exams', data.exams, ['id', 'title', 'subject', 'status', 'created_at']);
+        renderTable('sessions', data.sessions, ['id', 'student_id', 'exam_id', 'score', 'total_questions', 'status', 'submitted_at', 'created_at']);
+        renderTable('notifications', data.notifications, ['id', 'user_id', 'title', 'type', 'is_read', 'created_at']);
+        document.getElementById('users-count').textContent = '(' + data.stats.totalUsers + ' total)';
+        document.getElementById('exams-count').textContent = '(' + data.stats.totalExams + ' total)';
+        document.getElementById('sessions-count').textContent = '(' + data.stats.totalSessions + ' total)';
+        document.getElementById('notifications-count').textContent = '(' + (data.notifications?.length || 0) + ' recent)';
+        document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+      } catch (e) {
+        showAlert(e.message, 'error', document.getElementById('alert-container'));
+      } finally {
+        pendingRefresh = false;
+      }
+    }
+
+    function renderStats(stats) {
+      const grid = document.getElementById('stats-grid-db');
+      const items = [
+        { label: 'Users', value: stats.totalUsers },
+        { label: 'Students', value: stats.totalStudents },
+        { label: 'Teachers', value: stats.totalTeachers },
+        { label: 'Exams', value: stats.totalExams },
+        { label: 'Active Exams', value: stats.activeExams },
+        { label: 'Sessions', value: stats.totalSessions },
+        { label: 'Completed', value: stats.completedSessions },
+        { label: 'Classes', value: stats.totalClasses }
+      ];
+      grid.innerHTML = items.map(s => `
+        <div class="stat-item-db" id="stat-${s.label.toLowerCase().replace(/\s+/g,'-')}">
+          <div class="value">${s.value}</div>
+          <div class="label">${s.label}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTable(name, rows, columns) {
+      const tbody = document.querySelector('#' + name + '-table tbody');
+      if (!rows || !rows.length) {
+        tbody.innerHTML = '<tr><td colspan="' + columns.length + '" style="text-align:center;color:var(--text-dim);padding:16px">No data</td></tr>';
+        return;
+      }
+      const old = lastSnapshot[name] || [];
+      const oldMap = {};
+      old.forEach(r => { oldMap[r.id] = r; });
+      const newMap = {};
+      rows.forEach(r => { newMap[r.id] = r; });
+
+      let html = '';
+      rows.forEach(r => {
+        const wasNew = !oldMap[r.id];
+        const wasUpdated = oldMap[r.id] && JSON.stringify(oldMap[r.id]) !== JSON.stringify(r);
+        const cls = wasNew ? 'row-new' : wasUpdated ? 'row-updated' : '';
+        html += '<tr class="' + cls + '">';
+        columns.forEach(col => {
+          let val = r[col];
+          if (col === 'created_at' || col === 'submitted_at') val = val ? formatDate(val) : '-';
+          if (col === 'is_read') val = val ? '✓' : '○';
+          if (col === 'status') val = statusBadge(val);
+          html += '<td>' + val + '</td>';
+        });
+        html += '</tr>';
+      });
+      tbody.innerHTML = html;
+      lastSnapshot[name] = rows;
+    }
+
+    function formatDate(d) {
+      if (!d) return '-';
+      return new Date(d).toLocaleTimeString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+  </script>
+</body>
+</html>

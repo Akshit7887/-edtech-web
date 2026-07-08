@@ -64,6 +64,32 @@ public class AdminController : ControllerBase
         return Ok(new { success = true, data = exams, pagination = new { page, limit, total, total_pages = (int)Math.Ceiling((double)total / limit) } });
     }
 
+    [HttpGet("db-snapshot")]
+    public async Task<IActionResult> GetDbSnapshot()
+    {
+        using var conn = _db.CreateConnection();
+        var tasks = new
+        {
+            users = await conn.QueryAsync("SELECT \"id\", \"name\", \"email\", \"role\", \"created_at\" FROM \"Users\" ORDER BY \"created_at\" DESC LIMIT 20"),
+            exams = await conn.QueryAsync("SELECT \"id\", \"title\", \"subject\", \"status\", \"created_at\" FROM \"Exams\" ORDER BY \"created_at\" DESC LIMIT 20"),
+            sessions = await conn.QueryAsync("SELECT \"id\", \"student_id\", \"exam_id\", \"score\", \"total_questions\", \"status\", \"submitted_at\", \"created_at\" FROM \"ExamSessions\" ORDER BY \"created_at\" DESC LIMIT 20"),
+            assignments = await conn.QueryAsync("SELECT * FROM \"StudentExamAssignments\" ORDER BY \"created_at\" DESC LIMIT 20"),
+            notifications = await conn.QueryAsync("SELECT \"id\", \"user_id\", \"title\", \"message\", \"type\", \"is_read\", \"created_at\" FROM \"Notifications\" ORDER BY \"created_at\" DESC LIMIT 20"),
+            stats = new
+            {
+                totalUsers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\""),
+                totalStudents = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'student'"),
+                totalTeachers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'teacher'"),
+                totalExams = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Exams\""),
+                totalSessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\""),
+                totalClasses = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Classes\""),
+                activeExams = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Exams\" WHERE \"status\" = 'active'"),
+                completedSessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\" WHERE \"status\" = 'completed'")
+            }
+        };
+        return Ok(new { success = true, data = tasks });
+    }
+
     [HttpDelete("users/{userId:int}")]
     public async Task<IActionResult> DeleteUser(int userId)
     {
