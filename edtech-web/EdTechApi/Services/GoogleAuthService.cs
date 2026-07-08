@@ -7,6 +7,7 @@ public interface IGoogleAuthService
 {
     string GetAuthorizationUrl(string role = "student");
     Task<VerifyOtpResponse> HandleCallbackAsync(string code, string role = "student");
+    Task<VerifyOtpResponse> VerifyIdTokenAsync(string idToken, string role = "student");
 }
 
 public class GoogleAuthService : IGoogleAuthService
@@ -74,6 +75,26 @@ public class GoogleAuthService : IGoogleAuthService
         var idToken = doc.RootElement.GetProperty("id_token").GetString() ?? "";
 
         // Verify the ID token using Google's tokeninfo endpoint
+        var infoRes = await _http.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={idToken}");
+        if (!infoRes.IsSuccessStatusCode)
+        {
+            throw new AppException(401, "Invalid Google token");
+        }
+
+        var infoJson = await infoRes.Content.ReadAsStringAsync();
+        using var infoDoc = JsonDocument.Parse(infoJson);
+        var root = infoDoc.RootElement;
+
+        var email = root.GetProperty("email").GetString() ?? "";
+        var name = root.TryGetProperty("name", out var n) ? n.GetString() : null;
+        name ??= root.TryGetProperty("given_name", out var gn) ? gn.GetString() ?? "User" : email.Split('@')[0];
+        var googleSub = root.GetProperty("sub").GetString() ?? "";
+
+        return await _auth.ExternalAuthSessionAsync(email, name, role, googleSub);
+    }
+
+    public async Task<VerifyOtpResponse> VerifyIdTokenAsync(string idToken, string role = "student")
+    {
         var infoRes = await _http.GetAsync($"https://oauth2.googleapis.com/tokeninfo?id_token={idToken}");
         if (!infoRes.IsSuccessStatusCode)
         {

@@ -230,3 +230,14 @@ public class ExternalAuthRequest
     [JsonPropertyName("external_user_id")]
     public string ExternalUserId { get; set; } = string.Empty;
 }
+
+public class GoogleSignInRequest
+{
+    [Required(ErrorMessage = "ID token is required")]
+    [JsonPropertyName("id_token")]
+    public string IdToken { get; set; } = string.Empty;
+
+    [RegularExpression("^(teacher|student)$", ErrorMessage = "Role must be 'teacher' or 'student'")]
+    [JsonPropertyName("role")]
+    public string? Role { get; set; }
+}

@@ -1,6 +1,10 @@
 const API_BASE = (() => {
   const stored = localStorage.getItem('api_base');
   if (stored) return stored.replace(/\/+$/, '');
+  const host = window.location.hostname;
+  if (host !== 'localhost' && host !== '127.0.0.1') {
+    return 'https://edtech-web-rptw.onrender.com';
+  }
   return 'http://localhost:5000';
 })();
 
@@ -21,6 +25,7 @@ class ApiClient {
     const h = {};
     if (!isForm) h['Content-Type'] = 'application/json';
     if (this.token) h['Authorization'] = `Bearer ${this.token}`;
+    if (API_BASE.includes('ngrok')) h['ngrok-skip-browser-warning'] = 'true';
     return h;
   }
 

@@ -1,3 +1,4 @@
+using EdTechApi.DTOs;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -70,5 +71,20 @@ public class GoogleAuthController : ControllerBase
             var frontend = _config["Google:FrontendRedirect"] ?? "http://localhost:8081/google-callback.html";
             return Redirect($"{frontend}?error={Uri.EscapeDataString("An unexpected error occurred during Google sign-in")}");
         }
+    }
+
+    [HttpPost("signin")]
+    public async Task<IActionResult> SignIn([FromBody] GoogleSignInRequest request)
+    {
+        var selectedRole = !string.IsNullOrEmpty(request.Role) && (request.Role == "teacher" || request.Role == "student") ? request.Role : "student";
+        var result = await _googleAuth.VerifyIdTokenAsync(request.IdToken, selectedRole);
+        return Ok(result);
+    }
+
+    [HttpGet("config")]
+    public IActionResult GetConfig()
+    {
+        var clientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? _config["Google:ClientId"] ?? "";
+        return Ok(new { clientId });
     }
 }

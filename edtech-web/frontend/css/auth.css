@@ -151,7 +151,18 @@
   box-shadow: 0 0 0 3px var(--accent-ghost);
 }
 
-/* ── Google Button ── */
+/* ── Google Sign-In Container ── */
+#google-signin-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+#google-signin-container > div {
+  width: 100% !important;
+}
+
+/* ── Google Button (fallback) ── */
 .btn-google {
   display: flex;
   align-items: center;
