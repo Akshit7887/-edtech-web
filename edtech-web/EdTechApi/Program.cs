@@ -4,6 +4,7 @@ using Dapper;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using EdTechApi.Data;
+using EdTechApi.Hubs;
 using EdTechApi.Middleware;
 using EdTechApi.Services;
 using EdTechApi.Models;
@@ -66,6 +67,16 @@ builder.Services.AddScoped<IReportsService, ReportsService>();
 builder.Services.AddScoped<ISyllabusService, SyllabusService>();
 builder.Services.AddScoped<IMigrationService, MigrationService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+// ── SignalR ──
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.KeepAliveInterval = TimeSpan.FromSeconds(10);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+    options.MaximumReceiveMessageSize = 128 * 1024;
+});
+builder.Services.AddSingleton<IHubService, HubService>();
+
 builder.Services.AddHttpContextAccessor();
 
 // ── CORS ──
@@ -147,6 +158,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseJwtMiddleware();
 app.MapControllers();
+
+// ── SignalR Hubs ──
+app.MapHub<DashboardHub>("/hubs/dashboard");
+app.MapHub<ExamHub>("/hubs/exam");
+app.MapHub<NotificationHub>("/hubs/notification");
 
 // ── Health check ──
 app.MapGet("/api/health", (HttpContext context) =>

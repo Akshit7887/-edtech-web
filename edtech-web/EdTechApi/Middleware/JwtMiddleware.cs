@@ -18,9 +18,12 @@ public class JwtMiddleware
     public async Task InvokeAsync(HttpContext context, IJwtService jwtService, IDbConnectionFactory dbFactory)
     {
         var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+        var token = !string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ")
+            ? authHeader["Bearer ".Length..].Trim()
+            : context.Request.Query["access_token"].FirstOrDefault();
+
+        if (!string.IsNullOrEmpty(token))
         {
-            var token = authHeader["Bearer ".Length..].Trim();
             var principal = jwtService.VerifyToken(token);
             if (principal != null)
             {

@@ -32,10 +32,12 @@ public interface ITeacherService
 public class TeacherService : ITeacherService
 {
     private readonly IDbConnectionFactory _db;
+    private readonly IHubService _hub;
 
-    public TeacherService(IDbConnectionFactory db)
+    public TeacherService(IDbConnectionFactory db, IHubService hub)
     {
         _db = db;
+        _hub = hub;
     }
 
     public async Task<object> GetAllStudentsAsync(int teacherId, int page = 1, int limit = 50)
@@ -108,6 +110,8 @@ public class TeacherService : ITeacherService
             @"INSERT INTO ""Users"" (""name"", ""role"", ""email"", ""password_hash"", ""created_at"", ""updated_at"")
               VALUES (@Name, 'student', @Email, @PasswordHash, @Now, @Now) RETURNING *",
             new { Name = name, Email = email, PasswordHash = hash, Now = now });
+
+        await _hub.NotifyTeacherDashboard(teacherId, "StudentCreated", new { id = user.Id, name = user.Name, email = user.Email });
 
         return new { id = user.Id, name = user.Name, email = user.Email, role = user.Role, created_at = user.CreatedAt };
     }
@@ -282,6 +286,7 @@ public class TeacherService : ITeacherService
               VALUES (@TeacherId, @Name, @Description, @CreatedAt, @UpdatedAt) RETURNING *",
             new { TeacherId = teacherId, Name = data.Name, Description = data.Description ?? "", CreatedAt = now, UpdatedAt = now });
 
+        await _hub.NotifyTeacherDashboard(teacherId, "ClassCreated", new { id = cls.Id, name = cls.Name });
         return cls;
     }
 
@@ -410,6 +415,8 @@ public class TeacherService : ITeacherService
                 @"INSERT INTO ""Notifications"" (""user_id"", ""title"", ""message"", ""type"", ""created_at"")
                   VALUES (@UserId, @Title, @Message, 'announcement', @CreatedAt)",
                 new { UserId = uid, Title = data.Title, Message = data.Message, CreatedAt = now });
+
+            await _hub.NotifyUser(uid, "NewNotification", new { title = data.Title, message = data.Message, type = "announcement" });
         }
 
         return new { sentCount = targetIds.Count };

@@ -29,6 +29,7 @@ public class ExamService : IExamService
     private readonly ILogger<ExamService> _logger;
     private static readonly ThreadLocal<Random> _random = new(() => new Random());
     private readonly IConfiguration _config;
+    private readonly IHubService _hub;
 
     private static readonly Dictionary<string, string> ValidTransitions = new()
     {
@@ -36,11 +37,12 @@ public class ExamService : IExamService
         { "active", "closed" }
     };
 
-    public ExamService(IDbConnectionFactory db, ILogger<ExamService> logger, IConfiguration config)
+    public ExamService(IDbConnectionFactory db, ILogger<ExamService> logger, IConfiguration config, IHubService hub)
     {
         _db = db;
         _logger = logger;
         _config = config;
+        _hub = hub;
     }
 
     public async Task<ExamListResponse> GetAllExamsAsync(int userId, string role, int page = 1, int limit = 20)
@@ -239,6 +241,7 @@ public class ExamService : IExamService
                 UpdatedAt = now
             });
 
+        await _hub.NotifyTeacherDashboard(teacherId, "ExamCreated", new { exam.Id, exam.Title, exam.Subject, exam.Status });
         return exam;
     }
 
@@ -276,6 +279,11 @@ public class ExamService : IExamService
         var sql = $"UPDATE \"Exams\" SET {string.Join(", ", setClauses)} WHERE \"id\" = @Id RETURNING *";
         exam = await conn.QuerySingleAsync<Exam>(sql, parameters);
 
+        if (!string.IsNullOrEmpty(data.Status))
+        {
+            await _hub.NotifyTeacherDashboard(teacherId, "ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
+            await _hub.NotifyExamGroup(examId, "ExamStatusChanged", new { exam.Id, exam.Status });
+        }
         return exam;
     }
 
@@ -294,6 +302,8 @@ public class ExamService : IExamService
         await conn.ExecuteAsync("DELETE FROM \"ExamSessions\" WHERE \"exam_id\" = @ExamId", new { ExamId = examId });
         await conn.ExecuteAsync("DELETE FROM \"Attendance\" WHERE \"exam_id\" = @ExamId", new { ExamId = examId });
         await conn.ExecuteAsync("DELETE FROM \"Exams\" WHERE \"id\" = @Id", new { Id = examId });
+
+        await _hub.NotifyTeacherDashboard(teacherId, "ExamDeleted", new { examId = exam.Id, title = exam.Title });
     }
 
     public async Task<Exam> ActivateExamAsync(int examId, int teacherId)
@@ -314,6 +324,8 @@ public class ExamService : IExamService
             "UPDATE \"Exams\" SET \"status\" = 'active', \"updated_at\" = @Now WHERE \"id\" = @Id RETURNING *",
             new { Now = DateTime.UtcNow, Id = examId });
 
+        await _hub.NotifyTeacherDashboard(teacherId, "ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
+        await _hub.NotifyExamGroup(examId, "ExamActivated", new { exam.Id, exam.Title });
         return exam;
     }
 

@@ -27,14 +27,16 @@ public class QuestionService : IQuestionService
     private readonly IDbConnectionFactory _db;
     private readonly IGeminiService _gemini;
     private readonly ILogger<QuestionService> _logger;
+    private readonly IHubService _hub;
     private static readonly ThreadLocal<Random> _random = new(() => new Random());
     private static readonly string[] Letters = { "A", "B", "C", "D" };
 
-    public QuestionService(IDbConnectionFactory db, IGeminiService gemini, ILogger<QuestionService> logger)
+    public QuestionService(IDbConnectionFactory db, IGeminiService gemini, ILogger<QuestionService> logger, IHubService hub)
     {
         _db = db;
         _gemini = gemini;
         _logger = logger;
+        _hub = hub;
     }
 
     public async Task<object> StartExamAsync(int studentId, int examId)
@@ -191,6 +193,9 @@ public class QuestionService : IQuestionService
 
         await TriggerParentNotification(session.StudentId, session.ExamId, "disqualified", 0);
 
+        await _hub.NotifyTeacherDashboard(session.StudentId, "StudentDisqualified", new { sessionId, examId = session.ExamId, studentId = session.StudentId, reason });
+        await _hub.NotifyStudentDashboard(session.StudentId, "Disqualified", new { sessionId, reason });
+
         return new { success = true };
     }
 
@@ -332,6 +337,9 @@ public class QuestionService : IQuestionService
             new { Score = score, AnsweredCount = answeredCount, Now = now, Answers = answersJson, Id = sessionId });
 
         await TriggerParentNotification(session.StudentId, session.ExamId, "completed", (int)score);
+
+        await _hub.NotifyTeacherDashboard(session.StudentId, "ExamSubmitted", new { sessionId, examId = session.ExamId, studentId = session.StudentId, score, totalQuestions = session.TotalQuestions });
+        await _hub.NotifyStudentDashboard(session.StudentId, "ExamSubmitted", new { sessionId, score, totalQuestions = session.TotalQuestions });
 
         return new { score, totalQuestions = session.TotalQuestions, correctAnswers = (int)score, wrongAnswers = answeredCount - (int)score };
     }

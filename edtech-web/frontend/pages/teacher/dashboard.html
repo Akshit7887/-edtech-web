@@ -112,12 +112,13 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>
   <script src="../../js/animations.js"></script>
+  <script src="../../js/signalr-client.js"></script>
   <script>
-    let refreshInterval = null;
     let cachedStudents = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -127,11 +128,20 @@
       document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       setupNavbar();
       await refreshDashboard();
-      refreshInterval = setInterval(refreshDashboard, 30000);
+      // Connect real-time updates
+      const userId = getUserId();
+      await realtime.connectDashboard('teacher', userId);
+      realtime.on('ExamCreated', (data) => { refreshDashboard(); showAlert('New exam: ' + data.title, 'success', document.getElementById('alert-container')); });
+      realtime.on('ExamStatusChanged', (data) => { refreshDashboard(); });
+      realtime.on('ExamDeleted', (data) => { refreshDashboard(); });
+      realtime.on('StudentCreated', (data) => { refreshDashboard(); });
+      realtime.on('ClassCreated', (data) => { refreshDashboard(); });
+      realtime.on('ExamSubmitted', (data) => { refreshDashboard(); });
+      realtime.on('StudentDisqualified', (data) => { refreshDashboard(); showAlert('Student disqualified', 'error', document.getElementById('alert-container')); });
     });
 
     window.addEventListener('beforeunload', () => {
-      if (refreshInterval) clearInterval(refreshInterval);
+      realtime.disconnectAll();
     });
 
     async function refreshDashboard() {
@@ -210,7 +220,6 @@
         document.getElementById('recent-students-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
       }
     }
-
 
   </script>
 </body>

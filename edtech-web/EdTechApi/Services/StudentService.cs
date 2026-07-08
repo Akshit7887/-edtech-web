@@ -21,10 +21,12 @@ public interface IStudentService
 public class StudentService : IStudentService
 {
     private readonly IDbConnectionFactory _db;
+    private readonly IHubService _hub;
 
-    public StudentService(IDbConnectionFactory db)
+    public StudentService(IDbConnectionFactory db, IHubService hub)
     {
         _db = db;
+        _hub = hub;
     }
 
     public async Task<StudentAnalyticsResponse> GetAnalyticsAsync(int studentId)
@@ -317,9 +319,12 @@ public class StudentService : IStudentService
         using var conn = _db.CreateConnection();
 
         var now = DateTime.UtcNow;
-        return await conn.QuerySingleAsync<Notification>(
+        var notification = await conn.QuerySingleAsync<Notification>(
             @"INSERT INTO ""Notifications"" (""user_id"", ""title"", ""message"", ""type"", ""created_at"")
               VALUES (@UserId, @Title, @Message, @Type, @CreatedAt) RETURNING *",
             new { UserId = userId, Title = title, Message = message, Type = type, CreatedAt = now });
+
+        await _hub.NotifyUser(userId, "NewNotification", new { notification.Id, notification.Title, notification.Message, notification.Type });
+        return notification;
     }
 }

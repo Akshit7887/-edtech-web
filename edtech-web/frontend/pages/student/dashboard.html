@@ -65,23 +65,29 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js"></script>
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script src="../../js/animations.js"></script>
+  <script src="../../js/signalr-client.js"></script>
   <script>
-    let refreshInterval = null;
-
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
       const name = getUserName();
       if (name) document.getElementById('student-name').textContent = name;
       setupNavbar();
       await loadData();
-      refreshInterval = setInterval(loadData, 30000);
+      // Connect real-time updates
+      const userId = getUserId();
+      await realtime.connectDashboard('student', userId);
+      realtime.on('ExamSubmitted', (data) => { loadData(); });
+      realtime.on('ExamStatusChanged', (data) => { loadData(); });
+      realtime.on('ExamActivated', (data) => { loadData(); });
+      realtime.on('Disqualified', (data) => { loadData(); });
     });
 
     window.addEventListener('beforeunload', () => {
-      if (refreshInterval) clearInterval(refreshInterval);
+      realtime.disconnectAll();
     });
 
     async function loadData() {
