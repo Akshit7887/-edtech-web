@@ -39,12 +39,10 @@
     var navbar = document.querySelector('.navbar');
     if (!navbar) return;
 
-    // Don't add hamburger on dark admin-login page (no navbar-nav there)
-    var navbarNav = navbar.querySelector('.navbar-nav');
-    if (!navbarNav) return;
-
     // Prevent double-init
     if (navbar.querySelector('.hamburger-btn')) return;
+
+    var navbarNav = navbar.querySelector('.navbar-nav');
 
     // ── Hamburger button ──
     var btn = document.createElement('button');
@@ -83,12 +81,13 @@
     panel.appendChild(closeBtn);
 
     // Clone navbar-nav links (after setupNavbar may have run)
-    var navClone = navbarNav.cloneNode(true);
-    navClone.className = 'mobile-nav-list';
-    // Remove any existing .navbar-user from the clone (it has interactive widgets)
-    var userItem = navClone.querySelector('.navbar-user');
-    if (userItem) userItem.remove();
-    panel.appendChild(navClone);
+    if (navbarNav) {
+      var navClone = navbarNav.cloneNode(true);
+      navClone.className = 'mobile-nav-list';
+      var userItem = navClone.querySelector('.navbar-user');
+      if (userItem) userItem.remove();
+      panel.appendChild(navClone);
+    }
 
     // Clone sidebar-nav if present (also goes into the panel)
     var sidebar = document.querySelector('.sidebar-nav');
@@ -96,6 +95,27 @@
       var sideClone = sidebar.cloneNode(true);
       sideClone.className = 'mobile-sidebar-list';
       panel.appendChild(sideClone);
+    }
+
+    // If no navbarNav and no sidebar, add default navigation links
+    if (!navbarNav && !sidebar) {
+      var prefix = window.location.pathname.indexOf('/pages/') === 0 ? '../../' : '';
+      var defaultList = document.createElement('ul');
+      defaultList.className = 'mobile-nav-list';
+      var defaultLinks = [
+        { href: prefix + 'index.html', text: 'Home' },
+        { href: prefix + 'login.html', text: 'Login' },
+        { href: prefix + 'register.html', text: 'Register' }
+      ];
+      defaultLinks.forEach(function (link) {
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.href = link.href;
+        a.textContent = link.text;
+        li.appendChild(a);
+        defaultList.appendChild(li);
+      });
+      panel.appendChild(defaultList);
     }
 
     document.body.appendChild(backdrop);
