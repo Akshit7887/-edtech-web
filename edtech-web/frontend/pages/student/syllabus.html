@@ -217,7 +217,7 @@
         const ext = (f.file_name || '').split('.').pop().toUpperCase();
         const icon = ext === 'PDF' ? '&#x1F4C4;' : ext === 'DOC' || ext === 'DOCX' ? '&#x1F4DD;' : ext === 'PPT' || ext === 'PPTX' ? '&#x1F4CA;' : '&#x1F4C1;';
         const size = f.file_size > 1024 * 1024 ? (f.file_size / 1024 / 1024).toFixed(1) + ' MB' : (f.file_size / 1024).toFixed(0) + ' KB';
-        const url = `http://localhost:5000${f.file_path}`;
+        const url = `${API_BASE}${f.file_path}`;
         return `<div class="syllabus-card">
           <div class="syllabus-card-icon">${icon}</div>
           <h3>${escHtml(f.title)}</h3>
