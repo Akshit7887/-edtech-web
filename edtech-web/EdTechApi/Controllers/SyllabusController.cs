@@ -78,6 +78,34 @@ public class SyllabusController : ControllerBase
         return Created(string.Empty, new { success = true, message = "Syllabus file uploaded", data = result });
     }
 
+    [HttpGet("{id}/download")]
+    public async Task<IActionResult> Download(int id)
+    {
+        var file = await _syllabusService.GetByIdAsync(id);
+        if (file == null)
+            return NotFound(new { success = false, message = "File not found" });
+
+        var filePath = Path.Combine(
+            _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+            file.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+
+        if (!System.IO.File.Exists(filePath))
+            return NotFound(new { success = false, message = "File not found on disk" });
+
+        var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+        var contentType = ext switch
+        {
+            ".pdf" => "application/pdf",
+            ".doc" => "application/msword",
+            ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".txt" => "text/plain",
+            _ => "application/octet-stream"
+        };
+
+        var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return File(stream, contentType, file.FileName);
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
