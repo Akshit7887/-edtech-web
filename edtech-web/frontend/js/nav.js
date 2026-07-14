@@ -137,14 +137,8 @@
       if (e.key === 'Escape' && panel.classList.contains('open')) closeMenu();
     });
 
-    // Handle window resize: close panel if viewport goes above mobile breakpoint
-    var resizeTimer;
-    window.addEventListener('resize', function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function () {
-        if (window.innerWidth > 768 && panel.classList.contains('open')) closeMenu();
-      }, 200);
-    });
+    // Handle window resize: close panel on orientation change
+    // (no longer auto-closes above 768px since hamburger is now universal)
   }
 
   // ── Boot ──
