@@ -233,3 +233,59 @@
 .password-strength-bar.weak { background: var(--error); }
 .password-strength-bar.medium { background: var(--warning); }
 .password-strength-bar.strong { background: var(--success); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .auth-page {
+    padding: var(--space-4);
+    padding-top: 72px;
+  }
+  .auth-card {
+    padding: var(--space-8) var(--space-6);
+  }
+  .auth-logo h1 {
+    font-size: var(--text-2xl);
+  }
+  .auth-role-selector {
+    gap: var(--space-2);
+  }
+  .role-option {
+    padding: var(--space-3) var(--space-2);
+    font-size: var(--text-xs);
+  }
+  .role-option .role-icon {
+    font-size: var(--text-xl);
+  }
+  .otp-inputs {
+    gap: var(--space-2);
+  }
+  .otp-input {
+    width: 40px;
+    height: 48px;
+    font-size: var(--text-xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: var(--space-6) var(--space-4);
+  }
+  .auth-logo h1 {
+    font-size: var(--text-xl);
+  }
+  .auth-logo svg {
+    width: 32px;
+    height: 32px;
+  }
+  .otp-input {
+    width: 36px;
+    height: 42px;
+    font-size: var(--text-lg);
+  }
+  .otp-inputs {
+    gap: var(--space-1);
+  }
+  .auth-role-selector {
+    flex-direction: column;
+  }
+}
