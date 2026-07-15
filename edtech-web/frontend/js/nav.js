@@ -44,19 +44,24 @@
 
     var navbarNav = navbar.querySelector('.navbar-nav');
 
-    // ── Hamburger button ──
-    var btn = document.createElement('button');
-    btn.className = 'hamburger-btn';
+    // ── Hamburger button (use existing if present in HTML, or create one) ──
+    var btn = navbar.querySelector('.hamburger-btn');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.className = 'hamburger-btn';
+      navbar.appendChild(btn);
+    }
     btn.setAttribute('aria-label', 'Open navigation menu');
     btn.setAttribute('aria-expanded', 'false');
     btn.setAttribute('type', 'button');
-    btn.innerHTML =
-      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon">' +
-        '<line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/>' +
-        '<line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/>' +
-        '<line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/>' +
-      '</svg>';
-    navbar.appendChild(btn);
+    if (!btn.querySelector('svg')) {
+      btn.innerHTML =
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon">' +
+          '<line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/>' +
+          '<line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/>' +
+          '<line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/>' +
+        '</svg>';
+    }
 
     // ── Backdrop ──
     var backdrop = document.createElement('div');
