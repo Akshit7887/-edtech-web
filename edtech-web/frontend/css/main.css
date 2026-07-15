@@ -1684,6 +1684,15 @@
   -webkit-overflow-scrolling: touch;
 }
 
+@media (min-width: 1024px) {
+  .mobile-menu { width: min(35vw, 480px); }
+  .mobile-nav-list a,
+  .mobile-sidebar-list a {
+    font-size: var(--text-lg);
+    padding: var(--space-4) var(--space-5);
+  }
+}
+
 .mobile-menu.open {
   transform: translateX(0);
   visibility: visible;
