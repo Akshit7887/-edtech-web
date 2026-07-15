@@ -120,6 +120,11 @@
   50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
 }
 
+@keyframes slideInItem {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 /* ── Base Animation Utilities ── */
 .anim-fade       { animation: fadeIn      0.4s var(--ease) both; }
 .anim-fade-up    { animation: fadeInUp    0.5s var(--ease) both; }

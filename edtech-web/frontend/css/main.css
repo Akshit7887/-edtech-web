@@ -1605,18 +1605,24 @@
   color: var(--text);
   padding: var(--space-2);
   border-radius: var(--radius);
-  transition: background var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease), transform 0.2s var(--ease);
   flex-shrink: 0;
   margin-left: auto;
+  animation: fadeIn 0.4s var(--ease) 0.2s both;
 }
 
 .hamburger-btn:hover {
   background: var(--bg-muted);
   color: var(--accent);
+  transform: scale(1.05);
+}
+
+.hamburger-btn:active {
+  transform: scale(0.92);
 }
 
 .hamburger-btn svg {
-  transition: transform var(--duration-normal) var(--ease);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .hamburger-btn.active svg {
@@ -1624,7 +1630,7 @@
 }
 
 .hamburger-btn .hamburger-line {
-  transition: all var(--duration-normal) var(--ease);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform-origin: center;
 }
 
@@ -1643,24 +1649,25 @@
 
 /* Backdrop */
 .mobile-menu-backdrop {
-  display: none;
   position: fixed;
   inset: 0;
   z-index: 399;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   opacity: 0;
-  transition: opacity var(--duration-normal) var(--ease);
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease), visibility 0.3s var(--ease);
   -webkit-tap-highlight-color: transparent;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .mobile-menu-backdrop.open {
-  display: block;
   opacity: 1;
+  visibility: visible;
 }
 
 /* Panel */
 .mobile-menu {
-  display: none;
   position: fixed;
   top: 0;
   right: 0;
@@ -1668,16 +1675,17 @@
   width: min(85vw, 400px);
   z-index: 400;
   background: var(--white);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.12);
   transform: translateX(100%);
-  transition: transform var(--duration-normal) var(--ease-out);
+  visibility: hidden;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .mobile-menu.open {
-  display: block;
   transform: translateX(0);
+  visibility: visible;
 }
 
 .mobile-menu-close {
@@ -1698,6 +1706,15 @@
 .mobile-menu-close:hover {
   background: var(--accent-ghost);
   color: var(--accent);
+  transform: rotate(90deg);
+}
+
+.mobile-menu-close svg {
+  transition: transform 0.2s var(--ease);
+}
+
+.mobile-menu-close:hover svg {
+  transform: rotate(90deg);
 }
 
 .mobile-nav-list,
@@ -1722,10 +1739,38 @@
   font-weight: 500;
   color: var(--text-body);
   border-radius: var(--radius);
-  transition: all var(--duration-fast) var(--ease);
+  transition: all 0.2s var(--ease);
   text-decoration: none;
   min-height: 44px;
+  opacity: 0;
+  transform: translateX(20px);
 }
+
+.mobile-menu.open .mobile-nav-list a,
+.mobile-menu.open .mobile-sidebar-list a {
+  animation: slideInItem 0.4s var(--ease-out) forwards;
+}
+
+.mobile-menu.open .mobile-nav-list a:nth-child(1),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(1) { animation-delay: 0.05s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(2),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(2) { animation-delay: 0.1s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(3),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(3) { animation-delay: 0.15s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(4),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(4) { animation-delay: 0.2s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(5),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(5) { animation-delay: 0.25s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(6),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(6) { animation-delay: 0.3s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(7),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(7) { animation-delay: 0.35s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(8),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(8) { animation-delay: 0.4s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(9),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(9) { animation-delay: 0.45s; }
+.mobile-menu.open .mobile-nav-list a:nth-child(10),
+.mobile-menu.open .mobile-sidebar-list a:nth-child(10) { animation-delay: 0.5s; }
 
 .mobile-nav-list a:hover,
 .mobile-sidebar-list a:hover,
