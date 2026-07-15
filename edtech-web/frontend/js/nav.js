@@ -34,6 +34,32 @@
     }
   }
 
+  // ── Back button (injected into navbar on every page) ──
+  function initBackButton() {
+    var navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    if (document.querySelector('.back-btn')) return;
+
+    var btn = document.createElement('button');
+    btn.className = 'back-btn';
+    btn.setAttribute('aria-label', 'Go back to previous page');
+    btn.setAttribute('type', 'button');
+    btn.innerHTML =
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">' +
+        '<polyline points="15 18 9 12 15 6"/>' +
+      '</svg>';
+    btn.addEventListener('click', function () {
+      if (document.referrer || window.history.length > 1) {
+        window.history.back();
+      }
+    });
+    // Hide on first page (no history)
+    if (!document.referrer && window.history.length <= 1) {
+      btn.style.display = 'none';
+    }
+    navbar.insertBefore(btn, navbar.firstChild);
+  }
+
   // ── Hamburger menu (skipped on exam.html) ──
   function initMobileNav() {
     var navbar = document.querySelector('.navbar');
@@ -168,6 +194,7 @@
 
   // ── Boot ──
   initPWA();
+  initBackButton();
 
   if (!isExamPage) {
     if (document.readyState === 'loading') {

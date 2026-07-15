@@ -1622,6 +1622,30 @@
   transform: scale(0.92);
 }
 
+/* Back button */
+.back-btn {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text);
+  padding: var(--space-2);
+  border-radius: var(--radius-full);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+  flex-shrink: 0;
+  margin-right: var(--space-1);
+  animation: fadeIn 0.4s var(--ease) 0.1s both;
+}
+
+.back-btn:hover {
+  background: var(--bg-muted);
+  color: var(--accent);
+}
+
 .hamburger-btn svg {
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
