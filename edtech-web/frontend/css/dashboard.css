@@ -289,16 +289,7 @@ tbody tr:hover {
 }
 
 .sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  background: var(--white);
-  border-right: 1px solid var(--border);
-  padding: var(--space-4);
-  position: fixed;
-  top: 72px;
-  left: 0;
-  bottom: 0;
-  overflow-y: auto;
+  display: none;
 }
 
 .sidebar-nav {
@@ -341,7 +332,7 @@ tbody tr:hover {
 
 .main-content {
   flex: 1;
-  margin-left: 240px;
+  margin-left: 0;
   padding: var(--space-8);
   min-width: 0;
 }
@@ -623,9 +614,6 @@ tbody tr:hover {
 }
 
 @media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
   .main-content {
     margin-left: 0;
     padding: var(--space-4);

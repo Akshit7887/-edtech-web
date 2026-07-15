@@ -39,8 +39,8 @@
     var navbar = document.querySelector('.navbar');
     if (!navbar) return;
 
-    // Prevent double-init
-    if (navbar.querySelector('.hamburger-btn')) return;
+    // Prevent double-init (check for existing panel, not button — button is in HTML now)
+    if (document.querySelector('.mobile-menu')) return;
 
     var navbarNav = navbar.querySelector('.navbar-nav');
 
