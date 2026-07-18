@@ -8,25 +8,23 @@ public interface ISyllabusService
 {
     Task<List<SyllabusFile>> GetAllAsync(string? search = null);
     Task<SyllabusFile?> GetByIdAsync(int id);
-    Task<SyllabusFile> UploadAsync(string title, string? description, string fileName, string filePath, string contentType, long fileSize, int? uploadedBy);
+    Task<SyllabusFile> UploadAsync(string title, string? description, string fileName, byte[] fileData, string contentType, long fileSize, int? uploadedBy);
     Task<bool> DeleteAsync(int id, int? userId);
 }
 
 public class SyllabusService : ISyllabusService
 {
     private readonly IDbConnectionFactory _db;
-    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public SyllabusService(IDbConnectionFactory db, IHttpContextAccessor httpContextAccessor)
+    public SyllabusService(IDbConnectionFactory db)
     {
         _db = db;
-        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<List<SyllabusFile>> GetAllAsync(string? search = null)
     {
         using var conn = _db.CreateConnection();
-        var sql = @"SELECT sf.*, u.""name"" AS uploader_name 
+        var sql = @"SELECT sf.""id"", sf.""title"", sf.""description"", sf.""file_name"", sf.""content_type"", sf.""file_size"", sf.""uploaded_by"", u.""name"" AS uploader_name, sf.""created_at"", sf.""updated_at""
                      FROM ""SyllabusFiles"" sf
                      LEFT JOIN ""Users"" u ON u.""id"" = sf.""uploaded_by""";
         if (!string.IsNullOrWhiteSpace(search))
@@ -46,36 +44,21 @@ public class SyllabusService : ISyllabusService
         return await conn.QueryFirstOrDefaultAsync<SyllabusFile>(sql, new { Id = id });
     }
 
-    public async Task<SyllabusFile> UploadAsync(string title, string? description, string fileName, string filePath, string contentType, long fileSize, int? uploadedBy)
+    public async Task<SyllabusFile> UploadAsync(string title, string? description, string fileName, byte[] fileData, string contentType, long fileSize, int? uploadedBy)
     {
         using var conn = _db.CreateConnection();
-        var sql = @"INSERT INTO ""SyllabusFiles"" (""title"", ""description"", ""file_name"", ""file_path"", ""content_type"", ""file_size"", ""uploaded_by"", ""created_at"", ""updated_at"")
-                     VALUES (@Title, @Description, @FileName, @FilePath, @ContentType, @FileSize, @UploadedBy, NOW(), NOW())
+        var sql = @"INSERT INTO ""SyllabusFiles"" (""title"", ""description"", ""file_name"", ""file_data"", ""content_type"", ""file_size"", ""uploaded_by"", ""created_at"", ""updated_at"")
+                     VALUES (@Title, @Description, @FileName, @FileData, @ContentType, @FileSize, @UploadedBy, NOW(), NOW())
                      RETURNING *";
-        return await conn.QueryFirstAsync<SyllabusFile>(sql, new { Title = title, Description = description, FileName = fileName, FilePath = filePath, ContentType = contentType, FileSize = fileSize, UploadedBy = uploadedBy });
+        return await conn.QueryFirstAsync<SyllabusFile>(sql, new { Title = title, Description = description, FileName = fileName, FileData = fileData, ContentType = contentType, FileSize = fileSize, UploadedBy = uploadedBy });
     }
 
     public async Task<bool> DeleteAsync(int id, int? userId)
     {
         using var conn = _db.CreateConnection();
-        var file = await conn.QueryFirstOrDefaultAsync<SyllabusFile>(
-            "SELECT * FROM \"SyllabusFiles\" WHERE \"id\" = @Id", new { Id = id });
-        if (file == null) return false;
-
         var affected = await conn.ExecuteAsync(
             "DELETE FROM \"SyllabusFiles\" WHERE \"id\" = @Id",
             new { Id = id });
-
-        if (affected > 0)
-        {
-            try
-            {
-                var fullPath = Path.Combine(Directory.GetCurrentDirectory(), file.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-                if (File.Exists(fullPath))
-                    File.Delete(fullPath);
-            }
-            catch { /* file cleanup best-effort */ }
-        }
         return affected > 0;
     }
 }

@@ -85,6 +85,8 @@ ALTER TABLE ""SyllabusFiles"" DROP CONSTRAINT IF EXISTS ""SyllabusFiles_uploaded
 ALTER TABLE ""SyllabusFiles"" ADD CONSTRAINT ""SyllabusFiles_uploaded_by_fkey"" FOREIGN KEY (""uploaded_by"") REFERENCES ""Users""(""id"") ON DELETE SET NULL;",
             ["008_add_student_id"] = @"
 ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""student_id"" VARCHAR(10) UNIQUE;",
+            ["009_syllabus_file_data"] = @"
+ALTER TABLE ""SyllabusFiles"" ADD COLUMN IF NOT EXISTS ""file_data"" BYTEA;",
 
         };
 

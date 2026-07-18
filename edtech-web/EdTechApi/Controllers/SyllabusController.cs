@@ -9,21 +9,18 @@ namespace EdTechApi.Controllers;
 public class SyllabusController : ControllerBase
 {
     private readonly ISyllabusService _syllabusService;
-    private readonly IWebHostEnvironment _env;
 
-    private static readonly string[] AllowedExtensions = { ".pdf", ".doc", ".docx", ".txt" };
-    private const long MaxFileSize = 20 * 1024 * 1024; // 20 MB
+    private static readonly string[] AllowedExtensions = { ".pdf", ".doc", ".docx", ".ppt", ".pptx", ".txt" };
+    private const long MaxFileSize = 20 * 1024 * 1024;
 
-    public SyllabusController(ISyllabusService syllabusService, IWebHostEnvironment env)
+    public SyllabusController(ISyllabusService syllabusService)
     {
         _syllabusService = syllabusService;
-        _env = env;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? search)
     {
-        var userId = HttpContext.Items["UserId"] as int?;
         var files = await _syllabusService.GetAllAsync(search);
         return Ok(new { success = true, data = files });
     }
@@ -31,7 +28,6 @@ public class SyllabusController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var userId = HttpContext.Items["UserId"] as int?;
         var file = await _syllabusService.GetByIdAsync(id);
         if (file == null)
             return NotFound(new { success = false, message = "Syllabus file not found" });
@@ -58,21 +54,12 @@ public class SyllabusController : ControllerBase
         if (file.Length > MaxFileSize)
             return BadRequest(new { success = false, message = "File exceeds maximum size of 20 MB" });
 
-        var uploadsDir = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "syllabus");
-        Directory.CreateDirectory(uploadsDir);
-
-        var safeFileName = $"{Guid.NewGuid():N}_{file.FileName}";
-        var filePath = Path.Combine(uploadsDir, safeFileName);
-
-        await using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        var relativePath = $"/uploads/syllabus/{safeFileName}";
+        using var ms = new MemoryStream();
+        await file.CopyToAsync(ms);
+        var fileData = ms.ToArray();
 
         var result = await _syllabusService.UploadAsync(
-            title, description, file.FileName, relativePath,
+            title, description, file.FileName, fileData,
             file.ContentType, file.Length, userId);
 
         return Created(string.Empty, new { success = true, message = "Syllabus file uploaded", data = result });
@@ -85,12 +72,8 @@ public class SyllabusController : ControllerBase
         if (file == null)
             return NotFound(new { success = false, message = "File not found" });
 
-        var filePath = Path.Combine(
-            _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
-            file.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-
-        if (!System.IO.File.Exists(filePath))
-            return NotFound(new { success = false, message = "File not found on disk" });
+        if (file.FileData == null || file.FileData.Length == 0)
+            return NotFound(new { success = false, message = "File data not found" });
 
         var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant();
         var contentType = ext switch
@@ -98,12 +81,13 @@ public class SyllabusController : ControllerBase
             ".pdf" => "application/pdf",
             ".doc" => "application/msword",
             ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            ".ppt" => "application/vnd.ms-powerpoint",
+            ".pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             ".txt" => "text/plain",
             _ => "application/octet-stream"
         };
 
-        var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        return File(stream, contentType, file.FileName);
+        return File(file.FileData, contentType, file.FileName);
     }
 
     [HttpDelete("{id}")]

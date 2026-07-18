@@ -17,7 +17,10 @@ public class SyllabusFile
     public string FileName { get; set; } = string.Empty;
 
     [JsonPropertyName("file_path")]
-    public string FilePath { get; set; } = string.Empty;
+    public string? FilePath { get; set; }
+
+    [JsonPropertyName("file_data")]
+    public byte[]? FileData { get; set; }
 
     [JsonPropertyName("content_type")]
     public string ContentType { get; set; } = string.Empty;
