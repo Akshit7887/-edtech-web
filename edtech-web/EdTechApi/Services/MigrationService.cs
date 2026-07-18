@@ -1,5 +1,6 @@
 using Dapper;
 using EdTechApi.Data;
+using EdTechApi.Models;
 
 namespace EdTechApi.Services;
 
@@ -82,6 +83,8 @@ CREATE INDEX IF NOT EXISTS idx_users_department_id ON ""Users""(""department_id"
 ALTER TABLE ""SyllabusFiles"" ALTER COLUMN ""uploaded_by"" DROP NOT NULL;
 ALTER TABLE ""SyllabusFiles"" DROP CONSTRAINT IF EXISTS ""SyllabusFiles_uploaded_by_fkey"";
 ALTER TABLE ""SyllabusFiles"" ADD CONSTRAINT ""SyllabusFiles_uploaded_by_fkey"" FOREIGN KEY (""uploaded_by"") REFERENCES ""Users""(""id"") ON DELETE SET NULL;",
+            ["008_add_student_id"] = @"
+ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""student_id"" VARCHAR(10) UNIQUE;",
 
         };
 
@@ -108,6 +111,31 @@ ALTER TABLE ""SyllabusFiles"" ADD CONSTRAINT ""SyllabusFiles_uploaded_by_fkey"" 
             {
                 _logger.LogError(ex, "Migration failed: {Migration}", name);
             }
+        }
+
+        // Backfill student_id for existing students who don't have one
+        var studentsWithoutId = (await conn.QueryAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"role\" = 'student' AND \"student_id\" IS NULL")).AsList();
+
+        if (studentsWithoutId.Count > 0)
+        {
+            _logger.LogInformation("Backfilling student_id for {Count} existing students", studentsWithoutId.Count);
+            var random = new Random();
+            foreach (var student in studentsWithoutId)
+            {
+                string sid;
+                do
+                {
+                    sid = random.Next(0, 1000000000).ToString("D10");
+                } while (await conn.QueryFirstOrDefaultAsync<string>(
+                    "SELECT 1 FROM \"Users\" WHERE \"student_id\" = @Sid",
+                    new { Sid = sid }) != null);
+
+                await conn.ExecuteAsync(
+                    "UPDATE \"Users\" SET \"student_id\" = @Sid WHERE \"id\" = @Id",
+                    new { Sid = sid, Id = student.Id });
+            }
+            _logger.LogInformation("Backfilled student_id for {Count} students", studentsWithoutId.Count);
         }
     }
 }

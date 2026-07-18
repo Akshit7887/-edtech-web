@@ -49,6 +49,7 @@ function saveSession(token, user) {
   localStorage.setItem('user_role', user.role);
   localStorage.setItem('user_id', user.id);
   localStorage.setItem('user_name', user.name);
+  if (user.student_id) localStorage.setItem('user_student_id', user.student_id);
 }
 
 function clearSession() {
@@ -57,6 +58,7 @@ function clearSession() {
   localStorage.removeItem('user_role');
   localStorage.removeItem('user_id');
   localStorage.removeItem('user_name');
+  localStorage.removeItem('user_student_id');
 }
 
 function getUser() {

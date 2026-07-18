@@ -25,6 +25,9 @@ public class User
     [JsonPropertyName("token_version")]
     public int TokenVersion { get; set; }
 
+    [JsonPropertyName("student_id")]
+    public string? StudentId { get; set; }
+
     [JsonPropertyName("created_at")]
     public DateTime CreatedAt { get; set; }
 

@@ -97,6 +97,10 @@
                 <span class="user-badge" id="profile-role">Student</span>
               </div>
               <div style="display:flex;justify-content:space-between;padding:var(--space-2) 0;border-bottom:1px solid var(--border-light)">
+                <span style="color:var(--text-muted);font-size:var(--text-sm)">Student ID</span>
+                <span style="font-size:var(--text-sm);font-family:var(--font-mono);font-weight:600;color:var(--primary)" id="profile-student-id">-</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:var(--space-2) 0;border-bottom:1px solid var(--border-light)">
                 <span style="color:var(--text-muted);font-size:var(--text-sm)">User ID</span>
                 <span style="font-size:var(--text-sm);font-family:var(--font-mono)" id="profile-id">-</span>
               </div>
@@ -129,6 +133,7 @@
       document.getElementById('profile-email').value = user.email || '';
       document.getElementById('profile-phone').value = user.phone || '';
       document.getElementById('profile-role').textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Student';
+      document.getElementById('profile-student-id').textContent = user.student_id || '-';
       document.getElementById('profile-id').textContent = user.id || '-';
 
       const avatar = document.getElementById('profile-avatar');

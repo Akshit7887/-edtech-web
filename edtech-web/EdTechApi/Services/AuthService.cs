@@ -45,6 +45,39 @@ public class AuthService : IAuthService
         _cache = cache;
     }
 
+    private async Task EnsureStudentIdAsync(IDbConnection conn, User user)
+    {
+        if (user.Role != "student" || !string.IsNullOrEmpty(user.StudentId))
+            return;
+
+        var random = new Random();
+        string sid;
+        do
+        {
+            sid = random.Next(0, 1000000000).ToString("D10");
+        } while (await conn.QueryFirstOrDefaultAsync<string>(
+            "SELECT 1 FROM \"Users\" WHERE \"student_id\" = @Sid",
+            new { Sid = sid }) != null);
+
+        await conn.ExecuteAsync(
+            "UPDATE \"Users\" SET \"student_id\" = @Sid WHERE \"id\" = @Id",
+            new { Sid = sid, Id = user.Id });
+        user.StudentId = sid;
+    }
+
+    private static UserInfo UserToInfo(User user)
+    {
+        return new UserInfo
+        {
+            Id = user.Id,
+            Name = user.Name,
+            Role = user.Role,
+            Phone = user.Phone,
+            Email = user.Email,
+            StudentId = user.StudentId
+        };
+    }
+
     public async Task<VerifyOtpResponse> AdminLoginAsync(string email, string password)
     {
         if (!email.Contains('@'))
@@ -67,14 +100,7 @@ public class AuthService : IAuthService
         return new VerifyOtpResponse
         {
             Token = token,
-            User = new UserInfo
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Role = user.Role,
-                Phone = user.Phone,
-                Email = user.Email
-            }
+            User = UserToInfo(user)
         };
     }
 
@@ -110,6 +136,7 @@ public class AuthService : IAuthService
                 var sql = @"INSERT INTO ""Users"" (""name"", ""role"", ""password_hash"", ""email"", ""created_at"", ""updated_at"")
                     VALUES (@Name, @Role, @PasswordHash, @Email, @CreatedAt, @UpdatedAt) RETURNING *";
                 user = await conn.QuerySingleAsync<User>(sql, newUser, tx);
+                await EnsureStudentIdAsync(conn, user);
             }
 
             if (user == null)
@@ -190,19 +217,14 @@ public class AuthService : IAuthService
             throw new AppException(400, expired != null ? "OTP has expired" : "Invalid or expired OTP");
         }
 
+        await EnsureStudentIdAsync(conn, user);
+
         var token = _jwt.GenerateToken(user.Id, user.Role, user.TokenVersion);
 
         return new VerifyOtpResponse
         {
             Token = token,
-            User = new UserInfo
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Role = user.Role,
-                Phone = user.Phone,
-                Email = user.Email
-            }
+            User = UserToInfo(user)
         };
     }
 
@@ -293,19 +315,14 @@ public class AuthService : IAuthService
               VALUES (@Name, @Role, @PasswordHash, @Email, @CreatedAt, @UpdatedAt) RETURNING *",
             user);
 
+        await EnsureStudentIdAsync(conn, user);
+
         var token = _jwt.GenerateToken(user.Id, user.Role, user.TokenVersion);
 
         return new VerifyOtpResponse
         {
             Token = token,
-            User = new UserInfo
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Role = user.Role,
-                Phone = user.Phone,
-                Email = user.Email
-            }
+            User = UserToInfo(user)
         };
     }
 
@@ -437,14 +454,7 @@ public class AuthService : IAuthService
         user = await conn.QuerySingleAsync<User>(sql, parameters);
         await _cache.RemoveAsync($"user:{userId}");
 
-        return new UserInfo
-        {
-            Id = user.Id,
-            Name = user.Name,
-            Role = user.Role,
-            Phone = user.Phone,
-            Email = user.Email
-        };
+        return UserToInfo(user);
     }
 
     public async Task<object> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
@@ -493,6 +503,7 @@ public class AuthService : IAuthService
                 @"INSERT INTO ""Users"" (""name"", ""role"", ""email"", ""password_hash"", ""created_at"", ""updated_at"")
                   VALUES (@Name, @Role, @Email, @PasswordHash, @CreatedAt, @UpdatedAt) RETURNING *",
                 user);
+                await EnsureStudentIdAsync(conn, user);
         }
         else if (user.Role != role)
         {
@@ -502,19 +513,14 @@ public class AuthService : IAuthService
                 new { Role = role, Name = name, Now = now, Id = user.Id });
         }
 
+        await EnsureStudentIdAsync(conn, user);
+
         var token = _jwt.GenerateToken(user.Id, user.Role, user.TokenVersion);
 
         return new VerifyOtpResponse
         {
             Token = token,
-            User = new UserInfo
-            {
-                Id = user.Id,
-                Name = user.Name,
-                Role = user.Role,
-                Phone = user.Phone,
-                Email = user.Email
-            }
+            User = UserToInfo(user)
         };
     }
 

@@ -82,6 +82,9 @@ public class UserInfo
 
     [JsonPropertyName("email")]
     public string? Email { get; set; }
+
+    [JsonPropertyName("student_id")]
+    public string? StudentId { get; set; }
 }
 
 public class RegisterRequest
