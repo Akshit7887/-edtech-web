@@ -6,8 +6,28 @@ using EdTechApi.Hubs;
 using EdTechApi.Middleware;
 using EdTechApi.Services;
 using EdTechApi.Models;
+using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Observability: Sentry ──
+var sentryDsn = Environment.GetEnvironmentVariable("SENTRY_DSN") ?? builder.Configuration["Sentry:Dsn"] ?? "";
+if (!string.IsNullOrEmpty(sentryDsn))
+{
+    builder.WebHost.UseSentry(o =>
+    {
+        o.Dsn = sentryDsn;
+        o.TracesSampleRate = 0.1;
+        o.ProfilesSampleRate = 0.1;
+        o.Environment = builder.Environment.EnvironmentName;
+    });
+}
+
+// ── App metrics ──
+var appMeter = new Meter("EdTechApi", "1.0.0");
+var requestCounter = appMeter.CreateCounter<long>("http.requests.total", description: "Total HTTP requests");
+var requestDuration = appMeter.CreateHistogram<double>("http.requests.duration_ms", "ms", "Request duration");
+var rateLimitHits = appMeter.CreateCounter<long>("ratelimit.hits.total", description: "Rate limit rejection count");
 
 // ── Secrets from environment variables (override placeholder config) ──
 string GetConfigOrEnv(string configKey, string envKey, string? defaultValue = null)
@@ -113,6 +133,26 @@ builder.Services.AddControllers(options =>
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+var _startTime = DateTime.UtcNow;
+
+// ── Metrics middleware (captures duration + count for every request) ──
+app.Use(async (context, next) =>
+{
+    var sw = System.Diagnostics.Stopwatch.StartNew();
+    try
+    {
+        await next();
+    }
+    finally
+    {
+        sw.Stop();
+        requestCounter.Add(1);
+        requestDuration.Record(sw.Elapsed.TotalMilliseconds,
+            new KeyValuePair<string, object?>("method", context.Request.Method),
+            new KeyValuePair<string, object?>("path", context.Request.Path),
+            new KeyValuePair<string, object?>("status", context.Response.StatusCode));
+    }
+});
 
 // ── Middleware pipeline ──
 app.UseRequestId();
@@ -168,6 +208,18 @@ app.MapGet("/api/health/ready", async (HttpContext context, IDbConnectionFactory
     return healthy
         ? Results.Ok(new { status = "healthy", checks, timestamp = DateTime.UtcNow })
         : Results.StatusCode(503);
+});
+
+// ── Metrics endpoint ──
+app.MapGet("/api/metrics", () =>
+{
+    var meters = new Dictionary<string, object>
+    {
+        ["app"] = "EdTechApi",
+        ["version"] = "1.0.0",
+        ["uptime"] = (DateTime.UtcNow - _startTime).TotalSeconds
+    };
+    return Results.Ok(meters);
 });
 
 // Legacy health endpoint (alias)

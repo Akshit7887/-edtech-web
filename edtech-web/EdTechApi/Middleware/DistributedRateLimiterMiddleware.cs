@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using EdTechApi.Services;
-using System.Threading.RateLimiting;
 
 namespace EdTechApi.Middleware;
 
