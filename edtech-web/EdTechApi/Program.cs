@@ -26,6 +26,7 @@ if (string.IsNullOrEmpty(dbConnectionString))
     dbConnectionString = Environment.GetEnvironmentVariable("SUPABASE_CONNECTION_STRING")
         ?? throw new InvalidOperationException("Missing connection string: set NEON_CONNECTION_STRING env var or ConnectionStrings:Neon in config.");
 }
+var dbReplicaConnectionString = GetConfigOrEnv("ConnectionStrings:NeonReplica", "NEON_REPLICA_CONNECTION_STRING", null);
 var jwtSecret = GetConfigOrEnv("Jwt:Secret", "JWT_SECRET");
 var geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY") ?? builder.Configuration["Gemini:ApiKey"] ?? "";
 var sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY") ?? builder.Configuration["SendGrid:ApiKey"] ?? "";
@@ -48,7 +49,7 @@ SqlMapper.SetTypeMap(typeof(SyllabusFile), new CustomPropertyTypeMap(
         ?? throw new InvalidOperationException($"No property mapped to column '{columnName}'")));
 
 // ── Database ──
-builder.Services.AddSingleton<IDbConnectionFactory>(new DbConnectionFactory(dbConnectionString));
+builder.Services.AddSingleton<IDbConnectionFactory>(new DbConnectionFactory(dbConnectionString, dbReplicaConnectionString));
 
 // ── Services ──
 builder.Services.AddSingleton<IJwtService, JwtService>();

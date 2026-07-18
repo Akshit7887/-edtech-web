@@ -26,6 +26,7 @@ public interface IExamService
 public class ExamService : IExamService
 {
     private readonly IDbConnectionFactory _db;
+    private readonly IRedisCacheService _cache;
     private readonly ILogger<ExamService> _logger;
     private static readonly ThreadLocal<Random> _random = new(() => new Random());
     private readonly IConfiguration _config;
@@ -37,13 +38,17 @@ public class ExamService : IExamService
         { "active", "closed" }
     };
 
-    public ExamService(IDbConnectionFactory db, ILogger<ExamService> logger, IConfiguration config, IHubService hub)
+    public ExamService(IDbConnectionFactory db, IRedisCacheService cache, ILogger<ExamService> logger, IConfiguration config, IHubService hub)
     {
         _db = db;
+        _cache = cache;
         _logger = logger;
         _config = config;
         _hub = hub;
     }
+
+    private static string ExamCacheKey(int examId) => $"exam:{examId}";
+    private static string ExamListCacheKey(int userId, string role) => $"exams:{role}:{userId}";
 
     public async Task<ExamListResponse> GetAllExamsAsync(int userId, string role, int page = 1, int limit = 20)
     {
@@ -117,13 +122,20 @@ public class ExamService : IExamService
 
     public async Task<ExamDetailResponse> GetExamByIdAsync(int examId, int userId, string role, int questionOffset = 0, int questionLimit = 100)
     {
-        using var conn = _db.CreateConnection();
+        var exam = await _cache.GetAsync<Exam>($"exam:{examId}");
+        if (exam == null)
+        {
+            using var conn = _db.CreateReadOnlyConnection();
+            exam = await conn.QueryFirstOrDefaultAsync<Exam>(
+                "SELECT * FROM \"Exams\" WHERE \"id\" = @Id", new { Id = examId });
+            if (exam != null) await _cache.SetAsync($"exam:{examId}", exam, TimeSpan.FromMinutes(5));
+        }
 
-        var exam = await conn.QueryFirstOrDefaultAsync<Exam>(
-            "SELECT * FROM \"Exams\" WHERE \"id\" = @Id", new { Id = examId });
         if (exam == null) throw new AppException(404, "Exam not found");
 
-        var allQuestions = (await conn.QueryAsync<QuestionPool>(
+        using var readConn = _db.CreateReadOnlyConnection();
+
+        var allQuestions = (await readConn.QueryAsync<QuestionPool>(
             "SELECT * FROM \"QuestionPool\" WHERE \"exam_id\" = @ExamId ORDER BY \"id\"",
             new { ExamId = examId })).ToList();
 
@@ -169,7 +181,7 @@ public class ExamService : IExamService
 
         if (role == "student")
         {
-            var assignment = await conn.QueryFirstOrDefaultAsync<StudentExamAssignment>(
+            var assignment = await readConn.QueryFirstOrDefaultAsync<StudentExamAssignment>(
                 "SELECT * FROM \"StudentExamAssignments\" WHERE \"student_id\" = @StudentId AND \"exam_id\" = @ExamId",
                 new { StudentId = userId, ExamId = examId });
             if (assignment == null) throw new AppException(403, "You are not assigned to this exam");
@@ -178,7 +190,7 @@ public class ExamService : IExamService
             var assignedQuestions = allQuestions.Where(q => assignedIds.Contains(q.Id)).ToList();
             var paginated = assignedQuestions.Skip(questionOffset).Take(questionLimit).ToList();
 
-            var attendance = await conn.QueryFirstOrDefaultAsync<Attendance>(
+            var attendance = await readConn.QueryFirstOrDefaultAsync<Attendance>(
                 "SELECT * FROM \"Attendance\" WHERE \"student_id\" = @StudentId AND \"exam_id\" = @ExamId",
                 new { StudentId = userId, ExamId = examId });
 
@@ -242,6 +254,7 @@ public class ExamService : IExamService
             });
 
         await _hub.NotifyTeacherDashboard(teacherId, "ExamCreated", new { exam.Id, exam.Title, exam.Subject, exam.Status });
+        await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
         return exam;
     }
 
@@ -284,6 +297,8 @@ public class ExamService : IExamService
             await _hub.NotifyTeacherDashboard(teacherId, "ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
             await _hub.NotifyExamGroup(examId, "ExamStatusChanged", new { exam.Id, exam.Status });
         }
+        await _cache.RemoveAsync(ExamCacheKey(examId));
+        await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
         return exam;
     }
 
@@ -303,6 +318,8 @@ public class ExamService : IExamService
         await conn.ExecuteAsync("DELETE FROM \"Attendance\" WHERE \"exam_id\" = @ExamId", new { ExamId = examId });
         await conn.ExecuteAsync("DELETE FROM \"Exams\" WHERE \"id\" = @Id", new { Id = examId });
 
+        await _cache.RemoveAsync(ExamCacheKey(examId));
+        await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
         await _hub.NotifyTeacherDashboard(teacherId, "ExamDeleted", new { examId = exam.Id, title = exam.Title });
     }
 
@@ -326,6 +343,8 @@ public class ExamService : IExamService
 
         await _hub.NotifyTeacherDashboard(teacherId, "ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
         await _hub.NotifyExamGroup(examId, "ExamActivated", new { exam.Id, exam.Title });
+        await _cache.RemoveAsync(ExamCacheKey(examId));
+        await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
         return exam;
     }
 
@@ -530,6 +549,9 @@ public class ExamService : IExamService
         await conn.ExecuteAsync(
             "UPDATE \"Exams\" SET \"total_questions\" = @Count, \"updated_at\" = @Now WHERE \"id\" = @Id",
             new { Count = publishedCount, Now = DateTime.UtcNow, Id = examId });
+
+        await _cache.RemoveAsync(ExamCacheKey(examId));
+        await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
 
         return new { publishedCount };
     }

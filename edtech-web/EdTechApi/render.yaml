@@ -24,3 +24,5 @@ services:
         sync: false
       - key: REDIS_CONNECTION_STRING
         sync: false
+      - key: NEON_REPLICA_CONNECTION_STRING
+        sync: false
