@@ -18,9 +18,11 @@
     <aside class="sidebar">
       <ul class="sidebar-nav">
         <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="profile.html" class="active"><span class="nav-icon">👤</span><span>Profile &amp; Settings</span></a></li>
-        <li><a href="results.html"><span class="nav-icon">📝</span><span>My Results</span></a></li>
-        <li><a href="notifications.html"><span class="nav-icon">🔔</span><span>Notifications</span></a></li>
+        <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
+        <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
+        <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html" class="active"><span class="nav-icon">👤</span><span>Profile</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
@@ -94,11 +96,7 @@
             <div class="card-body" style="display:flex;flex-direction:column;gap:var(--space-3)">
               <div style="display:flex;justify-content:space-between;padding:var(--space-2) 0;border-bottom:1px solid var(--border-light)">
                 <span style="color:var(--text-muted);font-size:var(--text-sm)">Role</span>
-                <span class="user-badge" id="profile-role">Student</span>
-              </div>
-              <div style="display:flex;justify-content:space-between;padding:var(--space-2) 0;border-bottom:1px solid var(--border-light)">
-                <span style="color:var(--text-muted);font-size:var(--text-sm)">Student ID</span>
-                <span style="font-size:var(--text-sm);font-family:var(--font-mono);font-weight:600;color:var(--primary)" id="profile-student-id">-</span>
+                <span class="user-badge" id="profile-role">Admin</span>
               </div>
               <div style="display:flex;justify-content:space-between;padding:var(--space-2) 0;border-bottom:1px solid var(--border-light)">
                 <span style="color:var(--text-muted);font-size:var(--text-sm)">User ID</span>
@@ -120,7 +118,7 @@
   <script src="../../js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      if (!requireRole('student')) return;
+      if (!requireRole('admin')) return;
       setupNavbar();
       loadProfile();
     });
@@ -132,8 +130,7 @@
       document.getElementById('profile-name').value = user.name || '';
       document.getElementById('profile-email').value = user.email || '';
       document.getElementById('profile-phone').value = user.phone || '';
-      document.getElementById('profile-role').textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Student';
-      document.getElementById('profile-student-id').textContent = user.student_id || '-';
+      document.getElementById('profile-role').textContent = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Admin';
       document.getElementById('profile-id').textContent = user.id || '-';
 
       const avatar = document.getElementById('profile-avatar');

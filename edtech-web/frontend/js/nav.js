@@ -130,6 +130,7 @@
     if (role === 'student') {
       return [
         { label: 'Dashboard',    href: pfx + 'dashboard.html',     icon: 'dashboard' },
+        { label: 'Profile & Settings', href: pfx + 'profile.html', icon: 'profile' },
         { type: 'divider' },
         { label: 'My Results',   href: pfx + 'results.html',       icon: 'results' },
         { label: 'Practice',     href: pfx + 'practice.html',       icon: 'practice' },
@@ -137,13 +138,13 @@
         { label: 'Review',       href: pfx + 'review.html',         icon: 'review' },
         { type: 'divider' },
         { label: 'Notifications',href: pfx + 'notifications.html',  icon: 'notify' },
-        { label: 'Profile',      href: pfx + 'profile.html',        icon: 'profile' },
       ];
     }
 
     if (role === 'teacher') {
       return [
         { label: 'Dashboard',    href: pfx + 'dashboard.html',     icon: 'dashboard' },
+        { label: 'Profile & Settings', href: pfx + 'profile.html', icon: 'profile' },
         { type: 'divider' },
         { label: 'Classes',      href: pfx + 'classes.html',       icon: 'classes' },
         { label: 'Students',     href: pfx + 'students.html',      icon: 'users' },
@@ -162,6 +163,7 @@
     if (role === 'admin') {
       return [
         { label: 'Dashboard',    href: '/pages/admin/dashboard.html',  icon: 'dashboard' },
+        { label: 'Profile & Settings', href: '/pages/admin/profile.html', icon: 'profile' },
         { type: 'divider' },
         { label: 'Users',        href: '/pages/admin/users.html',       icon: 'users' },
         { label: 'Exams',        href: '/pages/admin/exams.html',       icon: 'exam' },
