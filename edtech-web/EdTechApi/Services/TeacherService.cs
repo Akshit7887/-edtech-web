@@ -85,6 +85,7 @@ public class TeacherService : ITeacherService
                 name = s.Name,
                 email = s.Email,
                 phone = s.Phone,
+                student_id = s.StudentId,
                 registeredAt = s.CreatedAt,
                 totalExams = sess.Count,
                 completedExams = completed.Count,
