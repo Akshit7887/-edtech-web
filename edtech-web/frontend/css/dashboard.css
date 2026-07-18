@@ -666,6 +666,158 @@ tbody tr:hover {
   }
 }
 
+/* ── Student Checklist (Add to Class modal) ── */
+.student-checklist {
+  max-height: 350px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+}
+
+.student-checklist-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius);
+  transition: background var(--duration-fast) var(--ease);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.student-checklist-item:last-child {
+  border-bottom: none;
+}
+
+.student-checklist-item:hover:not(.disabled) {
+  background: var(--bg-subtle);
+}
+
+.student-checklist-item.disabled {
+  opacity: 0.6;
+  cursor: default;
+  background: var(--bg-muted);
+}
+
+.student-checklist-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.student-checklist-item.disabled input[type="checkbox"] {
+  cursor: default;
+}
+
+.student-checklist-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.student-checklist-name {
+  font-weight: 500;
+  font-size: var(--text-sm);
+}
+
+.student-checklist-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.student-checklist-badge {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  background: var(--bg-muted);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.student-checklist-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+}
+
+/* ── Class Detail Table ── */
+.class-detail-students {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.class-detail-students table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.class-detail-students th {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+}
+
+.class-detail-students td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.class-detail-students tr:last-child td {
+  border-bottom: none;
+}
+
+.class-detail-students tr:hover {
+  background: var(--bg-subtle);
+}
+
+.class-detail-meta {
+  color: var(--text-muted);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+/* ── Search bar in modals ── */
+.modal-search {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.modal-search .form-group {
+  flex: 1;
+}
+
+/* ── Animations for new components ── */
+@keyframes checklist-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.student-checklist-item {
+  animation: checklist-fade-in 0.3s ease both;
+}
+
+.student-checklist-item:nth-child(1) { animation-delay: 0s; }
+.student-checklist-item:nth-child(2) { animation-delay: 0.03s; }
+.student-checklist-item:nth-child(3) { animation-delay: 0.06s; }
+.student-checklist-item:nth-child(4) { animation-delay: 0.09s; }
+.student-checklist-item:nth-child(5) { animation-delay: 0.12s; }
+.student-checklist-item:nth-child(6) { animation-delay: 0.15s; }
+.student-checklist-item:nth-child(7) { animation-delay: 0.18s; }
+.student-checklist-item:nth-child(8) { animation-delay: 0.21s; }
+.student-checklist-item:nth-child(9) { animation-delay: 0.24s; }
+.student-checklist-item:nth-child(10) { animation-delay: 0.27s; }
+
 @media (max-width: 480px) {
   .stats-row {
     grid-template-columns: 1fr 1fr;

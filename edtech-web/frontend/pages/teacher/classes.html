@@ -108,25 +108,25 @@
       window._stClassId = classId;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'st-modal';
       overlay.innerHTML = `
-        <div class="modal" style="max-width:600px"><div class="modal-header"><h3>Add Students to Class</h3><button class="modal-close" onclick="closeStModal()">×</button></div>
+        <div class="modal modal-lg"><div class="modal-header"><h3>Add Students to Class</h3><button class="modal-close" onclick="closeStModal()">×</button></div>
         <div class="modal-body">
-          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">Select students to add</p>
-          <div style="margin-bottom:12px">
-            <input class="form-input" id="st-filter" placeholder="Filter by name or ID..." oninput="renderStudentChecklist()" style="width:100%">
+          <p class="text-muted" style="margin-bottom:var(--space-3)">Select students to add to this class</p>
+          <div style="margin-bottom:var(--space-3)">
+            <input class="form-input" id="st-filter" placeholder="Filter by name or ID..." oninput="renderStudentChecklist()">
           </div>
-          <div id="st-checklist" style="max-height:350px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:4px">
-            <div class="loading-overlay" style="position:static;padding:20px"><div class="spinner"></div><span>Loading students...</span></div>
+          <div id="st-checklist" class="student-checklist">
+            <div class="loading-overlay" style="position:static;padding:var(--space-8)"><div class="spinner"></div><span>Loading students...</span></div>
           </div>
-          <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
-            <span id="st-selected-count" style="color:var(--text-muted);font-size:0.85rem">0 selected</span>
-            <div style="display:flex;gap:4px">
-              <button class="btn btn-sm btn-secondary" onclick="selectAllStudents()">Select All</button>
-              <button class="btn btn-sm btn-secondary" onclick="deselectAllStudents()">Clear</button>
+          <div class="student-checklist-actions">
+            <span id="st-selected-count" class="text-muted" style="font-size:var(--text-sm)">0 selected</span>
+            <div style="display:flex;gap:var(--space-1)">
+              <button class="btn btn-sm btn-ghost" onclick="selectAllStudents()">Select All</button>
+              <button class="btn btn-sm btn-ghost" onclick="deselectAllStudents()">Clear</button>
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="closeStModal()">Cancel</button>
+          <button class="btn btn-ghost" onclick="closeStModal()">Cancel</button>
           <button class="btn btn-primary" onclick="confirmAddStudents()">Add Selected</button>
         </div></div>
       `;
@@ -179,13 +179,13 @@
         const disabled = isEnrolled ? 'disabled' : '';
         const checked = isEnrolled || isSelected ? 'checked' : '';
         return `
-          <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:${isEnrolled?'default':'pointer'};border-radius:6px;background:${isEnrolled?'var(--surface-alt)':'transparent'};opacity:${isEnrolled?0.6:1};border-bottom:1px solid var(--border-light)">
-            <input type="checkbox" ${checked} ${disabled} onchange="toggleStudentSelect(${s.id},this.checked)" style="width:18px;height:18px;accent-color:var(--accent)">
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:500;font-size:0.9rem">${escHtml(s.name)}</div>
-              <div style="font-size:0.8rem;color:var(--text-muted)">${s.student_id||''} ${s.email?'· '+escHtml(s.email):''}</div>
+          <label class="student-checklist-item${isEnrolled?' disabled':''}">
+            <input type="checkbox" ${checked} ${disabled} onchange="toggleStudentSelect(${s.id},this.checked)">
+            <div class="student-checklist-info">
+              <div class="student-checklist-name">${escHtml(s.name)}</div>
+              <div class="student-checklist-meta">${escHtml(s.student_id||'')} ${s.email?'· '+escHtml(s.email):''}</div>
             </div>
-            ${isEnrolled ? '<span style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap">Already in class</span>' : ''}
+            ${isEnrolled ? '<span class="student-checklist-badge">Already in class</span>' : ''}
           </label>
         `;
       }).join('');
@@ -234,20 +234,20 @@
         const cls = res.data;
         const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'detail-modal';
         overlay.innerHTML = `
-          <div class="modal" style="max-width:600px"><div class="modal-header"><h3>${escHtml(cls.name)}</h3><button class="modal-close" onclick="document.getElementById('detail-modal').remove()">×</button></div>
+          <div class="modal modal-lg"><div class="modal-header"><h3>${escHtml(cls.name)}</h3><button class="modal-close" onclick="document.getElementById('detail-modal').remove()">×</button></div>
           <div class="modal-body">
-            <p style="color:var(--text-muted);margin-bottom:12px">${escHtml(cls.subject||'General')} · ${cls.student_count} student(s)</p>
-            <p style="margin-bottom:16px">${escHtml(cls.description)||'<span style="color:var(--text-muted)">No description</span>'}</p>
-            <h4 style="margin-bottom:8px">Students</h4>
+            <p class="class-detail-meta">${escHtml(cls.subject||'General')} · ${cls.student_count} student(s)</p>
+            <p style="margin-bottom:var(--space-4)">${escHtml(cls.description)||'<span class="text-muted">No description</span>'}</p>
+            <h4 style="margin-bottom:var(--space-2);font-size:var(--text-sm);font-weight:600">Students</h4>
             ${cls.students && cls.students.length ? `
-              <div style="max-height:300px;overflow-y:auto">
-                <table class="data-table" style="width:100%">
+              <div class="class-detail-students">
+                <table>
                   <thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th></th></tr></thead>
                   <tbody>
                     ${cls.students.map(s => `
                       <tr>
                         <td>${escHtml(s.name)}</td>
-                        <td style="font-family:mono">${s.student_id||'-'}</td>
+                        <td class="mono">${s.student_id||'-'}</td>
                         <td>${escHtml(s.email||'')}</td>
                         <td><button class="btn btn-sm btn-danger" onclick="handleRemoveStudentFromClass(${classId},${s.id})">Remove</button></td>
                       </tr>
@@ -255,9 +255,9 @@
                   </tbody>
                 </table>
               </div>
-            ` : '<p style="color:var(--text-muted)">No students in this class yet</p>'}
+            ` : '<p class="text-muted">No students in this class yet</p>'}
           </div>
-          <div class="modal-footer"><button class="btn btn-secondary" onclick="document.getElementById('detail-modal').remove()">Close</button></div></div>
+          <div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById('detail-modal').remove()">Close</button></div></div>
         `;
         document.body.appendChild(overlay);
       } catch (e) { showAlert(e.message, 'error'); }
