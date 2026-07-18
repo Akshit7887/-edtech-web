@@ -46,7 +46,7 @@ public class TeacherService : ITeacherService
     {
         using var conn = _db.CreateConnection();
         page = Math.Max(1, page);
-        limit = Math.Min(100, Math.Max(1, limit));
+        limit = Math.Min(10000, Math.Max(1, limit));
         var offset = (page - 1) * limit;
 
         var total = await conn.ExecuteScalarAsync<int>(

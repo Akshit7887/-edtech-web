@@ -87,6 +87,8 @@ ALTER TABLE ""SyllabusFiles"" ADD CONSTRAINT ""SyllabusFiles_uploaded_by_fkey"" 
 ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""student_id"" VARCHAR(10) UNIQUE;",
             ["009_syllabus_file_data"] = @"
 ALTER TABLE ""SyllabusFiles"" ADD COLUMN IF NOT EXISTS ""file_data"" BYTEA;",
+            ["010_classes_add_subject"] = @"
+ALTER TABLE ""Classes"" ADD COLUMN IF NOT EXISTS ""subject"" VARCHAR(100);",
 
         };
 

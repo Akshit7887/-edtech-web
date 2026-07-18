@@ -55,12 +55,12 @@
         }
         container.innerHTML = '<div class="exam-grid">' + classes.map((c, i) => `
           <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s">
-            <div class="exam-card-title">${c.name}</div>
+            <div class="exam-card-title">${escHtml(c.name)}</div>
             <div class="exam-card-meta">
-              <span>📖 ${c.subject || 'General'}</span>
+              <span>📖 ${escHtml(c.subject || 'General')}</span>
               <span>👥 ${c.student_count || 0} students</span>
             </div>
-            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">${c.description || ''}</p>
+            <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">${escHtml(c.description) || ''}</p>
             <div class="exam-card-footer">
               <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(c.created_at)}</span>
               <div style="display:flex;gap:4px">
