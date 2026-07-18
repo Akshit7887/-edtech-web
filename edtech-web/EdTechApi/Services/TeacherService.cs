@@ -114,9 +114,20 @@ public class TeacherService : ITeacherService
               VALUES (@Name, 'student', @Email, @PasswordHash, @Now, @Now) RETURNING *",
             new { Name = name, Email = email, PasswordHash = hash, Now = now });
 
+        // Assign a 10-digit student_id
+        var random = new Random();
+        string sid;
+        do {
+            sid = random.Next(0, 1000000000).ToString("D10");
+        } while (await conn.QueryFirstOrDefaultAsync<string>(
+            "SELECT 1 FROM \"Users\" WHERE \"student_id\" = @Sid", new { Sid = sid }) != null);
+        user = await conn.QuerySingleAsync<User>(
+            "UPDATE \"Users\" SET \"student_id\" = @Sid WHERE \"id\" = @Id RETURNING *",
+            new { Sid = sid, Id = user.Id });
+
         await _hub.NotifyTeacherDashboard(teacherId, "StudentCreated", new { id = user.Id, name = user.Name, email = user.Email });
 
-        return new { id = user.Id, name = user.Name, email = user.Email, role = user.Role, created_at = user.CreatedAt };
+        return new { id = user.Id, name = user.Name, email = user.Email, student_id = user.StudentId, role = user.Role, created_at = user.CreatedAt };
     }
 
     public async Task<object> GetStudentDetailAsync(int studentId)
