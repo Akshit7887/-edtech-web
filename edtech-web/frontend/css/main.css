@@ -1672,6 +1672,66 @@
 }
 
 /* Backdrop */
+@keyframes slideInItem {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pageFlipOut {
+  0%   { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
+  100% { transform: perspective(1200px) rotateY(-90deg); opacity: 0; }
+}
+
+@keyframes pageFlipIn {
+  0%   { transform: perspective(1200px) rotateY(90deg); opacity: 0; }
+  100% { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
+}
+
+body.page-flip-out {
+  animation: pageFlipOut 0.35s ease-in forwards;
+  transform-origin: left center;
+}
+
+body.page-flip-in {
+  animation: pageFlipIn 0.4s ease-out forwards;
+  transform-origin: left center;
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+@keyframes logoBounce {
+  0%   { transform: scale(1) rotate(0deg); }
+  25%  { transform: scale(1.15) rotate(-5deg); }
+  50%  { transform: scale(0.95) rotate(3deg); }
+  75%  { transform: scale(1.05) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes logoShine {
+  0%   { filter: brightness(1); }
+  50%  { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}
+
+.navbar-brand .brand-logo {
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+.navbar-brand .brand-logo svg {
+  transition: transform 0.3s var(--ease);
+}
+
+.navbar-brand:hover .brand-logo svg {
+  animation: logoBounce 0.5s ease;
+}
+
+.navbar-brand .brand-logo.shine {
+  animation: logoShine 2s ease-in-out infinite;
+}
+
 .mobile-menu-backdrop {
   position: fixed;
   inset: 0;
