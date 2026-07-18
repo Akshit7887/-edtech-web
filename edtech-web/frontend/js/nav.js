@@ -60,26 +60,59 @@
   }
 
   // ── Hamburger menu (skipped on exam.html) ──
-  var _panelCreated = false;
-  var _panel, _backdrop, _btn;
+  var panel, backdrop, btn;
 
-  function ensurePanel() {
-    if (_panelCreated) return;
-    _panelCreated = true;
+  function closeMenu() {
+    if (!panel) return;
+    panel.classList.remove('open');
+    backdrop.classList.remove('open');
+    if (btn) {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+    document.body.style.overflow = '';
+  }
 
+  function openMenu() {
+    if (!panel) return;
+    panel.classList.add('open');
+    backdrop.classList.add('open');
+    btn.classList.add('active');
+    btn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function initHamburger() {
     var navbar = document.querySelector('.navbar');
-    if (!navbar) return;
+    if (!navbar || btn) return;
 
-    var navbarNav = navbar.querySelector('.navbar-nav');
+    btn = navbar.querySelector('.hamburger-btn');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.className = 'hamburger-btn';
+      navbar.appendChild(btn);
+    }
+    btn.setAttribute('aria-label', 'Open navigation menu');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('type', 'button');
+    if (!btn.querySelector('svg')) {
+      btn.innerHTML =
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon">' +
+          '<line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/>' +
+          '<line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/>' +
+          '<line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/>' +
+        '</svg>';
+    }
 
-    _backdrop = document.createElement('div');
-    _backdrop.className = 'mobile-menu-backdrop';
+    // Create panel + backdrop immediately
+    backdrop = document.createElement('div');
+    backdrop.className = 'mobile-menu-backdrop';
 
-    _panel = document.createElement('div');
-    _panel.className = 'mobile-menu';
-    _panel.setAttribute('role', 'dialog');
-    _panel.setAttribute('aria-modal', 'true');
-    _panel.setAttribute('aria-label', 'Navigation menu');
+    panel = document.createElement('div');
+    panel.className = 'mobile-menu';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Navigation menu');
 
     var closeBtn = document.createElement('button');
     closeBtn.className = 'mobile-menu-close';
@@ -89,21 +122,22 @@
       '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
         '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>' +
       '</svg>';
-    _panel.appendChild(closeBtn);
+    panel.appendChild(closeBtn);
 
+    var navbarNav = navbar.querySelector('.navbar-nav');
     if (navbarNav) {
       var navClone = navbarNav.cloneNode(true);
       navClone.className = 'mobile-nav-list';
       var userItem = navClone.querySelector('.navbar-user');
       if (userItem) userItem.remove();
-      _panel.appendChild(navClone);
+      panel.appendChild(navClone);
     }
 
     var sidebar = document.querySelector('.sidebar-nav');
     if (sidebar) {
       var sideClone = sidebar.cloneNode(true);
       sideClone.className = 'mobile-sidebar-list';
-      _panel.appendChild(sideClone);
+      panel.appendChild(sideClone);
     }
 
     if (!navbarNav && !sidebar) {
@@ -123,91 +157,35 @@
         li.appendChild(a);
         defaultList.appendChild(li);
       });
-      _panel.appendChild(defaultList);
+      panel.appendChild(defaultList);
     }
 
-    document.body.appendChild(_backdrop);
-    document.body.appendChild(_panel);
+    document.body.appendChild(backdrop);
+    document.body.appendChild(panel);
 
-    _backdrop.addEventListener('click', closeMenu);
-    closeBtn.addEventListener('click', closeMenu);
-
-    _panel.querySelectorAll('a').forEach(function (link) {
-      link.addEventListener('click', closeMenu);
+    // Click handler on btn
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (panel.classList.contains('open')) closeMenu();
+      else openMenu();
     });
+
+    closeBtn.addEventListener('click', closeMenu);
+    backdrop.addEventListener('click', closeMenu);
 
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && _panel.classList.contains('open')) closeMenu();
+      if (e.key === 'Escape' && panel.classList.contains('open')) closeMenu();
     });
-  }
 
-  function openMenu() {
-    ensurePanel();
-    _panel.classList.add('open');
-    _backdrop.classList.add('open');
-    _btn.classList.add('active');
-    _btn.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeMenu() {
-    if (!_panel) return;
-    _panel.classList.remove('open');
-    _backdrop.classList.remove('open');
-    _btn.classList.remove('active');
-    _btn.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-  }
-
-  function initHamburger() {
-    var navbar = document.querySelector('.navbar');
-    if (!navbar) return;
-    if (_btn) return;
-
-    _btn = navbar.querySelector('.hamburger-btn');
-    if (!_btn) {
-      _btn = document.createElement('button');
-      _btn.className = 'hamburger-btn';
-      navbar.appendChild(_btn);
-    }
-    _btn.setAttribute('aria-label', 'Open navigation menu');
-    _btn.setAttribute('aria-expanded', 'false');
-    _btn.setAttribute('type', 'button');
-    if (!_btn.querySelector('svg')) {
-      _btn.innerHTML =
-        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon">' +
-          '<line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/>' +
-          '<line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/>' +
-          '<line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/>' +
-        '</svg>';
-    }
-
-    // Attach click handler immediately — no DOMContentLoaded wait
-    _btn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      if (_panel && _panel.classList.contains('open')) closeMenu();
-      else openMenu();
+    panel.querySelectorAll('a').forEach(function (link) {
+      link.addEventListener('click', closeMenu);
     });
   }
 
   // ── Boot ──
   initPWA();
   initBackButton();
-
-  // Init hamburger immediately (button exists in HTML, just attach listener)
   if (!isExamPage) {
     initHamburger();
-  }
-
-  // Ensure panel is created by DOMContentLoaded (or right now if already past)
-  function bootPanel() {
-    if (!isExamPage && !_panelCreated) {
-      ensurePanel();
-    }
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootPanel);
-  } else {
-    bootPanel();
   }
 })();
