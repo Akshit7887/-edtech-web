@@ -3,13 +3,11 @@ using EdTechApi.Middleware;
 using EdTechApi.Models;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
 [ApiController]
 [Route("api/teacher")]
-[EnableRateLimiting("ApiPolicy")]
 [RequireRole("teacher")]
 public class TeacherController : ControllerBase
 {

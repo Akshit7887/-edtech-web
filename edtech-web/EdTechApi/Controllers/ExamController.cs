@@ -3,13 +3,11 @@ using EdTechApi.Middleware;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
 [ApiController]
 [Route("api/exams")]
-[EnableRateLimiting("ApiPolicy")]
 [RequireAuth]
 public class ExamController : ControllerBase
 {

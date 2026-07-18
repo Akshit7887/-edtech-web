@@ -31,8 +31,9 @@ public class AuthService : IAuthService
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
     private readonly ILogger<AuthService> _logger;
+    private readonly IRedisCacheService _cache;
 
-    public AuthService(IDbConnectionFactory db, IJwtService jwt, IOtpService otp, IEmailService email, IConfiguration config, IWebHostEnvironment env, ILogger<AuthService> logger)
+    public AuthService(IDbConnectionFactory db, IJwtService jwt, IOtpService otp, IEmailService email, IConfiguration config, IWebHostEnvironment env, ILogger<AuthService> logger, IRedisCacheService cache)
     {
         _db = db;
         _jwt = jwt;
@@ -41,6 +42,7 @@ public class AuthService : IAuthService
         _config = config;
         _env = env;
         _logger = logger;
+        _cache = cache;
     }
 
     public async Task<VerifyOtpResponse> AdminLoginAsync(string email, string password)
@@ -388,6 +390,7 @@ public class AuthService : IAuthService
         await conn.ExecuteAsync(
             "UPDATE \"Users\" SET \"token_version\" = @Version, \"updated_at\" = @Now WHERE \"id\" = @Id",
             new { Version = newVersion, Now = DateTime.UtcNow, Id = user.Id });
+        await _cache.RemoveAsync($"user:{user.Id}");
 
         var newToken = _jwt.GenerateToken(user.Id, user.Role, newVersion);
         var refreshToken = _jwt.GenerateRefreshToken(user.Id, user.Role, newVersion);
@@ -432,6 +435,7 @@ public class AuthService : IAuthService
 
         var sql = $"UPDATE \"Users\" SET {string.Join(", ", setClauses)} WHERE \"id\" = @Id RETURNING *";
         user = await conn.QuerySingleAsync<User>(sql, parameters);
+        await _cache.RemoveAsync($"user:{userId}");
 
         return new UserInfo
         {
@@ -459,6 +463,7 @@ public class AuthService : IAuthService
         await conn.ExecuteAsync(
             "UPDATE \"Users\" SET \"password_hash\" = @Hash, \"token_version\" = @Version, \"updated_at\" = @Now WHERE \"id\" = @Id",
             new { Hash = hash, Version = newVersion, Now = DateTime.UtcNow, Id = userId });
+        await _cache.RemoveAsync($"user:{userId}");
 
         return new { success = true, message = "Password updated successfully. Please log in again." };
     }
@@ -523,5 +528,6 @@ public class AuthService : IAuthService
             throw new AppException(404, "User not found");
 
         await conn.ExecuteAsync("DELETE FROM \"Users\" WHERE \"id\" = @Id", new { Id = userId });
+        await _cache.RemoveAsync($"user:{userId}");
     }
 }

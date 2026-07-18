@@ -4,7 +4,6 @@ using EdTechApi.Middleware;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.Controllers;
 
@@ -21,7 +20,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("admin-login")]
-    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> AdminLogin([FromBody] AdminLoginRequest request)
     {
         var result = await _authService.AdminLoginAsync(request.Email, request.Password);
@@ -30,7 +28,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("generate-otp")]
-    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> GenerateOtp([FromBody] GenerateOtpRequest request)
     {
         var result = await _authService.GenerateOtpAsync(request.Identifier, request.Role, request.Password);
@@ -39,7 +36,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("verify-otp")]
-    [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
     {
         var result = await _authService.VerifyOtpAsync(request.Identifier, request.OtpCode, request.Role);
@@ -48,7 +44,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("send-register-otp")]
-    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> SendRegisterOtp([FromBody] RegisterRequest request)
     {
         var result = await _authService.SendRegisterOtpAsync(request.Name, request.Identifier, request.Password, request.Role);
@@ -57,7 +52,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("verify-register-otp")]
-    [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> VerifyRegisterOtp([FromBody] VerifyRegisterOtpRequest request)
     {
         var result = await _authService.VerifyRegisterOtpAsync(request.Identifier, request.OtpCode);
@@ -66,7 +60,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("forgot-password")]
-    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
     {
         var result = await _authService.ForgotPasswordAsync(request.Identifier);
@@ -75,7 +68,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("reset-password")]
-    [EnableRateLimiting("OtpPolicy")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
     {
         var result = await _authService.ResetPasswordAsync(request.Identifier, request.OtpCode, request.NewPassword);
@@ -84,7 +76,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("refresh-token")]
-    [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
     {
         var result = await _authService.RefreshTokenAsync(request.Token);
@@ -93,7 +84,6 @@ public class AuthController : ControllerBase
 
     [RequireAuth]
     [HttpPut("profile")]
-    [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
     {
         var userId = GetUserId();
@@ -103,7 +93,6 @@ public class AuthController : ControllerBase
 
     [RequireAuth]
     [HttpPost("change-password")]
-    [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         var userId = GetUserId();
@@ -113,7 +102,6 @@ public class AuthController : ControllerBase
 
     [RequireAuth]
     [HttpDelete("profile")]
-    [EnableRateLimiting("ApiPolicy")]
     public async Task<IActionResult> DeleteProfile()
     {
         var userId = GetUserId();
@@ -123,7 +111,6 @@ public class AuthController : ControllerBase
 
     [AllowAnonymous]
     [HttpPost("external-session")]
-    [EnableRateLimiting("AuthPolicy")]
     public async Task<IActionResult> ExternalSession([FromBody] ExternalAuthRequest request)
     {
         var result = await _authService.ExternalAuthSessionAsync(request.Email, request.Name, request.Role, request.ExternalUserId);

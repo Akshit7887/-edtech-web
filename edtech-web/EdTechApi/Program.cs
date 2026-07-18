@@ -1,8 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Dapper;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Threading.RateLimiting;
 using EdTechApi.Data;
 using EdTechApi.Hubs;
 using EdTechApi.Middleware;
@@ -79,6 +77,9 @@ builder.Services.AddSingleton<IHubService, HubService>();
 
 builder.Services.AddHttpContextAccessor();
 
+// ── Redis Cache ──
+builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+
 // ── CORS ──
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
     ?? new[] { "http://localhost:8081", "http://localhost:5000" };
@@ -91,39 +92,6 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
-    });
-});
-
-// ── Rate Limiting ──
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-    // Strict policy for auth endpoints
-    options.AddFixedWindowLimiter("AuthPolicy", cfg =>
-    {
-        cfg.PermitLimit = 5;
-        cfg.Window = TimeSpan.FromMinutes(1);
-        cfg.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        cfg.QueueLimit = 0;
-    });
-
-    // Moderate policy for general API
-    options.AddFixedWindowLimiter("ApiPolicy", cfg =>
-    {
-        cfg.PermitLimit = 100;
-        cfg.Window = TimeSpan.FromMinutes(1);
-        cfg.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        cfg.QueueLimit = 5;
-    });
-
-    // Strict policy for OTP verification
-    options.AddFixedWindowLimiter("OtpPolicy", cfg =>
-    {
-        cfg.PermitLimit = 10;
-        cfg.Window = TimeSpan.FromMinutes(1);
-        cfg.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        cfg.QueueLimit = 0;
     });
 });
 
@@ -146,7 +114,7 @@ var app = builder.Build();
 
 // ── Middleware pipeline ──
 app.UseRequestId();
-app.UseRateLimiter();
+app.UseDistributedRateLimiter();
 app.UseCors();
 app.UseErrorHandler();
 app.UseStaticFiles();

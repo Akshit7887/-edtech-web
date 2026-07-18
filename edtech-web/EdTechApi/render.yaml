@@ -20,3 +20,5 @@ services:
         sync: false
       - key: GOOGLE_FRONTEND_REDIRECT
         sync: false
+      - key: REDIS_CONNECTION_STRING
+        sync: false
