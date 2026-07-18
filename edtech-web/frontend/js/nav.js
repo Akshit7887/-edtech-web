@@ -35,8 +35,6 @@
   }
 
   // ── Page Flip Transitions ──
-  var _navigating = false;
-
   function initPageFlip() {
     var isInternal = document.referrer && document.referrer.indexOf(window.location.host) !== -1;
     if (isInternal) {
@@ -49,27 +47,11 @@
     if (typeof window.goTo === 'function') {
       var orig = window.goTo;
       window.goTo = function (path) {
-        if (_navigating) return;
-        _navigating = true;
         document.body.classList.remove('page-flip-in');
         document.body.classList.add('page-flip-out');
         setTimeout(function () { orig(path); }, 300);
       };
     }
-
-    document.addEventListener('click', function (e) {
-      if (_navigating) return;
-      var link = e.target.closest('a');
-      if (!link) return;
-      var href = link.getAttribute('href');
-      if (!href || href === '#' || href.indexOf('#') === 0) return;
-      if (link.getAttribute('target') === '_blank') return;
-      if (link.hasAttribute('download')) return;
-      if (link.hostname !== window.location.hostname && href.indexOf('/') !== 0) return;
-      if (window.location.pathname.indexOf('exam.html') !== -1) return;
-      e.preventDefault();
-      goTo(href);
-    });
   }
 
   // ── Dynamic Logo Icon ──
