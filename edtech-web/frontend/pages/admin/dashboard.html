@@ -88,6 +88,11 @@
             <div class="qa-label">View Exams</div>
             <div class="qa-desc">Browse all exams across departments</div>
           </div>
+          <div class="quick-action-card anim-fade-up stagger-4" onclick="backfillStudentIds()">
+            <div class="qa-icon" style="background:#fef2f2;color:#dc2626">🔢</div>
+            <div class="qa-label">Fix Student IDs</div>
+            <div class="qa-desc">Assign student_id to all students missing one</div>
+          </div>
         </div>
       </div>
 
@@ -115,6 +120,15 @@
   <script src="../../js/animations.js"></script>
   <script>
     let refreshInterval = null;
+
+    async function backfillStudentIds() {
+      if (!await confirmAction('Assign student IDs to all students missing one?')) return;
+      try {
+        const res = await api.post('/api/admin/backfill-student-ids');
+        showAlert(res.message || 'Done!', 'success');
+        await refreshDashboard();
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;

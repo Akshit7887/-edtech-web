@@ -1,6 +1,7 @@
 using Dapper;
 using EdTechApi.Data;
 using EdTechApi.Middleware;
+using EdTechApi.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EdTechApi.Controllers;
@@ -138,6 +139,30 @@ public class AdminController : ControllerBase
         await conn.ExecuteAsync("DELETE FROM \"ClassStudents\" WHERE \"class_id\" = @ClassId", new { ClassId = classId });
         await conn.ExecuteAsync("DELETE FROM \"Classes\" WHERE \"id\" = @Id", new { Id = classId });
         return Ok(new { success = true, message = "Class deleted" });
+    }
+
+    [HttpPost("backfill-student-ids")]
+    public async Task<IActionResult> BackfillStudentIds()
+    {
+        using var conn = _db.CreateConnection();
+        var studentsWithoutId = (await conn.QueryAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"role\" = 'student' AND \"student_id\" IS NULL")).AsList();
+        var count = 0;
+        var random = new Random();
+        foreach (var student in studentsWithoutId)
+        {
+            string sid;
+            do
+            {
+                sid = random.Next(0, 1000000000).ToString("D10");
+            } while (await conn.QueryFirstOrDefaultAsync<string>(
+                "SELECT 1 FROM \"Users\" WHERE \"student_id\" = @Sid", new { Sid = sid }) != null);
+            await conn.ExecuteAsync(
+                "UPDATE \"Users\" SET \"student_id\" = @Sid WHERE \"id\" = @Id",
+                new { Sid = sid, Id = student.Id });
+            count++;
+        }
+        return Ok(new { success = true, message = $"Backfilled {count} student(s)" });
     }
 
     [HttpDelete("users/{userId:int}")]
