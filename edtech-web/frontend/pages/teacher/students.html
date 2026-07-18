@@ -38,9 +38,9 @@
       <div id="alert-container"></div>
       <div class="table-container" data-aos="fade-up" data-aos-delay="100">
         <table>
-          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Class</th><th>Created</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Phone</th><th>Class</th><th>Created</th><th>Actions</th></tr></thead>
           <tbody id="students-tbody">
-            <tr><td colspan="6"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
+            <tr><td colspan="7"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -65,11 +65,12 @@
         const pagination = res.pagination || { page: 1, total: 0, total_pages: 1 };
         const tbody = document.getElementById('students-tbody');
         if (!students.length) {
-          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👥</div><h3>No students found</h3></div></td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">👥</div><h3>No students found</h3></div></td></tr>';
         } else {
           tbody.innerHTML = students.map(s => `
             <tr>
               <td><div class="student-row"><div class="student-avatar">${s.name.charAt(0).toUpperCase()}</div><strong>${s.name}</strong></div></td>
+              <td><span class="mono" style="font-size:var(--text-sm)">${s.student_id || '-'}</span></td>
               <td>${s.email || '-'}</td>
               <td>${s.phone || '-'}</td>
               <td>${s.class_name || '-'}</td>
