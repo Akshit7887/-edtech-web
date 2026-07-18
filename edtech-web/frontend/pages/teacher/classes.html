@@ -106,83 +106,120 @@
 
     function showAddStudentsModal(classId) {
       window._stClassId = classId;
-      window._stAdded = [];
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'st-modal';
       overlay.innerHTML = `
-        <div class="modal" style="max-width:500px"><div class="modal-header"><h3>Add Students to Class</h3><button class="modal-close" onclick="closeStModal()">×</button></div>
+        <div class="modal" style="max-width:600px"><div class="modal-header"><h3>Add Students to Class</h3><button class="modal-close" onclick="closeStModal()">×</button></div>
         <div class="modal-body">
-          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">Search by 10-digit student ID</p>
-          <div style="display:flex;gap:8px">
-            <div class="form-group form-floating" style="flex:1">
-              <input class="form-input" id="st-search-input" placeholder=" " onkeydown="if(event.key==='Enter')searchStudent()">
-              <label class="form-label">Student ID</label>
-            </div>
-            <button class="btn btn-primary" style="white-space:nowrap" onclick="searchStudent()">Search</button>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">Select students to add</p>
+          <div style="margin-bottom:12px">
+            <input class="form-input" id="st-filter" placeholder="Filter by name or ID..." oninput="renderStudentChecklist()" style="width:100%">
           </div>
-          <div id="st-search-result" style="margin-top:12px"></div>
-          <div id="st-added-list" style="margin-top:12px"></div>
+          <div id="st-checklist" style="max-height:350px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:4px">
+            <div class="loading-overlay" style="position:static;padding:20px"><div class="spinner"></div><span>Loading students...</span></div>
+          </div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+            <span id="st-selected-count" style="color:var(--text-muted);font-size:0.85rem">0 selected</span>
+            <div style="display:flex;gap:4px">
+              <button class="btn btn-sm btn-secondary" onclick="selectAllStudents()">Select All</button>
+              <button class="btn btn-sm btn-secondary" onclick="deselectAllStudents()">Clear</button>
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="closeStModal()">Done</button>
+          <button class="btn btn-secondary" onclick="closeStModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="confirmAddStudents()">Add Selected</button>
         </div></div>
       `;
       document.body.appendChild(overlay);
-      document.getElementById('st-search-input').focus();
+      loadStudentChecklist(classId);
     }
 
-    async function searchStudent() {
-      const sid = document.getElementById('st-search-input').value.trim();
-      if (!sid) { showAlert('Enter a student ID', 'error'); return; }
+    async function loadStudentChecklist(classId) {
       try {
-        const student = await searchStudentBySid(sid);
-        if (window._stAdded.some(s => s.id === student.id)) {
-          document.getElementById('st-search-result').innerHTML = '<div class="alert alert-info">Already added</div>'; return;
-        }
-        document.getElementById('st-search-result').innerHTML = `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-bottom:8px">
-            <div><strong>${escHtml(student.name)}</strong><br><span style="color:var(--text-muted);font-size:0.85rem">ID: ${student.student_id} | ${escHtml(student.email||'')}</span></div>
-            <button class="btn btn-sm btn-primary" onclick="addFoundStudent()">+ Add</button>
-          </div>
-        `;
-        window._stFound = student;
+        const [studentsRes, classRes] = await Promise.all([
+          api.get('/api/teacher/students?limit=1000'),
+          api.get('/api/teacher/classes/' + classId)
+        ]);
+        const allStudents = studentsRes.data.data || [];
+        const enrolledIds = new Set((classRes.data.students || []).map(s => s.id));
+        window._stAllStudents = allStudents;
+        window._stEnrolledIds = enrolledIds;
+        window._stSelectedIds = new Set();
+        renderStudentChecklist();
       } catch (e) {
-        document.getElementById('st-search-result').innerHTML = '<div class="alert alert-error">' + escHtml(e.message) + '</div>';
+        document.getElementById('st-checklist').innerHTML = '<div class="alert alert-error">' + escHtml(e.message) + '</div>';
       }
     }
 
-    function addFoundStudent() {
-      const student = window._stFound;
-      if (!student) return;
-      window._stAdded.push(student);
-      window._stFound = null;
-      document.getElementById('st-search-input').value = '';
-      document.getElementById('st-search-result').innerHTML = '';
-      renderAddedStudents();
+    function renderStudentChecklist() {
+      const container = document.getElementById('st-checklist');
+      if (!container) return;
+      const filter = (document.getElementById('st-filter')?.value || '').toLowerCase();
+      const students = window._stAllStudents || [];
+      const enrolledIds = window._stEnrolledIds || new Set();
+      const selectedIds = window._stSelectedIds || new Set();
+
+      let filtered = students;
+      if (filter) {
+        filtered = students.filter(s =>
+          (s.name || '').toLowerCase().includes(filter) ||
+          (s.student_id || '').includes(filter)
+        );
+      }
+
+      if (!filtered.length) {
+        container.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:20px">No students found</p>';
+        updateSelectedCount();
+        return;
+      }
+
+      container.innerHTML = filtered.map(s => {
+        const isEnrolled = enrolledIds.has(s.id);
+        const isSelected = selectedIds.has(s.id);
+        const disabled = isEnrolled ? 'disabled' : '';
+        const checked = isEnrolled || isSelected ? 'checked' : '';
+        return `
+          <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:${isEnrolled?'default':'pointer'};border-radius:6px;background:${isEnrolled?'var(--surface-alt)':'transparent'};opacity:${isEnrolled?0.6:1};border-bottom:1px solid var(--border-light)">
+            <input type="checkbox" ${checked} ${disabled} onchange="toggleStudentSelect(${s.id},this.checked)" style="width:18px;height:18px;accent-color:var(--accent)">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:500;font-size:0.9rem">${escHtml(s.name)}</div>
+              <div style="font-size:0.8rem;color:var(--text-muted)">${s.student_id||''} ${s.email?'· '+escHtml(s.email):''}</div>
+            </div>
+            ${isEnrolled ? '<span style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap">Already in class</span>' : ''}
+          </label>
+        `;
+      }).join('');
+
+      updateSelectedCount();
     }
 
-    function renderAddedStudents() {
-      const list = document.getElementById('st-added-list');
-      if (!list) return;
-      const students = window._stAdded || [];
-      if (!students.length) { list.innerHTML = ''; return; }
-      list.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:6px">Students to add:</p>' +
-        students.map((s, i) => `
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--surface);border-radius:6px;border:1px solid var(--border);margin-bottom:4px">
-            <span>${escHtml(s.name)} <span style="color:var(--text-muted);font-size:0.8rem">(${s.student_id})</span></span>
-            <button class="btn btn-sm btn-danger" onclick="removeAddedStudent(${i})">×</button>
-          </div>
-        `).join('') +
-        '<button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="confirmAddStudents()">Save All</button>';
+    function toggleStudentSelect(id, checked) {
+      if (!window._stSelectedIds) window._stSelectedIds = new Set();
+      if (checked) window._stSelectedIds.add(id);
+      else window._stSelectedIds.delete(id);
+      updateSelectedCount();
     }
 
-    function removeAddedStudent(idx) {
-      window._stAdded.splice(idx, 1);
-      renderAddedStudents();
+    function selectAllStudents() {
+      const students = window._stAllStudents || [];
+      const enrolledIds = window._stEnrolledIds || new Set();
+      window._stSelectedIds = new Set(students.filter(s => !enrolledIds.has(s.id)).map(s => s.id));
+      renderStudentChecklist();
+    }
+
+    function deselectAllStudents() {
+      window._stSelectedIds = new Set();
+      renderStudentChecklist();
+    }
+
+    function updateSelectedCount() {
+      const el = document.getElementById('st-selected-count');
+      if (el) el.textContent = (window._stSelectedIds?.size || 0) + ' selected';
     }
 
     async function confirmAddStudents() {
-      const ids = window._stAdded.map(s => s.id);
-      if (!ids.length) { showAlert('No students to add', 'error'); return; }
+      const ids = Array.from(window._stSelectedIds || []);
+      if (!ids.length) { showAlert('Select at least one student', 'error'); return; }
       try {
         await addStudentsToClass(window._stClassId, ids);
         showAlert('Students added!', 'success');
