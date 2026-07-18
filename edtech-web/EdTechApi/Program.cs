@@ -132,16 +132,61 @@ app.MapHub<DashboardHub>("/hubs/dashboard");
 app.MapHub<ExamHub>("/hubs/exam");
 app.MapHub<NotificationHub>("/hubs/notification");
 
-// ── Health check ──
-app.MapGet("/api/health", (HttpContext context) =>
+// ── Health checks ──
+app.MapGet("/api/health/live", () => Results.Ok(new { status = "alive" }));
+
+app.MapGet("/api/health/ready", async (HttpContext context, IDbConnectionFactory db) =>
 {
-    return Results.Ok(new
+    var checks = new Dictionary<string, string>();
+    var healthy = true;
+
+    try
     {
-        status = "ok",
-        message = "EdTech Examination API is running (ASP.NET Core)",
-        timestamp = DateTime.UtcNow,
-        requestId = context.Items["RequestId"]?.ToString()
-    });
+        using var conn = db.CreateConnection();
+        await conn.OpenAsync();
+        checks["database"] = "ok";
+    }
+    catch (Exception ex)
+    {
+        checks["database"] = $"error: {ex.Message}";
+        healthy = false;
+    }
+
+    try
+    {
+        var cache = context.RequestServices.GetService<IRedisCacheService>();
+        if (cache != null)
+            checks["redis"] = cache.IsConnected ? "ok" : "not configured";
+    }
+    catch (Exception ex)
+    {
+        checks["redis"] = $"error: {ex.Message}";
+    }
+
+    return healthy
+        ? Results.Ok(new { status = "healthy", checks, timestamp = DateTime.UtcNow })
+        : Results.StatusCode(503);
+});
+
+// Legacy health endpoint (alias)
+app.MapGet("/api/health", async (HttpContext context, IDbConnectionFactory db) =>
+{
+    try
+    {
+        using var conn = db.CreateConnection();
+        await conn.OpenAsync();
+        return Results.Ok(new
+        {
+            status = "ok",
+            message = "EdTech Examination API is running (ASP.NET Core)",
+            timestamp = DateTime.UtcNow,
+            requestId = context.Items["RequestId"]?.ToString()
+        });
+    }
+    catch
+    {
+        return Results.StatusCode(503);
+    }
 });
 
 // ── Run migrations ──

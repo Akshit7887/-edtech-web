@@ -5,6 +5,8 @@ services:
     repo: https://github.com/Akshit7887/-edtech-web.git
     rootDir: edtech-web/EdTechApi
     dockerfilePath: Dockerfile
+    healthCheckPath: /api/health/live
+    numInstances: 1
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
