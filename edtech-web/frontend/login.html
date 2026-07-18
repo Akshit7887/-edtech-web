@@ -112,10 +112,12 @@
 
       try {
         const data = await loginRequest(email, password, selectedRole);
-        document.getElementById('alert-container').innerHTML = '<div class="alert alert-success">OTP sent to your email</div>';
+        var msg = data.otp_code ? 'OTP: <strong>' + data.otp_code + '</strong> (check your email)' : 'OTP sent to your email';
+        document.getElementById('alert-container').innerHTML = '<div class="alert alert-success">' + msg + '</div>';
         sessionStorage.setItem('otp_identifier', email);
         sessionStorage.setItem('otp_role', selectedRole);
         sessionStorage.setItem('otp_user_id', data.user_id);
+        if (data.otp_code) sessionStorage.setItem('otp_code', data.otp_code);
         setTimeout(() => goTo('otp-verify.html'), 6000);
       } catch (e) {
         showAlert(e.message, 'error', document.getElementById('alert-container'));
