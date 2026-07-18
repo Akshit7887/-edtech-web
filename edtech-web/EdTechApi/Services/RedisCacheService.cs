@@ -6,8 +6,13 @@ public interface IRedisCacheService
 {
     Task<bool> CheckRateLimitAsync(string key, int limit, TimeSpan window);
     Task<T?> GetAsync<T>(string key) where T : class;
+    Task<T?> GetValueAsync<T>(string key) where T : struct;
     Task SetAsync<T>(string key, T value, TimeSpan expiry) where T : class;
+    Task SetValueAsync<T>(string key, T value, TimeSpan expiry) where T : struct;
     Task RemoveAsync(string key);
+    Task EnqueueAsync(string queue, string message);
+    Task<string?> DequeueAsync(string queue, TimeSpan? timeout = null);
+    Task<long> GetQueueLengthAsync(string queue);
     bool IsConnected { get; }
 }
 
@@ -81,7 +86,22 @@ public class RedisCacheService : IRedisCacheService, IDisposable
         return val.HasValue ? System.Text.Json.JsonSerializer.Deserialize<T>(val.ToString()) : null;
     }
 
+    public async Task<T?> GetValueAsync<T>(string key) where T : struct
+    {
+        if (_db == null) return null;
+        var val = await _db.StringGetAsync($"cache:{key}");
+        if (!val.HasValue) return null;
+        return System.Text.Json.JsonSerializer.Deserialize<T>(val.ToString());
+    }
+
     public async Task SetAsync<T>(string key, T value, TimeSpan expiry) where T : class
+    {
+        if (_db == null) return;
+        var json = System.Text.Json.JsonSerializer.Serialize(value);
+        await _db.StringSetAsync($"cache:{key}", json, expiry);
+    }
+
+    public async Task SetValueAsync<T>(string key, T value, TimeSpan expiry) where T : struct
     {
         if (_db == null) return;
         var json = System.Text.Json.JsonSerializer.Serialize(value);
@@ -92,6 +112,25 @@ public class RedisCacheService : IRedisCacheService, IDisposable
     {
         if (_db == null) return;
         await _db.KeyDeleteAsync($"cache:{key}");
+    }
+
+    public async Task EnqueueAsync(string queue, string message)
+    {
+        if (_db == null) return;
+        await _db.ListRightPushAsync(queue, message);
+    }
+
+    public async Task<string?> DequeueAsync(string queue, TimeSpan? timeout = null)
+    {
+        if (_db == null) return null;
+        var result = await _db.ListLeftPopAsync(queue);
+        return result.HasValue ? result.ToString() : null;
+    }
+
+    public async Task<long> GetQueueLengthAsync(string queue)
+    {
+        if (_db == null) return 0;
+        return await _db.ListLengthAsync(queue);
     }
 
     public void Dispose() => _redis?.Dispose();

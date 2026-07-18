@@ -80,6 +80,7 @@ builder.Services.AddHttpContextAccessor();
 
 // ── Redis Cache ──
 builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
+builder.Services.AddSingleton<ICircuitBreakerService, CircuitBreakerService>();
 
 // ── CORS ──
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()

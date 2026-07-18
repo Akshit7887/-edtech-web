@@ -34,6 +34,7 @@ public class GeminiService : IGeminiService
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly ILogger<GeminiService> _logger;
+    private readonly ICircuitBreakerService _circuitBreaker;
 
     private static readonly (string name, string version)[] Models = new[]
     {
@@ -45,11 +46,12 @@ public class GeminiService : IGeminiService
         ("gemini-2.0-flash-lite", "v1beta"),
     };
 
-    public GeminiService(HttpClient httpClient, IConfiguration config, ILogger<GeminiService> logger)
+    public GeminiService(HttpClient httpClient, IConfiguration config, ILogger<GeminiService> logger, ICircuitBreakerService circuitBreaker)
     {
         _httpClient = httpClient;
         _apiKey = config["Gemini:ApiKey"] ?? throw new InvalidOperationException("Gemini API Key not configured");
         _logger = logger;
+        _circuitBreaker = circuitBreaker;
     }
 
     public async Task<List<GeminiQuestion>> GenerateQuestionsFromText(string text, int questionCount, string difficulty)
@@ -211,65 +213,68 @@ Important rules:
         if (string.IsNullOrEmpty(_apiKey))
             throw new InvalidOperationException("GEMINI_API_KEY not configured. Please ask the admin to set it up.");
 
-        var lastError = "";
-
-        foreach (var (name, version) in Models)
+        return await _circuitBreaker.ExecuteAsync("gemini-api", async () =>
         {
-            try
+            var lastError = "";
+
+            foreach (var (name, version) in Models)
             {
-                var url = $"https://generativelanguage.googleapis.com/{version}/models/{name}:generateContent?key={_apiKey}";
-                var payload = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
-                var json = JsonSerializer.Serialize(payload);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                _logger.LogInformation("[AI] Trying model: {Model} ({Version})", name, version);
-                var response = await _httpClient.PostAsync(url, content);
-                response.EnsureSuccessStatusCode();
-
-                var responseBody = await response.Content.ReadAsStringAsync();
-                using var doc = JsonDocument.Parse(responseBody);
-                var text = doc.RootElement
-                    .GetProperty("candidates")[0]
-                    .GetProperty("content")
-                    .GetProperty("parts")[0]
-                    .GetProperty("text").GetString();
-
-                if (string.IsNullOrEmpty(text))
+                try
                 {
-                    lastError = "Invalid response from Gemini API";
-                    continue;
+                    var url = $"https://generativelanguage.googleapis.com/{version}/models/{name}:generateContent?key={_apiKey}";
+                    var payload = new { contents = new[] { new { parts = new[] { new { text = prompt } } } } };
+                    var json = JsonSerializer.Serialize(payload);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    _logger.LogInformation("[AI] Trying model: {Model} ({Version})", name, version);
+                    var response = await _httpClient.PostAsync(url, content);
+                    response.EnsureSuccessStatusCode();
+
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(responseBody);
+                    var text = doc.RootElement
+                        .GetProperty("candidates")[0]
+                        .GetProperty("content")
+                        .GetProperty("parts")[0]
+                        .GetProperty("text").GetString();
+
+                    if (string.IsNullOrEmpty(text))
+                    {
+                        lastError = "Invalid response from Gemini API";
+                        continue;
+                    }
+
+                    var firstBracket = text.IndexOf('[');
+                    var firstBrace = text.IndexOf('{');
+                    string? extracted = null;
+                    if (firstBracket >= 0 && (firstBrace < 0 || firstBracket < firstBrace))
+                        extracted = ExtractFirstJsonArray(text);
+                    else if (firstBrace >= 0)
+                        extracted = ExtractFirstJsonObject(text);
+
+                    if (extracted == null)
+                    {
+                        lastError = "Failed to parse questions from AI response";
+                        continue;
+                    }
+
+                    _logger.LogInformation("[AI] Successfully generated content using {Model}", name);
+                    return extracted;
                 }
-
-                var firstBracket = text.IndexOf('[');
-                var firstBrace = text.IndexOf('{');
-                string? extracted = null;
-                if (firstBracket >= 0 && (firstBrace < 0 || firstBracket < firstBrace))
-                    extracted = ExtractFirstJsonArray(text);
-                else if (firstBrace >= 0)
-                    extracted = ExtractFirstJsonObject(text);
-
-                if (extracted == null)
+                catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
-                    lastError = "Failed to parse questions from AI response";
-                    continue;
+                    lastError = "Rate limited";
+                    _logger.LogWarning("[AI] Rate limited on {Model}. Waiting 3s...", name);
+                    await Task.Delay(3000);
                 }
+                catch (Exception ex)
+                {
+                    lastError = ex.Message;
+                    _logger.LogWarning("[AI] Model {Model} failed: {Error}", name, ex.Message);
+                }
+            }
 
-                _logger.LogInformation("[AI] Successfully generated content using {Model}", name);
-                return extracted;
-            }
-            catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-            {
-                lastError = "Rate limited";
-                _logger.LogWarning("[AI] Rate limited on {Model}. Waiting 3s...", name);
-                await Task.Delay(3000);
-            }
-            catch (Exception ex)
-            {
-                lastError = ex.Message;
-                _logger.LogWarning("[AI] Model {Model} failed: {Error}", name, ex.Message);
-            }
-        }
-
-        throw new InvalidOperationException($"Failed to generate questions. {lastError}");
+            throw new InvalidOperationException($"Failed to generate questions. {lastError}");
+        });
     }
 }
