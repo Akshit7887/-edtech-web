@@ -11,6 +11,7 @@ public interface ITeacherService
     Task<object> GetAllStudentsAsync(int teacherId, int page = 1, int limit = 50);
     Task<object> CreateStudentAsync(int teacherId, string name, string email);
     Task<object> GetStudentDetailAsync(int studentId);
+    Task<object?> SearchStudentBySidAsync(string studentId);
     Task DeleteStudentAsync(int studentId);
     Task<object> GetQuestionBankAsync(int examId, int teacherId);
     Task<QuestionPool> AddQuestionAsync(int examId, int teacherId, QuestionPool data);
@@ -18,6 +19,7 @@ public interface ITeacherService
     Task DeleteQuestionAsync(int questionId, int teacherId);
     Task<ClassEntity> CreateClassAsync(int teacherId, CreateClassRequest data);
     Task<List<ClassListItem>> GetClassesAsync(int teacherId);
+    Task<ClassDetailResponse> GetClassDetailAsync(int classId, int teacherId);
     Task<object> AddStudentsToClassAsync(int classId, int teacherId, List<int> studentIds);
     Task RemoveStudentFromClassAsync(int classId, int teacherId, int studentId);
     Task DeleteClassAsync(int classId, int teacherId);
@@ -282,9 +284,9 @@ public class TeacherService : ITeacherService
 
         var now = DateTime.UtcNow;
         var cls = await conn.QuerySingleAsync<ClassEntity>(
-            @"INSERT INTO ""Classes"" (""teacher_id"", ""name"", ""description"", ""created_at"", ""updated_at"")
-              VALUES (@TeacherId, @Name, @Description, @CreatedAt, @UpdatedAt) RETURNING *",
-            new { TeacherId = teacherId, Name = data.Name, Description = data.Description ?? "", CreatedAt = now, UpdatedAt = now });
+            @"INSERT INTO ""Classes"" (""teacher_id"", ""name"", ""subject"", ""description"", ""created_at"", ""updated_at"")
+              VALUES (@TeacherId, @Name, @Subject, @Description, @CreatedAt, @UpdatedAt) RETURNING *",
+            new { TeacherId = teacherId, Name = data.Name, Subject = data.Subject ?? "", Description = data.Description ?? "", CreatedAt = now, UpdatedAt = now });
 
         await _hub.NotifyTeacherDashboard(teacherId, "ClassCreated", new { id = cls.Id, name = cls.Name });
         return cls;
@@ -317,6 +319,45 @@ public class TeacherService : ITeacherService
         }
 
         return result;
+    }
+
+    public async Task<ClassDetailResponse> GetClassDetailAsync(int classId, int teacherId)
+    {
+        using var conn = _db.CreateConnection();
+
+        var cls = await conn.QueryFirstOrDefaultAsync<ClassEntity>(
+            "SELECT * FROM \"Classes\" WHERE \"id\" = @Id AND \"teacher_id\" = @TeacherId",
+            new { Id = classId, TeacherId = teacherId });
+        if (cls == null) throw new AppException(404, "Class not found");
+
+        var teacher = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"id\" = @Id", new { Id = teacherId });
+
+        var students = (await conn.QueryAsync<User>(
+            @"SELECT u.* FROM ""Users"" u
+              JOIN ""ClassStudents"" cs ON cs.""student_id"" = u.""id""
+              WHERE cs.""class_id"" = @ClassId
+              ORDER BY u.""name"" ASC",
+            new { ClassId = classId })).ToList();
+
+        return new ClassDetailResponse
+        {
+            Id = cls.Id,
+            Name = cls.Name,
+            Subject = cls.Subject,
+            Description = cls.Description,
+            TeacherName = teacher?.Name ?? "Unknown",
+            StudentCount = students.Count,
+            CreatedAt = cls.CreatedAt,
+            Students = students.Select(s => new StudentInClass
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Email = s.Email,
+                StudentId = s.StudentId,
+                Phone = s.Phone
+            }).ToList()
+        };
     }
 
     public async Task<object> AddStudentsToClassAsync(int classId, int teacherId, List<int> studentIds)
@@ -499,6 +540,26 @@ public class TeacherService : ITeacherService
         await conn.ExecuteAsync(
             "DELETE FROM \"ParentContacts\" WHERE \"student_id\" = @StudentId",
             new { StudentId = studentId });
+    }
+
+    public async Task<object?> SearchStudentBySidAsync(string studentId)
+    {
+        using var conn = _db.CreateConnection();
+
+        var student = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"student_id\" = @Sid AND \"role\" = 'student'",
+            new { Sid = studentId });
+
+        if (student == null) return null;
+
+        return new
+        {
+            id = student.Id,
+            name = student.Name,
+            email = student.Email,
+            student_id = student.StudentId,
+            phone = student.Phone
+        };
     }
 
     public async Task DeleteStudentAsync(int studentId)

@@ -65,6 +65,7 @@
               <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(c.created_at)}</span>
               <div style="display:flex;gap:4px">
                 <button class="btn btn-sm btn-secondary" onclick="showAddStudentsModal(${c.id})">+ Add Students</button>
+                <button class="btn btn-sm btn-outline" onclick="viewClassDetail(${c.id})">View</button>
                 <button class="btn btn-sm btn-danger" onclick="handleDeleteClass(${c.id})">Delete</button>
               </div>
             </div>
@@ -104,29 +105,143 @@
     }
 
     function showAddStudentsModal(classId) {
-      const html = `
-        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">Enter student IDs separated by commas</p>
-        <div class="form-group form-floating"><input class="form-input" id="st-ids" placeholder=" "><label class="form-label">Student IDs</label></div>
-      `;
+      window._stClassId = classId;
+      window._stAdded = [];
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'st-modal';
       overlay.innerHTML = `
-        <div class="modal"><div class="modal-header"><h3>Add Students to Class</h3><button class="modal-close" onclick="closeStModal()">×</button></div>
-        <div class="modal-body">${html}</div>
-        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeStModal()">Cancel</button><button class="btn btn-primary" onclick="handleAddStudents(${classId})">Add</button></div></div>
+        <div class="modal" style="max-width:500px"><div class="modal-header"><h3>Add Students to Class</h3><button class="modal-close" onclick="closeStModal()">×</button></div>
+        <div class="modal-body">
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">Search by 10-digit student ID</p>
+          <div style="display:flex;gap:8px">
+            <div class="form-group form-floating" style="flex:1">
+              <input class="form-input" id="st-search-input" placeholder=" " onkeydown="if(event.key==='Enter')searchStudent()">
+              <label class="form-label">Student ID</label>
+            </div>
+            <button class="btn btn-primary" style="white-space:nowrap" onclick="searchStudent()">Search</button>
+          </div>
+          <div id="st-search-result" style="margin-top:12px"></div>
+          <div id="st-added-list" style="margin-top:12px"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeStModal()">Done</button>
+        </div></div>
       `;
       document.body.appendChild(overlay);
+      document.getElementById('st-search-input').focus();
     }
 
-    async function handleAddStudents(classId) {
-      const ids = document.getElementById('st-ids').value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
-      if (!ids.length) { showAlert('Enter valid student IDs', 'error'); return; }
-      try { await addStudentsToClass(classId, ids); showAlert('Students added!', 'success'); closeStModal(); await loadClassesList(); } catch (e) { showAlert(e.message, 'error'); }
+    async function searchStudent() {
+      const sid = document.getElementById('st-search-input').value.trim();
+      if (!sid) { showAlert('Enter a student ID', 'error'); return; }
+      try {
+        const student = await searchStudentBySid(sid);
+        if (window._stAdded.some(s => s.id === student.id)) {
+          document.getElementById('st-search-result').innerHTML = '<div class="alert alert-info">Already added</div>'; return;
+        }
+        document.getElementById('st-search-result').innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface);border-radius:8px;border:1px solid var(--border);margin-bottom:8px">
+            <div><strong>${escHtml(student.name)}</strong><br><span style="color:var(--text-muted);font-size:0.85rem">ID: ${student.student_id} | ${escHtml(student.email||'')}</span></div>
+            <button class="btn btn-sm btn-primary" onclick="addFoundStudent()">+ Add</button>
+          </div>
+        `;
+        window._stFound = student;
+      } catch (e) {
+        document.getElementById('st-search-result').innerHTML = '<div class="alert alert-error">' + escHtml(e.message) + '</div>';
+      }
+    }
+
+    function addFoundStudent() {
+      const student = window._stFound;
+      if (!student) return;
+      window._stAdded.push(student);
+      window._stFound = null;
+      document.getElementById('st-search-input').value = '';
+      document.getElementById('st-search-result').innerHTML = '';
+      renderAddedStudents();
+    }
+
+    function renderAddedStudents() {
+      const list = document.getElementById('st-added-list');
+      if (!list) return;
+      const students = window._stAdded || [];
+      if (!students.length) { list.innerHTML = ''; return; }
+      list.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:6px">Students to add:</p>' +
+        students.map((s, i) => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--surface);border-radius:6px;border:1px solid var(--border);margin-bottom:4px">
+            <span>${escHtml(s.name)} <span style="color:var(--text-muted);font-size:0.8rem">(${s.student_id})</span></span>
+            <button class="btn btn-sm btn-danger" onclick="removeAddedStudent(${i})">×</button>
+          </div>
+        `).join('') +
+        '<button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="confirmAddStudents()">Save All</button>';
+    }
+
+    function removeAddedStudent(idx) {
+      window._stAdded.splice(idx, 1);
+      renderAddedStudents();
+    }
+
+    async function confirmAddStudents() {
+      const ids = window._stAdded.map(s => s.id);
+      if (!ids.length) { showAlert('No students to add', 'error'); return; }
+      try {
+        await addStudentsToClass(window._stClassId, ids);
+        showAlert('Students added!', 'success');
+        closeStModal();
+        await loadClassesList();
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function viewClassDetail(classId) {
+      try {
+        const res = await api.get('/api/teacher/classes/' + classId);
+        const cls = res.data;
+        const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'detail-modal';
+        overlay.innerHTML = `
+          <div class="modal" style="max-width:600px"><div class="modal-header"><h3>${escHtml(cls.name)}</h3><button class="modal-close" onclick="document.getElementById('detail-modal').remove()">×</button></div>
+          <div class="modal-body">
+            <p style="color:var(--text-muted);margin-bottom:12px">${escHtml(cls.subject||'General')} · ${cls.student_count} student(s)</p>
+            <p style="margin-bottom:16px">${escHtml(cls.description)||'<span style="color:var(--text-muted)">No description</span>'}</p>
+            <h4 style="margin-bottom:8px">Students</h4>
+            ${cls.students && cls.students.length ? `
+              <div style="max-height:300px;overflow-y:auto">
+                <table class="data-table" style="width:100%">
+                  <thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th></th></tr></thead>
+                  <tbody>
+                    ${cls.students.map(s => `
+                      <tr>
+                        <td>${escHtml(s.name)}</td>
+                        <td style="font-family:mono">${s.student_id||'-'}</td>
+                        <td>${escHtml(s.email||'')}</td>
+                        <td><button class="btn btn-sm btn-danger" onclick="handleRemoveStudentFromClass(${classId},${s.id})">Remove</button></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : '<p style="color:var(--text-muted)">No students in this class yet</p>'}
+          </div>
+          <div class="modal-footer"><button class="btn btn-secondary" onclick="document.getElementById('detail-modal').remove()">Close</button></div></div>
+        `;
+        document.body.appendChild(overlay);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function handleRemoveStudentFromClass(classId, studentId) {
+      if (!await confirmAction('Remove this student from the class?')) return;
+      try {
+        await removeStudentFromClass(classId, studentId);
+        showAlert('Student removed', 'success');
+        const m = document.getElementById('detail-modal'); if (m) m.remove();
+        await loadClassesList();
+      } catch (e) { showAlert(e.message, 'error'); }
     }
 
     async function handleDeleteClass(id) {
       if (!await confirmAction('Delete this class?')) return;
       try { await deleteClass(id); showAlert('Class deleted', 'success'); await loadClassesList(); } catch (e) { showAlert(e.message, 'error'); }
     }
+
+    function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
   </script>
   <script src="../../js/nav.js"></script>
 </body>

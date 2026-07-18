@@ -15,6 +15,7 @@ public interface IStudentService
     Task<object> GetNotificationsAsync(int userId, int page = 1, int limit = 50);
     Task<Notification> MarkNotificationReadAsync(int notificationId, int userId);
     Task<object> MarkAllNotificationsReadAsync(int userId);
+    Task<List<StudentClassItem>> GetMyClassesAsync(int studentId);
     Task<Notification> CreateNotificationAsync(int userId, string title, string message, string type = "general");
 }
 
@@ -312,6 +313,24 @@ public class StudentService : IStudentService
             new { UserId = userId });
 
         return new { success = true };
+    }
+
+    public async Task<List<StudentClassItem>> GetMyClassesAsync(int studentId)
+    {
+        using var conn = _db.CreateConnection();
+
+        var classes = (await conn.QueryAsync<StudentClassItem>(
+            @"SELECT c.""id"", c.""name"", c.""subject"", c.""description"", c.""created_at"",
+                     u.""name"" AS teacher_name,
+                     (SELECT COUNT(*) FROM ""ClassStudents"" WHERE ""class_id"" = c.""id"") AS student_count
+              FROM ""Classes"" c
+              JOIN ""ClassStudents"" cs ON cs.""class_id"" = c.""id""
+              JOIN ""Users"" u ON u.""id"" = c.""teacher_id""
+              WHERE cs.""student_id"" = @StudentId
+              ORDER BY c.""name"" ASC",
+            new { StudentId = studentId })).ToList();
+
+        return classes;
     }
 
     public async Task<Notification> CreateNotificationAsync(int userId, string title, string message, string type = "general")

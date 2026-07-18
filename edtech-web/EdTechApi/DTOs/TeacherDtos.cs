@@ -118,6 +118,51 @@ public class ParentContactItem
     public string? Relationship { get; set; }
 }
 
+public class ClassDetailResponse
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("subject")]
+    public string? Subject { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("teacher_name")]
+    public string TeacherName { get; set; } = string.Empty;
+
+    [JsonPropertyName("student_count")]
+    public int StudentCount { get; set; }
+
+    [JsonPropertyName("created_at")]
+    public DateTime CreatedAt { get; set; }
+
+    [JsonPropertyName("students")]
+    public List<StudentInClass> Students { get; set; } = new();
+}
+
+public class StudentInClass
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
+    [JsonPropertyName("student_id")]
+    public string? StudentId { get; set; }
+
+    [JsonPropertyName("phone")]
+    public string? Phone { get; set; }
+}
+
 public class ParentReportHistoryItem
 {
     [JsonPropertyName("id")]

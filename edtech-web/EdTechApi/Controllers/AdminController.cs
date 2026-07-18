@@ -90,6 +90,56 @@ public class AdminController : ControllerBase
         return Ok(new { success = true, data = tasks });
     }
 
+    [HttpGet("classes")]
+    public async Task<IActionResult> GetClasses([FromQuery] int page = 1, [FromQuery] int limit = 50)
+    {
+        using var conn = _db.CreateConnection();
+        var offset = (page - 1) * limit;
+        var total = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Classes\"");
+        var classes = await conn.QueryAsync(@"
+            SELECT c.*, u.""name"" AS teacher_name,
+                   (SELECT COUNT(*) FROM ""ClassStudents"" WHERE ""class_id"" = c.""id"") AS student_count
+            FROM ""Classes"" c
+            LEFT JOIN ""Users"" u ON u.""id"" = c.""teacher_id""
+            ORDER BY c.""created_at"" DESC
+            LIMIT @Limit OFFSET @Offset",
+            new { Limit = limit, Offset = offset });
+        return Ok(new { success = true, data = classes, pagination = new { page, limit, total, total_pages = (int)Math.Ceiling((double)total / limit) } });
+    }
+
+    [HttpGet("classes/{classId:int}")]
+    public async Task<IActionResult> GetClassDetail(int classId)
+    {
+        using var conn = _db.CreateConnection();
+
+        var cls = await conn.QueryFirstOrDefaultAsync(@"
+            SELECT c.*, u.""name"" AS teacher_name,
+                   (SELECT COUNT(*) FROM ""ClassStudents"" WHERE ""class_id"" = c.""id"") AS student_count
+            FROM ""Classes"" c
+            LEFT JOIN ""Users"" u ON u.""id"" = c.""teacher_id""
+            WHERE c.""id"" = @Id", new { Id = classId });
+
+        if (cls == null) return NotFound(new { success = false, error = "Class not found" });
+
+        var students = await conn.QueryAsync(@"
+            SELECT u.""id"", u.""name"", u.""email"", u.""student_id"", u.""phone""
+            FROM ""Users"" u
+            JOIN ""ClassStudents"" cs ON cs.""student_id"" = u.""id""
+            WHERE cs.""class_id"" = @ClassId
+            ORDER BY u.""name"" ASC", new { ClassId = classId });
+
+        return Ok(new { success = true, data = new { cls = cls, students = students } });
+    }
+
+    [HttpDelete("classes/{classId:int}")]
+    public async Task<IActionResult> DeleteClass(int classId)
+    {
+        using var conn = _db.CreateConnection();
+        await conn.ExecuteAsync("DELETE FROM \"ClassStudents\" WHERE \"class_id\" = @ClassId", new { ClassId = classId });
+        await conn.ExecuteAsync("DELETE FROM \"Classes\" WHERE \"id\" = @Id", new { Id = classId });
+        return Ok(new { success = true, message = "Class deleted" });
+    }
+
     [HttpDelete("users/{userId:int}")]
     public async Task<IActionResult> DeleteUser(int userId)
     {

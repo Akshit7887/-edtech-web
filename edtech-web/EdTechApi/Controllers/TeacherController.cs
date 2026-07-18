@@ -38,6 +38,19 @@ public class TeacherController : ControllerBase
         return Created(string.Empty, new { success = true, data = result });
     }
 
+    [HttpGet("students/search-by-sid")]
+    public async Task<IActionResult> SearchStudentBySid([FromQuery] string student_id)
+    {
+        if (string.IsNullOrEmpty(student_id) || student_id.Length < 3)
+            return BadRequest(new { success = false, error = "Enter at least 3 digits of the student ID" });
+
+        var result = await _teacherService.SearchStudentBySidAsync(student_id);
+        if (result == null)
+            return NotFound(new { success = false, error = "No student found with that ID" });
+
+        return Ok(new { success = true, data = result });
+    }
+
     [HttpGet("students/{studentId:int}")]
     public async Task<IActionResult> GetStudentDetail(int studentId)
     {
@@ -98,6 +111,14 @@ public class TeacherController : ControllerBase
         var teacherId = GetUserId();
         var classes = await _teacherService.GetClassesAsync(teacherId);
         return Ok(new { success = true, data = classes });
+    }
+
+    [HttpGet("classes/{classId:int}")]
+    public async Task<IActionResult> GetClassDetail(int classId)
+    {
+        var teacherId = GetUserId();
+        var detail = await _teacherService.GetClassDetailAsync(classId, teacherId);
+        return Ok(new { success = true, data = detail });
     }
 
     [HttpPost("classes/{classId:int}/students")]

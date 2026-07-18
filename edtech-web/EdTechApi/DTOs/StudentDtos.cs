@@ -125,6 +125,30 @@ public class NotificationItem
     public DateTime CreatedAt { get; set; }
 }
 
+public class StudentClassItem
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("subject")]
+    public string? Subject { get; set; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("teacher_name")]
+    public string TeacherName { get; set; } = string.Empty;
+
+    [JsonPropertyName("student_count")]
+    public int StudentCount { get; set; }
+
+    [JsonPropertyName("created_at")]
+    public DateTime CreatedAt { get; set; }
+}
+
 public class MyResultItem
 {
     [JsonPropertyName("session_id")]

@@ -68,6 +68,14 @@ public class StudentController : ControllerBase
         return Ok(new { success = true, data = notification });
     }
 
+    [HttpGet("classes")]
+    public async Task<IActionResult> GetMyClasses()
+    {
+        var userId = GetUserId();
+        var classes = await _studentService.GetMyClassesAsync(userId);
+        return Ok(new { success = true, data = classes });
+    }
+
     [HttpPut("notifications/read-all")]
     public async Task<IActionResult> MarkAllNotificationsRead()
     {

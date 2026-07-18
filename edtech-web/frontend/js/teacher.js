@@ -133,6 +133,15 @@ async function generateDeepLink(examId) {
   return res.data.deepLink;
 }
 
+async function searchStudentBySid(studentId) {
+  try {
+    const res = await api.get('/api/teacher/students/search-by-sid?student_id=' + encodeURIComponent(studentId));
+    return res.data;
+  } catch (e) {
+    throw new Error(e.message || 'Student not found');
+  }
+}
+
 async function loadClasses() {
   try {
     const res = await api.get('/api/teacher/classes');
