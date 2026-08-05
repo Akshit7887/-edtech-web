@@ -74,7 +74,7 @@
               <td>${s.email || '-'}</td>
               <td>${s.phone || '-'}</td>
               <td>${s.class_name || '-'}</td>
-              <td>${formatDate(s.created_at)}</td>
+              <td>${formatDate(s.registered_at || s.created_at)}</td>
               <td>
                 <button class="btn btn-sm btn-info" onclick="goTo('student-detail.html?id=${s.id}')">View</button>
                 <button class="btn btn-sm btn-danger" onclick="confirmDeleteStudent(${s.id}, '${s.name.replace(/'/g, "\\'")}')">Delete</button>

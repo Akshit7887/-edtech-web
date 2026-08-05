@@ -158,3 +158,27 @@ function getQueryParam(name) {
 function goTo(path) { window.location.href = path; }
 
 function confirmAction(msg) { return new Promise(resolve => { resolve(confirm(msg)); }); }
+
+let _pollTimer = null;
+
+function startPolling(fn, intervalMs = 60000) {
+  stopPolling();
+  const tick = async () => {
+    if (document.hidden) return;
+    try {
+      await fn();
+    } catch (e) {
+      if (e && e.status === 503) {
+        console.warn('[poll] 503 request queue full - backing off 60s');
+        stopPolling();
+        setTimeout(() => startPolling(fn, intervalMs), 60000);
+      }
+    }
+  };
+  _pollTimer = setInterval(tick, intervalMs);
+  return _pollTimer;
+}
+
+function stopPolling() {
+  if (_pollTimer) { clearInterval(_pollTimer); _pollTimer = null; }
+}

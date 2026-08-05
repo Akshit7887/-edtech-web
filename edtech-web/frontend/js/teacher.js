@@ -1,3 +1,4 @@
+console.log('teacher.js loaded');
 async function loadStudents(page = 1, limit = 20) {
   try {
     const res = await api.get(`/api/teacher/students?page=${page}&limit=${limit}`);
@@ -11,6 +12,8 @@ async function loadStudents(page = 1, limit = 20) {
 async function loadStudentDetail(studentId) {
   try {
     const res = await api.get(`/api/teacher/students/${studentId}`);
+
+   console.log('Student detail response:', res.data); // Log the response for debugging
     return res.data;
   } catch (e) {
     showAlert(e.message || 'Failed to load student details');

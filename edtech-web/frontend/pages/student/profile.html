@@ -127,6 +127,8 @@
 
     function loadProfile() {
       const user = getUser();
+      USER_ID = user ? user.id : null;
+      console.log('Loaded user profile:', user);
       if (!user) return;
       document.getElementById('profile-display-name').textContent = user.name || 'My Profile';
       document.getElementById('profile-name').value = user.name || '';

@@ -49,7 +49,12 @@ function saveSession(token, user) {
   localStorage.setItem('user_role', user.role);
   localStorage.setItem('user_id', user.id);
   localStorage.setItem('user_name', user.name);
-  if (user.student_id) localStorage.setItem('user_student_id', user.student_id);
+  console.log('Student ID saved:', user.student_id ? user.student_id : 'N/A');
+  if (user.student_id) {
+    localStorage.setItem('user_student_id', user.student_id);
+  
+  }
+
 }
 
 function clearSession() {
