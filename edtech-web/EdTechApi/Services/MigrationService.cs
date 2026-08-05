@@ -89,6 +89,11 @@ ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""student_id"" VARCHAR(10) UNIQUE
 ALTER TABLE ""SyllabusFiles"" ADD COLUMN IF NOT EXISTS ""file_data"" BYTEA;",
             ["010_classes_add_subject"] = @"
 ALTER TABLE ""Classes"" ADD COLUMN IF NOT EXISTS ""subject"" VARCHAR(100);",
+            ["011_syllabus_class_link"] = @"
+ALTER TABLE ""SyllabusFiles"" ADD COLUMN IF NOT EXISTS ""file_data"" BYTEA;
+ALTER TABLE ""SyllabusFiles"" ALTER COLUMN ""file_path"" DROP NOT NULL;
+ALTER TABLE ""SyllabusFiles"" ADD COLUMN IF NOT EXISTS ""class_id"" INTEGER REFERENCES ""Classes""(""id"") ON DELETE CASCADE;
+CREATE INDEX IF NOT EXISTS idx_syllabus_files_class_id ON ""SyllabusFiles""(""class_id"");",
 
         };
 

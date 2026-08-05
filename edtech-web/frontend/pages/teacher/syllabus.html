@@ -24,6 +24,14 @@
     .file-type-badge { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-ghost); color: var(--accent); }
     .empty-state { text-align: center; padding: var(--space-12); color: var(--text-muted); }
     .empty-state-icon { font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.5; }
+    .class-syllabus-block { margin-bottom: var(--space-8); }
+    .class-syllabus-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 2px solid var(--border-strong); }
+    .class-syllabus-header-icon { font-size: 1.5rem; }
+    .class-syllabus-header h2 { font-size: var(--text-lg); font-weight: 700; color: var(--text-heading); }
+    .class-syllabus-header .class-meta { font-size: var(--text-sm); color: var(--text-muted); margin-top: 2px; }
+    .class-syllabus-count { margin-left: auto; font-size: var(--text-xs); font-weight: 600; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 12px; border-radius: var(--radius-full); white-space: nowrap; }
+    .class-syllabus-empty { padding: var(--space-4); border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); color: var(--text-muted); font-size: var(--text-sm); text-align: center; }
+    .assign-class-select { width: 100%; margin-top: var(--space-1); font-size: var(--text-xs); }
   </style>
 </head>
 <body>
@@ -72,6 +80,12 @@
             <input type="text" class="form-input" id="file-title" placeholder="e.g. Mathematics Syllabus" required>
           </div>
           <div style="flex:1;">
+            <label class="form-label">Class</label>
+            <select class="form-input" id="file-class" required>
+              <option value="">Select a class...</option>
+            </select>
+          </div>
+          <div style="flex:1;">
             <label class="form-label">Description (optional)</label>
             <input type="text" class="form-input" id="file-desc" placeholder="e.g. Unit 1 topics">
           </div>
@@ -81,7 +95,10 @@
       </form>
 
       <div class="syllabus-search">
-        <input type="text" class="form-input" id="search-input" placeholder="Search syllabus files..." oninput="searchFiles()">
+        <select class="form-input" id="class-filter" style="max-width:240px;" onchange="applyFilter()">
+          <option value="">All classes</option>
+        </select>
+        <input type="text" class="form-input" id="search-input" placeholder="Search syllabus files..." oninput="applyFilter()">
       </div>
 
       <div id="syllabus-grid" class="syllabus-grid"></div>
@@ -92,13 +109,14 @@
   <script src="../../js/auth.js"></script>
   <script>
     let currentFile = null;
-    let refreshInterval = null;
+    let teacherClasses = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
+      await loadTeacherClasses();
       loadFiles();
-      refreshInterval = setInterval(loadFiles, 15000);
-      window.addEventListener('beforeunload', () => { if (refreshInterval) clearInterval(refreshInterval); });
+      startPolling(loadFiles, 60000);
+      window.addEventListener('beforeunload', stopPolling);
 
       const dropZone = document.getElementById('drop-zone');
       dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
@@ -118,10 +136,16 @@
         e.preventDefault();
         const title = document.getElementById('file-title').value.trim();
         const desc = document.getElementById('file-desc').value.trim();
+        const classId = document.getElementById('file-class').value;
         if (!title || !currentFile) return;
+        if (!classId) {
+          showAlert('Please select a class for this syllabus file', 'error');
+          return;
+        }
 
         const sizeStr = currentFile.size > 1024 * 1024 ? (currentFile.size / 1024 / 1024).toFixed(1) + ' MB' : (currentFile.size / 1024).toFixed(0) + ' KB';
-        if (!confirm('Upload this file?\n\nFile: ' + currentFile.name + '\nSize: ' + sizeStr + '\nType: ' + (currentFile.type || 'Unknown') + '\nTitle: ' + title + '\n\nClick OK to confirm upload.')) return;
+        const clsName = teacherClasses.find(c => c.id === parseInt(classId));
+        if (!confirm('Upload this file?\n\nFile: ' + currentFile.name + '\nSize: ' + sizeStr + '\nType: ' + (currentFile.type || 'Unknown') + '\nTitle: ' + title + '\nClass: ' + (clsName ? clsName.name : 'Unknown') + '\n\nClick OK to confirm upload.')) return;
 
         const btn = document.getElementById('upload-submit-btn');
         btn.disabled = true; btn.textContent = 'Uploading...';
@@ -129,6 +153,7 @@
         try {
           const fd = new FormData();
           fd.append('title', title);
+          fd.append('class_id', classId);
           if (desc) fd.append('description', desc);
           fd.append('file', currentFile);
           await api.uploadFile('/api/syllabus/upload', fd);
@@ -142,6 +167,18 @@
         }
       });
     });
+
+    async function loadTeacherClasses() {
+      try {
+        const res = await api.get('/api/teacher/classes');
+        teacherClasses = res.data || [];
+        const opts = teacherClasses.map(c => `<option value="${c.id}">${escHtml(c.name)}${c.subject ? ' - ' + escHtml(c.subject) : ''}</option>`).join('');
+        document.getElementById('file-class').innerHTML = '<option value="">Select a class...</option>' + opts;
+        document.getElementById('class-filter').innerHTML = '<option value="">All classes</option>' + opts;
+      } catch (e) {
+        showAlert('Failed to load classes: ' + (e.message || ''), 'error');
+      }
+    }
 
     function handleFileSelect(file) {
       if (file.size > 20 * 1024 * 1024) {
@@ -174,6 +211,7 @@
       document.getElementById('file-preview').style.display = 'none';
       document.getElementById('file-preview').innerHTML = '';
       document.getElementById('upload-btn').disabled = false;
+      document.getElementById('file-class').value = '';
     }
 
     async function loadFiles() {
@@ -187,16 +225,23 @@
       }
     }
 
-    async function searchFiles() {
-      const q = document.getElementById('search-input').value.trim();
+    function applyFilter() {
+      const q = document.getElementById('search-input').value.trim().toLowerCase();
+      const classFilter = document.getElementById('class-filter').value;
       const grid = document.getElementById('syllabus-grid');
-      grid.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Searching...</p></div>';
-      try {
-        const res = await api.get('/api/syllabus' + (q ? '?search=' + encodeURIComponent(q) : ''));
-        renderFiles(res.data || []);
-      } catch (e) {
+      grid.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Filtering...</p></div>';
+      api.get('/api/syllabus').then(res => {
+        let files = res.data || [];
+        if (classFilter) files = files.filter(f => String(f.class_id || '') === classFilter);
+        if (q) files = files.filter(f =>
+          (f.title || '').toLowerCase().includes(q) ||
+          (f.description || '').toLowerCase().includes(q) ||
+          (f.class_name || '').toLowerCase().includes(q)
+        );
+        renderFiles(files);
+      }).catch(() => {
         grid.innerHTML = '<div class="empty-state"><p>Search failed</p></div>';
-      }
+      });
     }
 
     function renderFiles(files) {
@@ -205,12 +250,60 @@
         grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F4DA;</div><p>No syllabus files available</p></div>';
         return;
       }
-      grid.innerHTML = files.map(f => {
-        const ext = (f.file_name || '').split('.').pop().toUpperCase();
-        const icon = ext === 'PDF' ? '&#x1F4C4;' : ext === 'DOC' || ext === 'DOCX' ? '&#x1F4DD;' : ext === 'PPT' || ext === 'PPTX' ? '&#x1F4CA;' : '&#x1F4C1;';
-        const size = f.file_size > 1024 * 1024 ? (f.file_size / 1024 / 1024).toFixed(1) + ' MB' : (f.file_size / 1024).toFixed(0) + ' KB';
-        const url = `${API_BASE}/api/syllabus/${f.id}/download`;
-        return `<div class="syllabus-card">
+
+      const grouped = new Map();
+      const unassigned = [];
+      files.forEach(f => {
+        if (!f.class_id) { unassigned.push(f); return; }
+        if (!grouped.has(f.class_id)) grouped.set(f.class_id, { id: f.class_id, name: f.class_name || 'Class ' + f.class_id, subject: f.class_subject, files: [] });
+        grouped.get(f.class_id).files.push(f);
+      });
+
+      const classOpts = teacherClasses.map(c => `<option value="${c.id}">${escHtml(c.name)}</option>`).join('');
+      const blocks = [];
+
+      [...grouped.values()].forEach(g => {
+        blocks.push(`
+          <div class="class-syllabus-block">
+            <div class="class-syllabus-header">
+              <span class="class-syllabus-header-icon">&#x1F3EB;</span>
+              <div>
+                <h2>${escHtml(g.name)}</h2>
+                ${g.subject ? '<div class="class-meta">' + escHtml(g.subject) + '</div>' : ''}
+              </div>
+              <span class="class-syllabus-count">${g.files.length} file${g.files.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="syllabus-grid">${g.files.map(f => fileCard(f, classOpts)).join('')}</div>
+          </div>`);
+      });
+
+      if (unassigned.length) {
+        blocks.push(`
+          <div class="class-syllabus-block">
+            <div class="class-syllabus-header">
+              <span class="class-syllabus-header-icon">&#x1F4C1;</span>
+              <div>
+                <h2>Unassigned</h2>
+                <div class="class-meta">Files not linked to any class yet</div>
+              </div>
+              <span class="class-syllabus-count">${unassigned.length} file${unassigned.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="syllabus-grid">${unassigned.map(f => fileCard(f, classOpts)).join('')}</div>
+          </div>`);
+      }
+
+      grid.innerHTML = blocks.join('');
+    }
+
+    function fileCard(f, classOpts) {
+      const ext = (f.file_name || '').split('.').pop().toUpperCase();
+      const icon = ext === 'PDF' ? '&#x1F4C4;' : ext === 'DOC' || ext === 'DOCX' ? '&#x1F4DD;' : ext === 'PPT' || ext === 'PPTX' ? '&#x1F4CA;' : '&#x1F4C1;';
+      const size = f.file_size > 1024 * 1024 ? (f.file_size / 1024 / 1024).toFixed(1) + ' MB' : (f.file_size / 1024).toFixed(0) + ' KB';
+      const url = `${API_BASE}/api/syllabus/${f.id}/download`;
+      const assign = f.class_id
+        ? `<div class="file-type-badge" style="background:var(--bg-secondary);color:var(--text-muted);">&#x1F3EB; ${escHtml(f.class_name || '')}</div>`
+        : `<select class="form-input assign-class-select" onchange="assignClass(${f.id}, this.value)"><option value="">Assign class...</option>${classOpts}</select>`;
+      return `<div class="syllabus-card">
           <div class="syllabus-card-icon">${icon}</div>
           <h3>${escHtml(f.title)}</h3>
           <p>${f.description ? escHtml(f.description) : 'No description'}</p>
@@ -218,6 +311,7 @@
             <span class="file-type-badge">${ext}</span>
             <span>${size}</span>
           </div>
+          ${assign}
           <div class="syllabus-card-meta">
             <span>by ${escHtml(f.uploader_name || 'Unknown')}</span>
             <span>${formatDate(f.created_at)}</span>
@@ -227,7 +321,17 @@
             <button class="btn btn-sm btn-secondary" onclick="deleteFile(${f.id})">Delete</button>
           </div>
         </div>`;
-      }).join('');
+    }
+
+    async function assignClass(id, classId) {
+      try {
+        await api.request('PATCH', '/api/syllabus/' + id, { class_id: classId ? parseInt(classId) : null });
+        showAlert(classId ? 'File linked to class' : 'File unlinked from class', 'success');
+        loadFiles();
+      } catch (e) {
+        showAlert(e.message || 'Update failed', 'error');
+        loadFiles();
+      }
     }
 
     async function deleteFile(id) {

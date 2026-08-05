@@ -1,3 +1,4 @@
+using EdTechApi.Middleware;
 using EdTechApi.Models;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -19,13 +20,13 @@ public class SyllabusController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? search)
+    public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] int? class_id)
     {
-        var files = await _syllabusService.GetAllAsync(search);
+        var files = await _syllabusService.GetAllAsync(search, class_id);
         return Ok(new { success = true, data = files });
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
         var file = await _syllabusService.GetByIdAsync(id);
@@ -34,8 +35,21 @@ public class SyllabusController : ControllerBase
         return Ok(new { success = true, data = file });
     }
 
+    [HttpGet("my")]
+    [RequireAuth]
+    public async Task<IActionResult> GetMyFiles()
+    {
+        var userId = HttpContext.Items["UserId"] as int?;
+        if (userId == null)
+            return Unauthorized(new { success = false, message = "Authentication required" });
+
+        var files = await _syllabusService.GetStudentFilesAsync(userId.Value);
+        return Ok(new { success = true, data = files });
+    }
+
     [HttpPost("upload")]
-    public async Task<IActionResult> Upload([FromForm] string title, [FromForm] string? description, [FromForm] IFormFile file)
+    [RequireRole("teacher")]
+    public async Task<IActionResult> Upload([FromForm] string title, [FromForm] string? description, [FromForm] int? classId, [FromForm] IFormFile file)
     {
         var userId = HttpContext.Items["UserId"] as int?;
         if (userId == null)
@@ -60,12 +74,12 @@ public class SyllabusController : ControllerBase
 
         var result = await _syllabusService.UploadAsync(
             title, description, file.FileName, fileData,
-            file.ContentType, file.Length, userId);
+            file.ContentType, file.Length, userId, classId);
 
         return Created(string.Empty, new { success = true, message = "Syllabus file uploaded", data = result });
     }
 
-    [HttpGet("{id}/download")]
+    [HttpGet("{id:int}/download")]
     public async Task<IActionResult> Download(int id)
     {
         var file = await _syllabusService.GetByIdAsync(id);
@@ -90,7 +104,23 @@ public class SyllabusController : ControllerBase
         return File(file.FileData, contentType, file.FileName);
     }
 
-    [HttpDelete("{id}")]
+    [HttpPatch("{id:int}")]
+    [RequireRole("teacher")]
+    public async Task<IActionResult> UpdateClass(int id, [FromBody] UpdateSyllabusClassRequest request)
+    {
+        var userId = HttpContext.Items["UserId"] as int?;
+        if (userId == null)
+            return Unauthorized(new { success = false, message = "Authentication required" });
+
+        var updated = await _syllabusService.UpdateClassAsync(id, request.ClassId);
+        if (!updated)
+            return NotFound(new { success = false, message = "File not found" });
+
+        return Ok(new { success = true, message = "Syllabus file updated" });
+    }
+
+    [HttpDelete("{id:int}")]
+    [RequireRole("teacher")]
     public async Task<IActionResult> Delete(int id)
     {
         var userId = HttpContext.Items["UserId"] as int?;
@@ -103,4 +133,9 @@ public class SyllabusController : ControllerBase
 
         return Ok(new { success = true, message = "Syllabus file deleted" });
     }
+}
+
+public class UpdateSyllabusClassRequest
+{
+    public int? ClassId { get; set; }
 }

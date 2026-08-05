@@ -34,6 +34,15 @@ public class SyllabusFile
     [JsonPropertyName("uploader_name")]
     public string? UploaderName { get; set; }
 
+    [JsonPropertyName("class_id")]
+    public int? ClassId { get; set; }
+
+    [JsonPropertyName("class_name")]
+    public string? ClassName { get; set; }
+
+    [JsonPropertyName("class_subject")]
+    public string? ClassSubject { get; set; }
+
     [JsonPropertyName("created_at")]
     public DateTime CreatedAt { get; set; }
 
