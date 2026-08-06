@@ -30,7 +30,7 @@ public class RedisCacheService : IRedisCacheService, IDisposable
             ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
         if (string.IsNullOrEmpty(connStr))
         {
-            logger.LogWarning("Redis not configured — rate limiting will fall back to in-memory");
+            logger.LogInformation("Redis not configured — rate limiting will fall back to in-memory");
             _redis = null;
             _db = null;
             return;
