@@ -49,7 +49,15 @@ public class SyllabusService : ISyllabusService
                      WHERE cs.""student_id"" = @StudentId
                      ORDER BY c.""name"" ASC, sf.""created_at"" DESC";
 
-        return (await conn.QueryAsync<SyllabusFile>(sql, new { StudentId = studentId })).ToList();
+        var files = (await conn.QueryAsync<SyllabusFile>(sql, new { StudentId = studentId })).ToList();
+
+        // If the student has no matching class-linked files (e.g. not enrolled in a class
+        // yet or the teacher uploaded without linking), fall back to all uploaded syllabus
+        // files so every student can still see and download them.
+        if (files.Count == 0)
+            files = await GetAllAsync(null, null);
+
+        return files;
     }
 
     public async Task<SyllabusFile?> GetByIdAsync(int id)
