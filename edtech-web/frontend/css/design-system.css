@@ -177,7 +177,7 @@ a {
   transition: color var(--duration-fast) var(--ease);
 }
 
-a:hover {
+a:not(.btn):hover {
   color: var(--accent-dark);
   text-decoration: underline;
 }
