@@ -288,4 +288,16 @@
   .auth-role-selector {
     flex-direction: column;
   }
+  .auth-card .field input,
+  .auth-card .field select {
+    min-height: 48px;
+  }
+  .role-option {
+    padding: var(--space-3) var(--space-4);
+  }
+  .auth-footer {
+    flex-direction: column;
+    gap: var(--space-1);
+    text-align: center;
+  }
 }

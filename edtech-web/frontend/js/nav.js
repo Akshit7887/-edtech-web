@@ -12,6 +12,16 @@
         l.href = (window.location.pathname.indexOf('/pages/') === 0 ? '../../' : '') + 'manifest.json';
         document.head.appendChild(l);
       }
+      if (!document.querySelector('meta[name="theme-color"]')) {
+        var theme = document.createElement('meta');
+        theme.name = 'theme-color'; theme.content = '#b91c1c';
+        document.head.appendChild(theme);
+      }
+      if (!document.querySelector('meta[name="mobile-web-app-capable"]')) {
+        var mw = document.createElement('meta');
+        mw.name = 'mobile-web-app-capable'; mw.content = 'yes';
+        document.head.appendChild(mw);
+      }
       if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
         var m = document.createElement('meta');
         m.name = 'apple-mobile-web-app-capable'; m.content = 'yes';

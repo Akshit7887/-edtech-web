@@ -2085,6 +2085,7 @@ body.page-flip-in {
   .hero-bg-gradient { width: 400px; height: 400px; }
   .footer-links { gap: var(--space-4); }
   .btn-lg { padding: var(--space-3) var(--space-6); }
+  .navbar-brand { font-size: var(--text-xl); }
 }
 
 @media (max-width: 480px) {
@@ -2097,4 +2098,19 @@ body.page-flip-in {
   .carousel-card { padding: var(--space-6) var(--space-4); }
   .carousel-card-title { font-size: var(--text-lg); }
   .mobile-menu { width: 100vw; }
+  .navbar { height: 60px; padding: 0 var(--space-4); }
+  .navbar-brand { font-size: var(--text-lg); max-width: 70vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hero-title { text-wrap: balance; }
+  .hero-cta .btn { padding: var(--space-3) var(--space-4); font-size: var(--text-base); }
+  .exam-card-title, .card h3 { overflow-wrap: break-word; word-break: break-word; }
+  .section-header h2 { font-size: var(--text-2xl); }
+}
+
+/* PWA standalone / notched devices: keep fixed UI clear of safe areas */
+@supports (padding: env(safe-area-inset-top)) {
+  .navbar { height: auto; min-height: 72px; padding-top: env(safe-area-inset-top); }
+  .mobile-menu-header { padding-top: calc(var(--space-3) + env(safe-area-inset-top)); }
+  .mobile-nav-body { padding-bottom: env(safe-area-inset-bottom); }
+  .site-footer { padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom)); }
+  .exam-timer { padding-top: calc(var(--space-3) + env(safe-area-inset-top)); }
 }

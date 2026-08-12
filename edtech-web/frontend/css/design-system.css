@@ -108,15 +108,18 @@
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Mono', 'Fira Code', monospace;
 
+  /* Small sizes stay fixed for readability; large sizes scale fluidly
+     with the viewport so headings stay balanced on phones, tablets,
+     and standalone PWA windows alike. */
   --text-xs:   0.75rem;
   --text-sm:   0.875rem;
   --text-base: 1rem;
   --text-lg:   1.125rem;
-  --text-xl:   1.25rem;
-  --text-2xl:  1.5rem;
-  --text-3xl:  1.875rem;
-  --text-4xl:  2.25rem;
-  --text-5xl:  3rem;
+  --text-xl:   clamp(1.125rem, 1.06rem + 0.35vw, 1.25rem);
+  --text-2xl:  clamp(1.25rem, 1.12rem + 0.65vw, 1.5rem);
+  --text-3xl:  clamp(1.4rem, 1.18rem + 1.1vw, 1.875rem);
+  --text-4xl:  clamp(1.6rem, 1.2rem + 2vw, 2.25rem);
+  --text-5xl:  clamp(1.9rem, 1.25rem + 3.25vw, 3rem);
 
   --leading-tight: 1.25;
   --leading-normal:1.5;
@@ -144,6 +147,9 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
 body {

@@ -314,3 +314,17 @@
     margin-bottom: var(--space-4);
   }
 }
+
+@media (max-width: 480px) {
+  .exam-container { padding: var(--space-3); padding-top: 76px; }
+  .exam-header { padding: var(--space-4); }
+  .exam-header h2 { font-size: var(--text-xl); }
+  .exam-meta { gap: var(--space-2); }
+  .exam-meta-item { font-size: var(--text-xs); padding: var(--space-1) var(--space-2); }
+  .exam-timer { font-size: var(--text-base); padding: var(--space-3); }
+  .question-card { padding: var(--space-4); }
+  .question-text { font-size: var(--text-base); overflow-wrap: break-word; word-break: break-word; }
+  .option-item { padding: var(--space-3); font-size: var(--text-base); min-height: 48px; }
+  .palette-item { width: 36px; height: 36px; }
+  .q-nav-btn { width: 44px; height: 44px; }
+}

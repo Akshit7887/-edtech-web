@@ -834,6 +834,16 @@ tbody tr:hover {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-2);
   }
+  .page-header h1 { font-size: var(--text-lg); }
+  .page-header .btn { width: 100%; }
+  .exam-card-title { font-size: var(--text-base); }
+  .exam-card { padding: var(--space-4); }
+  .sidebar { width: 280px; }
+  .main-content { padding: var(--space-3); }
+  .breadcrumb { font-size: var(--text-xs); }
+  .sidebar-nav a { font-size: var(--text-sm); padding: var(--space-2) var(--space-4); }
+  .class-card, .section-card, .student-row { padding: var(--space-4); }
+}
   .quick-action-card {
     padding: var(--space-4) var(--space-3);
   }

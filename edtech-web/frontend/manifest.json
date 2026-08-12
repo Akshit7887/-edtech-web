@@ -1,24 +1,42 @@
 {
-  "name": "edtech",
-  "short_name": "edtech",
-  "description": "AI-powered examination platform",
+  "id": "/",
+  "name": "EdTech AI Test & Learning App",
+  "short_name": "EdTech",
+  "description": "AI-powered examination platform - smart exams, practice, auto-grading, and analytics for students and educators",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#b91c1c",
+  "lang": "en",
+  "dir": "ltr",
   "orientation": "any",
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
