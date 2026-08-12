@@ -71,6 +71,11 @@ SqlMapper.SetTypeMap(typeof(SyllabusFile), new CustomPropertyTypeMap(
         p.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name == columnName)
         ?? throw new InvalidOperationException($"No property mapped to column '{columnName}'")));
 
+// Map snake_case DB columns (e.g. password_hash) to PascalCase properties
+// (e.g. PasswordHash) for all models; otherwise Dapper leaves them null,
+// which silently breaks BCrypt verification and admin login.
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 // ── Database ──
 builder.Services.AddSingleton<IDbConnectionFactory>(new DbConnectionFactory(dbConnectionString, dbReplicaConnectionString));
 
