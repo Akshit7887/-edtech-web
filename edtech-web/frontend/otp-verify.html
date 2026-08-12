@@ -110,10 +110,18 @@
       try {
         if (isRegistration) {
           const data = await verifyRegisterOtp(identifier, otp);
+          if (data.pending_approval) {
+            showPendingApproval();
+            return;
+          }
           saveSession(data.token, { id: data.user.id, name: data.user.name, role: data.user.role, email: data.user.email, phone: data.user.phone });
           showSuccess();
         } else {
           const data = await verifyOtpRequest(identifier, otp, role);
+          if (data.pending_approval) {
+            showPendingApproval();
+            return;
+          }
           saveSession(data.token, { id: data.user.id, name: data.user.name, role: data.user.role, email: data.user.email, phone: data.user.phone });
           showSuccess();
         }
@@ -121,6 +129,22 @@
         showAlert(e.message, 'error', document.getElementById('alert-container'));
         btn.disabled = false; text.textContent = 'Verify OTP'; spinner.style.display = 'none';
       }
+    }
+
+    function showPendingApproval() {
+      clearSession();
+      sessionStorage.removeItem('otp_identifier');
+      sessionStorage.removeItem('otp_registration');
+      sessionStorage.removeItem('otp_code');
+      const container = document.querySelector('.auth-card');
+      container.innerHTML = `
+        <div style="text-align:center;padding:var(--space-8) 0;">
+          <div style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-6);background:var(--warning-light);border-radius:var(--radius-full);font-size:var(--text-3xl);color:var(--warning-dark);animation:scaleIn 0.4s var(--ease-bounce) both;">&#x23F3;</div>
+          <h2 style="font-size:var(--text-xl);font-weight:600;margin-bottom:var(--space-2);">Registration Submitted!</h2>
+          <p style="color:var(--text-muted);font-size:var(--text-sm);line-height:1.6;margin-bottom:var(--space-6);">Your teacher account has been created and is <strong>pending admin approval</strong>. The admin will review your details. You will receive a notification and be able to log in once your account is approved.</p>
+          <button class="btn btn-primary" onclick="goTo('login.html')">Back to Login</button>
+        </div>
+      `;
     }
 
     function showSuccess() {

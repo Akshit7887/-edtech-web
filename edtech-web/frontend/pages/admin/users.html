@@ -31,11 +31,17 @@
           <p class="text-muted">Manage all platform users</p>
         </div>
         <div style="display:flex;gap:var(--space-3)">
-          <select id="role-filter" class="form-input" style="width:auto" onchange="loadUsers()">
+          <select id="role-filter" class="form-input" style="width:auto" onchange="loadUsers(1)">
             <option value="">All Roles</option>
             <option value="student">Students</option>
             <option value="teacher">Teachers</option>
             <option value="admin">Admins</option>
+          </select>
+          <select id="status-filter" class="form-input" style="width:auto" onchange="loadUsers(1)">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending Approval</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
           </select>
         </div>
       </div>
@@ -43,9 +49,9 @@
       <div class="dashboard-section">
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Phone</th><th>Created</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Department</th><th>Phone</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
             <tbody id="users-tbody">
-              <tr><td colspan="7"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
+              <tr><td colspan="8"><div class="loading-overlay"><div class="spinner"></div></div></td></tr>
             </tbody>
           </table>
         </div>
@@ -62,37 +68,84 @@
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
       setupNavbar();
-      await loadUsers();
+      const filter = getQueryParam('filter');
+      if (filter === 'pending') {
+        document.getElementById('role-filter').value = 'teacher';
+        document.getElementById('status-filter').value = 'pending';
+      }
+      await loadUsers(1);
     });
+
+    function approvalBadge(status) {
+      const map = { pending: 'badge-yellow', approved: 'badge-green', rejected: 'badge-red' };
+      const cls = map[status] || 'badge-gray';
+      return `<span class="badge ${cls}">${(status || 'approved').replace(/_/g, ' ')}</span>`;
+    }
 
     async function loadUsers(page) {
       currentPage = page || currentPage;
       try {
         const role = document.getElementById('role-filter').value;
-        const url = `/api/admin/users?page=${currentPage}&limit=50${role ? '&role=' + role : ''}`;
+        const status = document.getElementById('status-filter').value;
+        let url = `/api/admin/users?page=${currentPage}&limit=50`;
+        if (role) url += '&role=' + role;
+        if (status) url += '&status=' + status;
         const res = await api.get(url);
         const users = res.data || [];
         const pagination = res.pagination || { page: 1, total: 0, total_pages: 1 };
         const tbody = document.getElementById('users-tbody');
         if (!users.length) {
-          tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">👥</div><h3>No users found</h3></div></td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">👥</div><h3>No users found</h3></div></td></tr>';
         } else {
-          tbody.innerHTML = users.map(u => `
+          tbody.innerHTML = users.map(u => {
+            const approval = u.approval_status || 'approved';
+            const isTeacher = u.role === 'teacher';
+            const actions = [];
+            if (isTeacher && approval !== 'approved') actions.push(`<button class="btn btn-sm btn-primary" onclick="approveTeacher(${u.id})">Approve</button>`);
+            if (isTeacher && approval === 'pending') actions.push(`<button class="btn btn-sm btn-danger" onclick="rejectTeacher(${u.id})">Reject</button>`);
+            if (approval === 'rejected' && u.rejection_reason) actions.push(`<button class="btn btn-sm btn-ghost" onclick="showRejectReason('${(u.rejection_reason || '').replace(/'/g, "\\'")}')">Why?</button>`);
+            actions.push(`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id}, '${(u.name || '').replace(/'/g, "\\'")}')">Delete</button>`);
+            return `
             <tr>
               <td><div class="student-row"><div class="student-avatar">${(u.name || '?').charAt(0).toUpperCase()}</div><strong>${u.name}</strong></div></td>
               <td>${u.email || '-'}</td>
               <td>${statusBadge(u.role)}</td>
               <td>${u.department_name || '-'}</td>
               <td>${u.phone || '-'}</td>
+              <td>${approvalBadge(approval)}</td>
               <td>${formatDate(u.created_at)}</td>
-              <td><button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id}, '${(u.name || '').replace(/'/g, "\\'")}')">Delete</button></td>
-            </tr>
-          `).join('');
+              <td><div style="display:flex;gap:6px;flex-wrap:wrap">${actions.join('')}</div></td>
+            </tr>`;
+          }).join('');
         }
         renderPagination(pagination);
       } catch (e) {
-        document.getElementById('users-tbody').innerHTML = `<tr><td colspan="7"><div class="alert alert-error">${e.message}</div></td></tr>`;
+        document.getElementById('users-tbody').innerHTML = `<tr><td colspan="8"><div class="alert alert-error">${e.message}</div></td></tr>`;
       }
+    }
+
+    async function approveTeacher(id) {
+      if (!await confirmAction('Approve this teacher? They will be able to log in immediately.')) return;
+      try {
+        await api.post('/api/admin/teachers/' + id + '/approve');
+        showAlert('Teacher approved', 'success');
+        loadUsers(currentPage);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function rejectTeacher(id) {
+      const reason = prompt('Reason for rejection (optional):', '');
+      if (reason === null) return;
+      if (!await confirmAction('Reject this teacher? They will not be able to log in.')) return;
+      try {
+        await api.post('/api/admin/teachers/' + id + '/reject', { rejection_reason: reason });
+        showAlert('Teacher rejected', 'success');
+        loadUsers(currentPage);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    function showRejectReason(reason) {
+      alert('Rejection reason: ' + reason);
     }
 
     function renderPagination(p) {

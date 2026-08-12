@@ -44,6 +44,9 @@
           Teacher
         </button>
       </div>
+      <div class="alert alert-info" id="teacher-approval-note" style="display:none;margin-bottom:var(--space-6)">
+        <strong>Teacher accounts require admin approval.</strong> After registering, the admin will review your details. You will be able to log in only after your account is approved.
+      </div>
 
       <form id="register-form" onsubmit="handleRegister(event)">
         <div class="form-group form-floating">
@@ -95,6 +98,8 @@
       });
       const label = document.getElementById('google-role-label');
       if (label) label.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+      const note = document.getElementById('teacher-approval-note');
+      if (note) note.style.display = role === 'teacher' ? 'block' : 'none';
     }
 
     async function handleRegister(e) {

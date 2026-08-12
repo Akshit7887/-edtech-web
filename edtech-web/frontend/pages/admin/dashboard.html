@@ -65,6 +65,11 @@
             <div class="stat-value" id="stat-classes">-</div>
             <div class="stat-label">Classes</div>
           </div>
+          <div class="stat-card anim-fade-up stagger-7" style="cursor:pointer" onclick="goTo('users.html?filter=pending')" title="Review pending teacher approvals">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-value" id="stat-pending-teachers">-</div>
+            <div class="stat-label">Pending Teacher Approvals</div>
+          </div>
         </div>
       </div>
 
@@ -93,6 +98,11 @@
             <div class="qa-label">Fix Student IDs</div>
             <div class="qa-desc">Assign student_id to all students missing one</div>
           </div>
+          <div class="quick-action-card anim-fade-up stagger-5" onclick="goTo('users.html?filter=pending')">
+            <div class="qa-icon" style="background:#fffbeb;color:#d97706">⏳</div>
+            <div class="qa-label">Teacher Approvals</div>
+            <div class="qa-desc">Approve or reject pending teacher registrations</div>
+          </div>
         </div>
       </div>
 
@@ -119,7 +129,6 @@
   <script src="../../js/auth.js"></script>
   <script src="../../js/animations.js"></script>
   <script>
-    let refreshInterval = null;
 
     async function backfillStudentIds() {
       if (!await confirmAction('Assign student IDs to all students missing one?')) return;
@@ -135,10 +144,10 @@
       document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       setupNavbar();
       await refreshDashboard();
-      refreshInterval = setInterval(refreshDashboard, 30000);
+      startPolling(refreshDashboard, 60000);
     });
 
-    window.addEventListener('beforeunload', () => { if (refreshInterval) clearInterval(refreshInterval); });
+    window.addEventListener('beforeunload', stopPolling);
 
     async function refreshDashboard() {
       await Promise.all([loadStats(), loadRecentUsers(), loadRecentDepts()]);
@@ -154,6 +163,7 @@
         animateCounter('stat-exams', d.totalExams || 0);
         animateCounter('stat-departments', d.totalDepartments || 0);
         animateCounter('stat-classes', d.totalClasses || 0);
+        animateCounter('stat-pending-teachers', d.pendingTeachers || 0);
       } catch (e) {
         document.getElementById('stats-grid').innerHTML = '<div class="alert alert-error">Failed to load stats</div>';
       }

@@ -74,8 +74,34 @@ public class AuthService : IAuthService
             Role = user.Role,
             Phone = user.Phone,
             Email = user.Email,
-            StudentId = user.StudentId
+            StudentId = user.StudentId,
+            ApprovalStatus = user.ApprovalStatus
         };
+    }
+
+    private async Task NotifyAdminsAsync(IDbConnection conn, string title, string message)
+    {
+        var admins = await conn.QueryAsync<int>("SELECT \"id\" FROM \"Users\" WHERE \"role\" = 'admin'");
+        foreach (var adminId in admins)
+        {
+            await conn.ExecuteAsync(
+                @"INSERT INTO ""Notifications"" (""user_id"", ""title"", ""message"", ""type"", ""created_at"")
+                  VALUES (@UserId, @Title, @Message, 'admin', @Now)",
+                new { UserId = adminId, Title = title, Message = message, Now = DateTime.UtcNow });
+        }
+    }
+
+    private void EnsureTeacherApproved(User user)
+    {
+        if (user.Role != "teacher" || user.ApprovalStatus == "approved")
+            return;
+
+        if (user.ApprovalStatus == "rejected")
+            throw new AppException(403, string.IsNullOrEmpty(user.RejectionReason)
+                ? "Your teacher account was rejected by the admin. Please contact support for more information."
+                : $"Your teacher account was rejected by the admin. Reason: {user.RejectionReason}");
+
+        throw new AppException(403, "Your teacher account is pending admin approval. Please wait until an admin confirms and approves your account.");
     }
 
     public async Task<VerifyOtpResponse> AdminLoginAsync(string email, string password)
@@ -130,13 +156,22 @@ public class AuthService : IAuthService
                     Role = role,
                     PasswordHash = hash,
                     Email = identifier,
+                    ApprovalStatus = role == "teacher" ? "pending" : "approved",
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
                 };
-                var sql = @"INSERT INTO ""Users"" (""name"", ""role"", ""password_hash"", ""email"", ""created_at"", ""updated_at"")
-                    VALUES (@Name, @Role, @PasswordHash, @Email, @CreatedAt, @UpdatedAt) RETURNING *";
+                var sql = @"INSERT INTO ""Users"" (""name"", ""role"", ""password_hash"", ""email"", ""approval_status"", ""created_at"", ""updated_at"")
+                    VALUES (@Name, @Role, @PasswordHash, @Email, @ApprovalStatus, @CreatedAt, @UpdatedAt) RETURNING *";
                 user = await conn.QuerySingleAsync<User>(sql, newUser, tx);
                 await EnsureStudentIdAsync(conn, user);
+
+                if (user.Role == "teacher")
+                {
+                    await NotifyAdminsAsync(conn, "New teacher registration",
+                        $"A new teacher ({user.Name}, {user.Email}) registered and is awaiting your approval.");
+                    tx.Commit();
+                    throw new AppException(403, "Your teacher account has been created and is pending admin approval. Please wait until an admin confirms your account.");
+                }
             }
 
             if (user == null)
@@ -144,6 +179,8 @@ public class AuthService : IAuthService
 
             if (!string.IsNullOrEmpty(role) && user.Role != role)
                 throw new AppException(403, "Role mismatch. Please use the correct login method.");
+
+            EnsureTeacherApproved(user);
 
             if (!string.IsNullOrEmpty(password))
             {
@@ -202,6 +239,7 @@ public class AuthService : IAuthService
 
         if (user == null) throw new AppException(404, "User not found");
         if (!string.IsNullOrEmpty(role) && user.Role != role) throw new AppException(403, "Role mismatch");
+        EnsureTeacherApproved(user);
 
         var now = DateTime.UtcNow;
         var affected = await conn.ExecuteAsync(
@@ -300,22 +338,37 @@ public class AuthService : IAuthService
             throw new AppException(400, "No pending registration found. Please start registration again.");
 
         var now2 = DateTime.UtcNow;
+        var isTeacher = pending.Role == "teacher";
         var user = new User
         {
             Name = pending.Name,
             Role = pending.Role,
             PasswordHash = pending.PasswordHash ?? "",
             Email = pending.Email ?? pending.Identifier,
+            ApprovalStatus = isTeacher ? "pending" : "approved",
             CreatedAt = now2,
             UpdatedAt = now2
         };
 
         user = await conn.QuerySingleAsync<User>(
-            @"INSERT INTO ""Users"" (""name"", ""role"", ""password_hash"", ""email"", ""created_at"", ""updated_at"")
-              VALUES (@Name, @Role, @PasswordHash, @Email, @CreatedAt, @UpdatedAt) RETURNING *",
+            @"INSERT INTO ""Users"" (""name"", ""role"", ""password_hash"", ""email"", ""approval_status"", ""created_at"", ""updated_at"")
+              VALUES (@Name, @Role, @PasswordHash, @Email, @ApprovalStatus, @CreatedAt, @UpdatedAt) RETURNING *",
             user);
 
         await EnsureStudentIdAsync(conn, user);
+
+        if (isTeacher)
+        {
+            await NotifyAdminsAsync(conn, "New teacher registration",
+                $"A new teacher ({user.Name}, {user.Email}) registered and is awaiting your approval. Review it in the Admin panel.");
+            return new VerifyOtpResponse
+            {
+                Token = "",
+                PendingApproval = true,
+                ApprovalStatus = "pending",
+                User = UserToInfo(user)
+            };
+        }
 
         var token = _jwt.GenerateToken(user.Id, user.Role, user.TokenVersion);
 
@@ -490,29 +543,47 @@ public class AuthService : IAuthService
             var jwtSecret = _config["Jwt:Secret"] ?? "";
             var hash = BCrypt.Net.BCrypt.HashPassword(externalUserId + jwtSecret);
             var now = DateTime.UtcNow;
+            var isTeacher = role == "teacher";
             user = new User
             {
                 Name = name,
                 Role = role ?? "student",
                 Email = email,
                 PasswordHash = hash,
+                ApprovalStatus = isTeacher ? "pending" : "approved",
                 CreatedAt = now,
                 UpdatedAt = now
             };
             user = await conn.QuerySingleAsync<User>(
-                @"INSERT INTO ""Users"" (""name"", ""role"", ""email"", ""password_hash"", ""created_at"", ""updated_at"")
-                  VALUES (@Name, @Role, @Email, @PasswordHash, @CreatedAt, @UpdatedAt) RETURNING *",
+                @"INSERT INTO ""Users"" (""name"", ""role"", ""email"", ""password_hash"", ""approval_status"", ""created_at"", ""updated_at"")
+                  VALUES (@Name, @Role, @Email, @PasswordHash, @ApprovalStatus, @CreatedAt, @UpdatedAt) RETURNING *",
                 user);
-                await EnsureStudentIdAsync(conn, user);
+            await EnsureStudentIdAsync(conn, user);
+
+            if (isTeacher)
+            {
+                await NotifyAdminsAsync(conn, "New teacher registration",
+                    $"A new teacher ({user.Name}, {user.Email}) registered and is awaiting your approval. Review it in the Admin panel.");
+                throw new AppException(403, "Your teacher account has been created and is pending admin approval. Please wait until an admin confirms your account.");
+            }
         }
         else if (user.Role != role)
         {
             var now = DateTime.UtcNow;
+            var isTeacher = role == "teacher";
             user = await conn.QuerySingleAsync<User>(
-                @"UPDATE ""Users"" SET ""role"" = @Role, ""name"" = @Name, ""token_version"" = ""token_version"" + 1, ""updated_at"" = @Now WHERE ""id"" = @Id RETURNING *",
-                new { Role = role, Name = name, Now = now, Id = user.Id });
+                @"UPDATE ""Users"" SET ""role"" = @Role, ""name"" = @Name, ""approval_status"" = @ApprovalStatus, ""token_version"" = ""token_version"" + 1, ""updated_at"" = @Now WHERE ""id"" = @Id RETURNING *",
+                new { Role = role, Name = name, ApprovalStatus = isTeacher ? "pending" : "approved", Now = now, Id = user.Id });
+
+            if (isTeacher)
+            {
+                await NotifyAdminsAsync(conn, "New teacher registration",
+                    $"A new teacher ({user.Name}, {user.Email}) registered and is awaiting your approval. Review it in the Admin panel.");
+                throw new AppException(403, "Your teacher account has been created and is pending admin approval. Please wait until an admin confirms your account.");
+            }
         }
 
+        EnsureTeacherApproved(user);
         await EnsureStudentIdAsync(conn, user);
 
         var token = _jwt.GenerateToken(user.Id, user.Role, user.TokenVersion);

@@ -18,9 +18,10 @@ public class AuthServiceTests
         var env = new Mock<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
         env.Setup(e => e.EnvironmentName).Returns("Development");
         var logger = new Mock<ILogger<AuthService>>();
+        var cache = new Mock<IRedisCacheService>();
 
         var ex = Record.Exception(() => new AuthService(
-            dbFactory.Object, jwt.Object, otp.Object, email.Object, config, env.Object, logger.Object));
+            dbFactory.Object, jwt.Object, otp.Object, email.Object, config, env.Object, logger.Object, cache.Object));
 
         Assert.Null(ex);
     }

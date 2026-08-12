@@ -94,6 +94,10 @@ ALTER TABLE ""SyllabusFiles"" ADD COLUMN IF NOT EXISTS ""file_data"" BYTEA;
 ALTER TABLE ""SyllabusFiles"" ALTER COLUMN ""file_path"" DROP NOT NULL;
 ALTER TABLE ""SyllabusFiles"" ADD COLUMN IF NOT EXISTS ""class_id"" INTEGER REFERENCES ""Classes""(""id"") ON DELETE CASCADE;
 CREATE INDEX IF NOT EXISTS idx_syllabus_files_class_id ON ""SyllabusFiles""(""class_id"");",
+            ["012_teacher_approval"] = @"
+ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""approval_status"" VARCHAR(20) NOT NULL DEFAULT 'approved';
+ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""rejection_reason"" TEXT;
+ALTER TABLE ""Users"" ADD COLUMN IF NOT EXISTS ""approved_at"" TIMESTAMP WITH TIME ZONE;",
 
         };
 

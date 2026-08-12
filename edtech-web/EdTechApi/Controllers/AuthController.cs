@@ -55,7 +55,10 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> VerifyRegisterOtp([FromBody] VerifyRegisterOtpRequest request)
     {
         var result = await _authService.VerifyRegisterOtpAsync(request.Identifier, request.OtpCode);
-        return Created(string.Empty, new { success = true, message = "Account created and verified successfully", data = result });
+        var message = result.PendingApproval
+            ? "Your teacher account has been created and is pending admin approval. You will be able to log in once an admin approves it."
+            : "Account created and verified successfully";
+        return Created(string.Empty, new { success = true, message, data = result });
     }
 
     [AllowAnonymous]

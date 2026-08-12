@@ -530,6 +530,12 @@
   color: var(--success-dark);
 }
 
+.alert-info {
+  background: var(--info-light, #eef2ff);
+  border: 1px solid var(--info, #818cf8);
+  color: var(--info-dark, #3730a3);
+}
+
 /* ============================================================
    Footer
    ============================================================ */

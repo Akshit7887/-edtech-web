@@ -76,9 +76,16 @@ public class GoogleAuthController : ControllerBase
     [HttpPost("signin")]
     public async Task<IActionResult> SignIn([FromBody] GoogleSignInRequest request)
     {
-        var selectedRole = !string.IsNullOrEmpty(request.Role) && (request.Role == "teacher" || request.Role == "student") ? request.Role : "student";
-        var result = await _googleAuth.VerifyIdTokenAsync(request.IdToken, selectedRole);
-        return Ok(result);
+        try
+        {
+            var selectedRole = !string.IsNullOrEmpty(request.Role) && (request.Role == "teacher" || request.Role == "student") ? request.Role : "student";
+            var result = await _googleAuth.VerifyIdTokenAsync(request.IdToken, selectedRole);
+            return Ok(result);
+        }
+        catch (AppException ex)
+        {
+            return StatusCode(ex.StatusCode, new { success = false, error = ex.Message });
+        }
     }
 
     [HttpGet("config")]

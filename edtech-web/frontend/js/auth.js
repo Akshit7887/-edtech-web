@@ -59,11 +59,9 @@ function saveSession(token, user) {
 
 function clearSession() {
   api.setToken(null);
-  localStorage.removeItem('user');
-  localStorage.removeItem('user_role');
-  localStorage.removeItem('user_id');
-  localStorage.removeItem('user_name');
-  localStorage.removeItem('user_student_id');
+  try { if (typeof stopPolling === 'function') stopPolling(); } catch (e) {}
+  Object.keys(localStorage).forEach(k => { if (k !== 'api_base') localStorage.removeItem(k); });
+  Object.keys(sessionStorage).forEach(k => sessionStorage.removeItem(k));
 }
 
 function getUser() {
@@ -110,12 +108,55 @@ function redirectToDashboard() {
   return false;
 }
 
-function logout() {
+function showLogoutConfirm() {
+  let overlay = document.getElementById('logout-confirm-modal');
+  if (overlay) { overlay.classList.add('active'); return; }
+  overlay = document.createElement('div');
+  overlay.id = 'logout-confirm-modal';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logout-modal-title">
+      <div class="modal-header">
+        <h3 id="logout-modal-title">Confirm Logout</h3>
+        <button class="modal-close" type="button" onclick="closeLogoutConfirm()" aria-label="Close">&#x00D7;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:8px">Are you sure you want to log out?</p>
+        <p style="color:var(--text-muted);font-size:0.85rem">All your session data will be removed from this device. You will need to log in again.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" onclick="closeLogoutConfirm()">Cancel</button>
+        <button class="btn btn-primary" type="button" onclick="performLogout()">Yes, Log Out</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => overlay.classList.add('active'));
+}
+
+function closeLogoutConfirm() {
+  const overlay = document.getElementById('logout-confirm-modal');
+  if (overlay) overlay.remove();
+}
+
+function performLogout() {
+  closeLogoutConfirm();
   const role = getUserRole();
+  try { if (typeof realtime !== 'undefined' && realtime.disconnectAll) realtime.disconnectAll(); } catch (e) {}
   clearSession();
   if (role === 'admin') goTo('/pages/admin/login.html');
   else goTo('/login.html');
 }
+
+function logout() {
+  showLogoutConfirm();
+}
+
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted && !api.getToken()) {
+    clearSession();
+    redirectToLogin();
+  }
+});
 
 function setupNavbar() {
   const nav = document.querySelector('.navbar-nav');

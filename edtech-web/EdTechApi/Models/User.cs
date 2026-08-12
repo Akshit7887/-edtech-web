@@ -28,6 +28,15 @@ public class User
     [JsonPropertyName("student_id")]
     public string? StudentId { get; set; }
 
+    [JsonPropertyName("approval_status")]
+    public string ApprovalStatus { get; set; } = "approved";
+
+    [JsonPropertyName("rejection_reason")]
+    public string? RejectionReason { get; set; }
+
+    [JsonPropertyName("approved_at")]
+    public DateTime? ApprovedAt { get; set; }
+
     [JsonPropertyName("created_at")]
     public DateTime CreatedAt { get; set; }
 

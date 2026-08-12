@@ -64,6 +64,12 @@ public class VerifyOtpResponse
 
     [JsonPropertyName("user")]
     public UserInfo User { get; set; } = new();
+
+    [JsonPropertyName("pending_approval")]
+    public bool PendingApproval { get; set; }
+
+    [JsonPropertyName("approval_status")]
+    public string? ApprovalStatus { get; set; }
 }
 
 public class UserInfo
@@ -85,6 +91,9 @@ public class UserInfo
 
     [JsonPropertyName("student_id")]
     public string? StudentId { get; set; }
+
+    [JsonPropertyName("approval_status")]
+    public string? ApprovalStatus { get; set; }
 }
 
 public class RegisterRequest
@@ -255,4 +264,11 @@ public class GoogleSignInRequest
     [RegularExpression("^(teacher|student)$", ErrorMessage = "Role must be 'teacher' or 'student'")]
     [JsonPropertyName("role")]
     public string? Role { get; set; }
+}
+
+public class RejectTeacherRequest
+{
+    [MaxLength(500, ErrorMessage = "Rejection reason must be at most 500 characters")]
+    [JsonPropertyName("rejection_reason")]
+    public string? RejectionReason { get; set; }
 }
