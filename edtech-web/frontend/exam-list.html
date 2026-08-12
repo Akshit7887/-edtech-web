@@ -7,6 +7,54 @@
   <link rel="stylesheet" href="css/main.css?v=3">
   <link rel="stylesheet" href="css/dashboard.css?v=2">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    .hero-browse { min-height: auto; }
+    .exam-toolbar { margin-bottom: var(--space-6); }
+    .exam-search {
+      width: 100%;
+      max-width: 420px;
+      padding: var(--space-3) var(--space-4);
+      font-size: var(--text-sm);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      outline: none;
+      transition: border-color var(--duration-fast) var(--ease), box-shadow var(--duration-fast) var(--ease);
+    }
+    .exam-search:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-ghost);
+    }
+    .exam-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-top: var(--space-4);
+    }
+    .filter-chip {
+      padding: var(--space-1) var(--space-4);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-body);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease);
+    }
+    .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--white);
+    }
+    .step-card { display: flex; align-items: center; gap: var(--space-6); padding: var(--space-8); }
+    .step-num {
+      width: 48px; height: 48px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--accent-ghost); border-radius: var(--radius-full);
+      font-size: var(--text-xl); font-weight: 700; color: var(--accent);
+    }
+  </style>
 </head>
 <body>
 
@@ -23,43 +71,177 @@
     <button class="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false" type="button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon"><line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/><line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/><line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/></svg></button>
   </nav>
 
-  <div class="container" style="padding-top: 96px;">
-    <div class="dashboard-header">
-      <h1>Available Exams</h1>
-      <p>Browse and take exams assigned to you</p>
+  <section class="hero hero-browse">
+    <div class="hero-bg">
+      <div class="hero-bg-grid"></div>
+      <div class="hero-bg-gradient"></div>
     </div>
-    <div id="alert-container"></div>
-    <div id="exam-list">
-      <div class="exam-grid">
-        <div class="card" style="padding: var(--space-6);">
-          <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
-          <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
-          <div class="skeleton" style="height: 14px; width: 40%;"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-pulse"></span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>
+        Public Exam Catalog
+      </div>
+      <h1 class="hero-title">
+        Discover Exams,<br>
+        <span class="accent-text">Prepare Smarter</span>
+      </h1>
+      <p class="hero-subtitle">
+        Explore AI-crafted exams across every subject. Take them with instant
+        auto-grading, AI feedback, and performance analytics.
+      </p>
+      <div class="hero-cta">
+        <a href="register.html" class="btn btn-primary btn-lg">Get Started Free</a>
+        <a href="login.html" class="btn btn-secondary btn-lg">Sign In</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="stats-row" id="browse-stats">
+        <div class="stat-card">
+          <div class="stat-card-label">Available Exams</div>
+          <div class="stat-card-value accent"><span id="stat-exams">0</span></div>
         </div>
-        <div class="card" style="padding: var(--space-6);">
-          <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
-          <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
-          <div class="skeleton" style="height: 14px; width: 40%;"></div>
+        <div class="stat-card">
+          <div class="stat-card-label">Subjects</div>
+          <div class="stat-card-value"><span id="stat-subjects">0</span></div>
         </div>
-        <div class="card" style="padding: var(--space-6);">
-          <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
-          <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
-          <div class="skeleton" style="height: 14px; width: 40%;"></div>
+        <div class="stat-card">
+          <div class="stat-card-label">Total Questions</div>
+          <div class="stat-card-value"><span id="stat-questions">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Minutes of Practice</div>
+          <div class="stat-card-value"><span id="stat-minutes">0</span></div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <section class="section bg-subtle">
+    <div class="container">
+      <div class="text-center" style="margin-bottom: var(--space-8);">
+        <p class="text-sm text-muted font-medium tracking-wide" style="margin-bottom: var(--space-2);">EXAM CATALOG</p>
+        <h2 class="text-3xl font-bold">Available Exams</h2>
+        <p class="text-body" style="max-width: 480px; margin: 0 auto;">Search by title or subject, then login to take an exam</p>
+      </div>
+
+      <div class="exam-toolbar text-center">
+        <input type="text" id="exam-search" class="exam-search" placeholder="Search exams by title or subject...">
+        <div class="exam-filters" id="exam-filters" style="justify-content: center;"></div>
+      </div>
+
+      <div id="alert-container"></div>
+      <div id="exam-list">
+        <div class="exam-grid">
+          <div class="card" style="padding: var(--space-6);">
+            <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
+            <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
+            <div class="skeleton" style="height: 14px; width: 40%;"></div>
+          </div>
+          <div class="card" style="padding: var(--space-6);">
+            <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
+            <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
+            <div class="skeleton" style="height: 14px; width: 40%;"></div>
+          </div>
+          <div class="card" style="padding: var(--space-6);">
+            <div class="skeleton" style="height: 20px; width: 60%; margin-bottom: var(--space-3);"></div>
+            <div class="skeleton" style="height: 14px; width: 80%; margin-bottom: var(--space-2);"></div>
+            <div class="skeleton" style="height: 14px; width: 40%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="text-center" style="margin-bottom: var(--space-12);">
+        <p class="text-sm text-muted font-medium tracking-wide" style="margin-bottom: var(--space-2);">HOW IT WORKS</p>
+        <h2 class="text-3xl font-bold" style="margin-bottom: var(--space-2);">From Browsing to Brilliance</h2>
+        <p class="text-body" style="max-width: 480px; margin: 0 auto;">Three simple steps to start practicing smarter</p>
+      </div>
+      <div class="stagger-group" style="max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-8);">
+        <div class="card hover-lift step-card">
+          <div class="step-num">1</div>
+          <div>
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-1);">Browse Exams</h3>
+            <p style="font-size: var(--text-sm); color: var(--text-muted); line-height: var(--leading-relaxed);">Explore the public catalog, search by title or subject, and find the exam that matches your learning goals.</p>
+          </div>
+        </div>
+        <div class="card hover-lift step-card">
+          <div class="step-num">2</div>
+          <div>
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-1);">Create a Free Account</h3>
+            <p style="font-size: var(--text-sm); color: var(--text-muted); line-height: var(--leading-relaxed);">Register in seconds and get access to your personal dashboard with practice, syllabus, and results.</p>
+          </div>
+        </div>
+        <div class="card hover-lift step-card">
+          <div class="step-num">3</div>
+          <div>
+            <h3 style="font-size: var(--text-lg); font-weight: 600; margin-bottom: var(--space-1);">Take &amp; Get AI Insights</h3>
+            <p style="font-size: var(--text-sm); color: var(--text-muted); line-height: var(--leading-relaxed);">Take exams with secure proctoring and receive instant auto-grading with personalized AI feedback and analytics.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section bg-subtle text-center">
+    <div class="container">
+      <div style="max-width: 600px; margin: 0 auto;">
+        <h2 class="text-3xl font-bold" style="margin-bottom: var(--space-4);">Ready to Start Practicing?</h2>
+        <p class="text-body" style="margin-bottom: var(--space-8);">Join educators and students already using EdTech to learn smarter.</p>
+        <a href="register.html" class="btn btn-primary btn-lg">Create Free Account</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <h2>EdTech</h2>
+          <p>AI-powered examination platform</p>
+        </div>
+        <div class="footer-links">
+          <a href="index.html">Home</a>
+          <a href="exam-list.html">Browse Exams</a>
+          <a href="login.html">Login</a>
+          <a href="register.html">Register</a>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+        <p class="footer-copy">&copy; 2026 EdTech. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
 
   <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/animations.js"></script>
   <script>
 
+    let allExams = [];
+    let activeSubject = 'all';
+
     document.addEventListener('DOMContentLoaded', async () => {
       const token = api.getToken();
       if (token) setupNavbar();
       await loadExams();
-      startPolling(loadExams, 60000);
+      if (token) startPolling(loadExams, 60000);
+
+      const searchInput = document.getElementById('exam-search');
+      searchInput.addEventListener('input', renderExams);
+      document.getElementById('exam-filters').addEventListener('click', (e) => {
+        const chip = e.target.closest('.filter-chip');
+        if (!chip) return;
+        activeSubject = chip.dataset.subject;
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c === chip));
+        renderExams();
+      });
     });
 
     window.addEventListener('beforeunload', stopPolling);
@@ -67,30 +249,59 @@
     async function loadExams() {
       try {
         const res = await api.get('/api/exams?page=1&limit=20');
-        const exams = res.data || [];
-        const container = document.getElementById('exam-list');
-        if (!exams.length) {
-          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F4DA;</div><h3>No exams available</h3></div>';
-          return;
-        }
-        container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
-          <div class="exam-card anim-fade-up" style="animation-delay:${i * 0.05}s" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${e.id}')` : `goTo('login.html')`}">
-            <div class="exam-card-title">${e.title}</div>
-            <div class="exam-card-meta">
-              <span>&#x1F4D6; ${e.subject}</span>
-              <span>&#x23F1; ${e.duration_minutes} min</span>
-              <span>&#x1F4C4; ${e.total_questions} Q</span>
-              ${statusBadge(e.status)}
-            </div>
-            <div class="exam-card-footer">
-              <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
-              <span class="btn btn-sm ${api.getToken() ? 'btn-primary' : 'btn-secondary'}">${api.getToken() ? 'Take Exam \u2192' : 'Login to Take'}</span>
-            </div>
-          </div>
-        `).join('') + '</div>';
+        allExams = res.data || [];
+        renderStats();
+        renderFilters();
+        renderExams();
       } catch (e) {
         document.getElementById('exam-list').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
       }
+    }
+
+    function renderStats() {
+      const subjects = new Set(allExams.map(e => e.subject).filter(Boolean));
+      document.getElementById('stat-exams').textContent = allExams.length;
+      document.getElementById('stat-subjects').textContent = subjects.size;
+      document.getElementById('stat-questions').textContent = allExams.reduce((s, e) => s + (e.total_questions || 0), 0);
+      document.getElementById('stat-minutes').textContent = allExams.reduce((s, e) => s + (e.duration_minutes || 0), 0);
+    }
+
+    function renderFilters() {
+      const subjects = [...new Set(allExams.map(e => e.subject).filter(Boolean))];
+      const chips = [{ label: 'All', subject: 'all' }, ...subjects.map(s => ({ label: s, subject: s }))];
+      document.getElementById('exam-filters').innerHTML = chips.map(c =>
+        `<button type="button" class="filter-chip${c.subject === activeSubject ? ' active' : ''}" data-subject="${c.subject}">${c.label}</button>`
+      ).join('');
+    }
+
+    function renderExams() {
+      const q = (document.getElementById('exam-search').value || '').toLowerCase().trim();
+      const filtered = allExams.filter(e => {
+        const subjectMatch = activeSubject === 'all' || e.subject === activeSubject;
+        const text = ((e.title || '') + ' ' + (e.subject || '')).toLowerCase();
+        return subjectMatch && text.indexOf(q) !== -1;
+      });
+
+      const container = document.getElementById('exam-list');
+      if (!filtered.length) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F50D;</div><h3>No exams match your search</h3><p style="color: var(--text-muted); font-size: var(--text-sm); margin-top: var(--space-2);">Try a different keyword or subject filter</p></div>';
+        return;
+      }
+      container.innerHTML = '<div class="exam-grid">' + filtered.map((e, i) => `
+        <div class="exam-card anim-fade-up" style="animation-delay:${i * 0.05}s" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${e.id}')` : `goTo('login.html')`}">
+          <div class="exam-card-title">${e.title}</div>
+          <div class="exam-card-meta">
+            <span>&#x1F4D6; ${e.subject}</span>
+            <span>&#x23F1; ${e.duration_minutes} min</span>
+            <span>&#x1F4C4; ${e.total_questions} Q</span>
+            ${statusBadge(e.status)}
+          </div>
+          <div class="exam-card-footer">
+            <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
+            <span class="btn btn-sm ${api.getToken() ? 'btn-primary' : 'btn-secondary'}">${api.getToken() ? 'Take Exam \u2192' : 'Login to Take'}</span>
+          </div>
+        </div>
+      `).join('') + '</div>';
     }
   </script>
   <script src="js/nav.js"></script>
