@@ -79,6 +79,14 @@ public class AuthService : IAuthService
         };
     }
 
+    private static bool IsValidBcryptHash(string? hash)
+    {
+        if (string.IsNullOrEmpty(hash) || hash.Length < 50)
+            return false;
+        var prefix = hash.Length >= 4 ? hash.Substring(0, 4) : hash;
+        return prefix is "$2a$" or "$2b$" or "$2y$";
+    }
+
     private async Task NotifyAdminsAsync(IDbConnection conn, string title, string message)
     {
         var admins = await conn.QueryAsync<int>("SELECT \"id\" FROM \"Users\" WHERE \"role\" = 'admin'");
@@ -118,7 +126,7 @@ public class AuthService : IAuthService
         if (user == null)
             throw new AppException(401, "Invalid admin credentials");
 
-        if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        if (!IsValidBcryptHash(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             throw new AppException(401, "Invalid admin credentials");
 
         var token = _jwt.GenerateToken(user.Id, user.Role, user.TokenVersion);
@@ -186,16 +194,10 @@ public class AuthService : IAuthService
             {
                 if (string.IsNullOrEmpty(user.PasswordHash))
                 {
-                    var hash = BCrypt.Net.BCrypt.HashPassword(password);
-                    await conn.ExecuteAsync(
-                        "UPDATE \"Users\" SET \"password_hash\" = @Hash, \"updated_at\" = @Now WHERE \"id\" = @Id",
-                        new { Hash = hash, Now = DateTime.UtcNow, Id = user.Id }, tx);
+                    throw new AppException(400, "No password is set for this account. Please use the 'Forgot Password' option to set one.");
                 }
-                else
-                {
-                    if (!BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-                        throw new AppException(401, "Invalid password");
-                }
+                if (!IsValidBcryptHash(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+                    throw new AppException(401, "Invalid password");
             }
 
             var otpCode = _otp.GenerateOtp();
@@ -225,7 +227,15 @@ public class AuthService : IAuthService
         }
         catch
         {
-            tx.Rollback();
+            try
+            {
+                tx.Rollback();
+            }
+            catch
+            {
+                // Transaction was already committed (e.g. a new teacher account was
+                // created and committed before the pending-approval notice is thrown).
+            }
             throw;
         }
     }
@@ -518,7 +528,7 @@ public class AuthService : IAuthService
             "SELECT * FROM \"Users\" WHERE \"id\" = @Id", new { Id = userId });
         if (user == null) throw new AppException(404, "User not found");
 
-        if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
+        if (!IsValidBcryptHash(user.PasswordHash) || !BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
             throw new AppException(401, "Current password is incorrect");
 
         var hash = BCrypt.Net.BCrypt.HashPassword(newPassword);
