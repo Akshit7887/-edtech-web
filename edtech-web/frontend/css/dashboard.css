@@ -295,12 +295,7 @@
 
 @media (max-width: 480px) {
   .smart-card-files {
-    align-items: center;
-    text-align: left;
-  }
-  .smart-card-files li {
-    width: 100%;
-    justify-content: center;
+    align-items: flex-start;
   }
 }
 
@@ -312,28 +307,37 @@
 
 @media (max-width: 480px) {
   .smart-card {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
   }
-  .smart-card-icon {
-    margin: 0 auto;
-  }
-  .smart-card-title,
-  .smart-card-subtitle {
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
+  .smart-card-body {
+    flex: 1 1 calc(100% - 56px);
   }
   .smart-card-actions {
-    justify-content: center;
+    flex-basis: 100%;
+    justify-content: flex-start;
+  }
+  .smart-card-actions .file-type-badge {
+    margin-right: auto;
   }
   .smart-card-actions .btn {
-    width: 100%;
+    flex: 1 1 calc(50% - 2px);
+    width: auto;
+    min-height: 34px;
   }
   .smart-card-actions .assign-class-select {
     width: 100%;
     min-width: 0;
+    flex-basis: 100%;
+    min-height: 34px;
+  }
+  .smart-card-files li {
+    justify-content: flex-start;
+  }
+  .form-input,
+  .syllabus-search input,
+  .syllabus-search select {
+    font-size: 16px;
   }
 }
 
@@ -466,7 +470,10 @@
     padding: var(--space-3) var(--space-4);
   }
   .file-viewer-header h3 {
-    white-space: normal;
+    white-space: nowrap;
+  }
+  .file-viewer-header .btn {
+    flex-shrink: 0;
   }
 }
 
