@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var isExamPage = window.location.pathname.indexOf('exam.html') !== -1;
+  var isExamPage = /(^|\/)exam\.html$/.test(window.location.pathname);
 
   // ── PWA / iOS meta injection ──
   function initPWA() {
@@ -381,11 +381,64 @@
     }
   }
 
+  // ── Desktop sidebar (same menu as hamburger) ──
+  function initSidebar() {
+    var sidebar = document.querySelector('.sidebar-nav');
+    if (!sidebar) return;
+
+    var hasBackEl = sidebar.querySelector('#back-link, #back-to-exam');
+
+    var role = null;
+    try { role = localStorage.getItem('user_role'); } catch (e) {}
+
+    var menu = getMenu(role);
+    if (!menu.length) return;
+
+    sidebar.innerHTML = '';
+
+    // Preserve exam-scoped "Back to Exam" links (page JS updates their href)
+    if (hasBackEl) {
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.id = hasBackEl.id;
+      a.href = 'dashboard.html';
+      a.innerHTML = '<span class="nav-icon">←</span><span>Back to Exam</span>';
+      li.appendChild(a);
+      sidebar.appendChild(li);
+    }
+
+    var currentPath = window.location.pathname;
+    for (var i = 0; i < menu.length; i++) {
+      var item = menu[i];
+      if (item.type === 'divider') continue;
+      var li = document.createElement('li');
+      var a = document.createElement('a');
+      a.href = item.href;
+      if (a.pathname === currentPath) a.className = 'active';
+      a.innerHTML = '<span class="nav-icon">' + icon(item.icon) + '</span><span>' + item.label + '</span>';
+      li.appendChild(a);
+      sidebar.appendChild(li);
+    }
+
+    var liLogout = document.createElement('li');
+    var aLogout = document.createElement('a');
+    aLogout.href = '#';
+    aLogout.innerHTML = '<span class="nav-icon">🚪</span><span>Logout</span>';
+    aLogout.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (typeof window.logout === 'function') window.logout();
+      else { window.location.href = '/login.html'; }
+    });
+    liLogout.appendChild(aLogout);
+    sidebar.appendChild(liLogout);
+  }
+
   initPWA();
   initPageFlip();
   initLogoAnim();
   initBackButton();
   if (!isExamPage) {
     initHamburger();
+    initSidebar();
   }
 })();

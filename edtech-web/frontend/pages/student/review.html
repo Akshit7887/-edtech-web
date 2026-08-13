@@ -40,7 +40,11 @@
       if (!requireRole('student')) return;
       setupNavbar();
       const sessionId = parseInt(getQueryParam('session'));
-      if (!sessionId) { showAlert('No session specified', 'error'); return; }
+      if (!sessionId) {
+        showAlert('No session selected — taking you to your results', 'warning');
+        setTimeout(() => goTo('results.html'), 1200);
+        return;
+      }
       await loadReview(sessionId);
     });
 

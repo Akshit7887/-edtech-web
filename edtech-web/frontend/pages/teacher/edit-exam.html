@@ -42,12 +42,10 @@
       if (!requireRole('teacher')) return;
       setupNavbar();
       examId = parseInt(getQueryParam('id'));
-      if (!examId) { showAlert('No exam ID specified', 'error'); return; }
-
-      document.getElementById('questions-link').href = `questions.html?examId=${examId}`;
-      document.getElementById('stats-link').href = `statistics.html?id=${examId}`;
-      document.getElementById('attendance-link').href = `attendance.html?id=${examId}`;
-      document.getElementById('reports-link').href = `reports.html?id=${examId}`;
+      if (!examId) {
+        await renderExamPicker('exam-content', 'Edit Exam', 'edit-exam.html?id=');
+        return;
+      }
 
       await loadExam();
     });

@@ -38,7 +38,10 @@
       if (!requireRole('teacher')) return;
       setupNavbar();
       const sid = parseInt(getQueryParam('id'));
-      if (!sid) { showAlert('No student ID', 'error'); return; }
+      if (!sid) {
+        await renderStudentPicker('student-content', 'student-detail.html?id=');
+        return;
+      }
       await loadStudent(sid);
     });
 

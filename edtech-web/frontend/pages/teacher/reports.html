@@ -38,7 +38,11 @@
       if (!requireRole('teacher')) return;
       setupNavbar();
       const examId = parseInt(getQueryParam('id'));
-      if (!examId) { showAlert('No exam ID', 'error'); return; }
+      if (!examId) {
+        document.getElementById('back-link').href = 'dashboard.html';
+        await renderExamPicker('reports-content', 'Parent Reports', 'reports.html?id=');
+        return;
+      }
       document.getElementById('back-link').href = `edit-exam.html?id=${examId}`;
       await loadReports(examId);
     });

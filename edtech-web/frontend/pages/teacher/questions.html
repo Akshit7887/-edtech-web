@@ -40,7 +40,11 @@
       if (!requireRole('teacher')) return;
       setupNavbar();
       examId = parseInt(getQueryParam('examId'));
-      if (!examId) { showAlert('No exam ID', 'error'); return; }
+      if (!examId) {
+        document.getElementById('back-to-exam').href = 'dashboard.html';
+        await renderExamPicker('questions-content', 'Question Bank', 'questions.html?examId=');
+        return;
+      }
       document.getElementById('back-to-exam').href = `edit-exam.html?id=${examId}`;
       await loadQuestions();
     });

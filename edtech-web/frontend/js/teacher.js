@@ -69,7 +69,7 @@ async function aiCreateExam(subject, topic, count, difficulty) {
 async function getQuestionBank(examId) {
   try {
     const res = await api.get(`/api/teacher/questions/${examId}`);
-    return res.data;
+    return (res.data && res.data.questions) || [];
   } catch (e) {
     showAlert(e.message || 'Failed to load questions');
     return [];
@@ -257,4 +257,91 @@ async function loadReportHistory(examId) {
   } catch (e) {
     return [];
   }
+}
+
+async function renderStudentPicker(containerId, pageUrl) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let students = [];
+  try {
+    const res = await loadStudents(1, 500);
+    students = res.data || [];
+  } catch (e) {
+    container.innerHTML = '<div class="alert alert-error">Failed to load students</div>';
+    return;
+  }
+  if (!students.length) {
+    container.innerHTML = `
+      <div class="dashboard-header"><h1>Student Detail</h1><p>Select a student to continue</p></div>
+      <div class="empty-state">
+        <div class="empty-state-icon">👥</div>
+        <h3>No students yet</h3>
+        <p>Add students first — you can open this page from the student list.</p>
+      </div>`;
+    return;
+  }
+  container.innerHTML = `
+    <div class="dashboard-header"><h1>Student Detail</h1><p>Select a student to continue</p></div>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+        <tbody>
+          ${students.map(s => `
+            <tr>
+              <td><strong>${escHtml(s.name)}</strong></td>
+              <td>${escHtml(s.student_id || '-')}</td>
+              <td>${escHtml(s.email || '-')}</td>
+              <td>${escHtml(s.phone || '-')}</td>
+              <td><button class="btn btn-sm btn-primary" onclick="goTo('${pageUrl}${s.id}')">View</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function escHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function renderExamPicker(containerId, title, pageUrl) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let exams = [];
+  try {
+    const res = await api.get('/api/exams?page=1&limit=100');
+    exams = (res && res.data) || [];
+  } catch (e) {
+    container.innerHTML = '<div class="alert alert-error">Failed to load exams</div>';
+    return;
+  }
+  if (!exams.length) {
+    container.innerHTML = `
+      <div class="dashboard-header"><h1>${escHtml(title)}</h1><p>Select an exam to continue</p></div>
+      <div class="empty-state">
+        <div class="empty-state-icon">📝</div>
+        <h3>No exams yet</h3>
+        <p>Create an exam first — you can open this page from the exam after that.</p>
+        <button class="btn btn-primary" onclick="goTo('create-exam.html')">Create Exam</button>
+      </div>`;
+    return;
+  }
+  container.innerHTML = `
+    <div class="dashboard-header"><h1>${escHtml(title)}</h1><p>Select an exam to continue</p></div>
+    <div class="table-container">
+      <table>
+        <thead><tr><th>Exam</th><th>Subject</th><th>Questions</th><th>Status</th><th>Created</th><th></th></tr></thead>
+        <tbody>
+          ${exams.map(e => `
+            <tr>
+              <td><strong>${escHtml(e.title)}</strong></td>
+              <td>${escHtml(e.subject || '-')}</td>
+              <td>${e.total_questions || 0}</td>
+              <td>${statusBadge(e.status)}</td>
+              <td>${formatDate(e.created_at)}</td>
+              <td><button class="btn btn-sm btn-primary" onclick="goTo('${pageUrl}${e.id}')">Open</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
