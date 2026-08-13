@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-EdTech is an AI-powered examination platform that enables teachers to create, manage, and grade exams while students take timed assessments with real-time auto-grading. The system supports role-based access, AI-driven question generation, OTP-based authentication, and comprehensive exam analytics.
+EdTech is an AI-powered examination platform that enables teachers to create, schedule, and manage exams while students take timed assessments with instant auto-grading. The system supports role-based access (Student / Teacher / Admin), AI-driven question generation (Google Gemini), OTP + JWT authentication with Google OAuth, live teacher dashboards via SignalR, parent report delivery, class & department management, syllabus file distribution, and comprehensive exam analytics. The frontend is a dependency-free vanilla JS static site; the backend is ASP.NET Core 10 with Dapper on Neon PostgreSQL.
 
 ---
 
@@ -11,29 +11,51 @@ EdTech is an AI-powered examination platform that enables teachers to create, ma
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     CLIENT LAYER                                 │
-│  (Vanilla JS Frontend - HTML/CSS/JavaScript)                    │
-│  ├── Authentication (OTP, JWT, Password Reset)                  │
-│  ├── Teacher Portal (Exam Management, Analytics, Reports)       │
-│  └── Student Portal (Exams, Results, Practice Mode)             │
+│  (Static Vanilla JS — HTML/CSS/JS, no build step, Vercel)       │
+│  ├── Auth Pages        (OTP login, register, admin login,       │
+│  │                      forgot/reset password, Google OAuth)    │
+│  ├── Teacher Portal    (13 pages: exams, questions, students,   │
+│  │                      classes, attendance, statistics,        │
+│  │                      reports, parent contacts, syllabus,     │
+│  │                      scheduling, announcements)              │
+│  ├── Student Portal    (9 pages: dashboard, exam screen,        │
+│  │                      review, practice, classes, syllabus,    │
+│  │                      notifications)                          │
+│  └── Admin Portal      (stats, users, exams, classes,           │
+│                         departments, teacher approvals,         │
+│                         DB monitor)                             │
 └─────────────────────┬───────────────────────────────────────────┘
-                      │ HTTPS
+                      │ HTTPS (REST + SignalR WebSocket)
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │              API GATEWAY / REST LAYER                            │
-│  (ASP.NET Core 10, C#)                                          │
-│  ├── /api/auth/*          - Authentication & Authorization      │
-│  ├── /api/exams/*         - Exam CRUD & Lifecycle               │
-│  ├── /api/questions/*     - Question Generation & Sessions      │
-│  ├── /api/students/*      - Student Analytics & Results         │
-│  ├── /api/teacher/*       - Teacher Dashboard & Management      │
-│  └── /api/reports/*       - Report Generation & Distribution    │
+│  (ASP.NET Core 10, C#, Railway — Dockerfile)                    │
+│  ├── /api/auth/*          Auth, OTP, registration, Google       │
+│  ├── /api/exams/*         Exam CRUD, lifecycle, deep links      │
+│  ├── /api/questions/*     Question generation, sessions,        │
+│  │                         auto-grading, disqualification       │
+│  ├── /api/teacher/*       Dashboard, students, classes,         │
+│  │                         question bank, scheduling,           │
+│  │                         parent contacts, reports             │
+│  ├── /api/students/*      Analytics, review, practice,          │
+│  │                         notifications                        │
+│  ├── /api/admin/*         Stats, users, teacher approvals,      │
+│  │                         departments, DB monitoring           │
+│  ├── /api/reports/*       Parent report generation & delivery   │
+│  ├── /api/syllabus/*      Syllabus file upload/distribution     │
+│  ├── /api/departments/*   Department CRUD & assignment          │
+│  └── /hubs/*              SignalR: dashboard, exam,             │
+│                            notification                         │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
         ┌─────────────┼──────────────┐
         ▼             ▼              ▼
 ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-│   SERVICES   │ │  EXTERNAL    │ │  DATABASE    │
-│              │ │   APIs       │ │   LAYER      │
+│  SERVICES    │ │  EXTERNAL    │ │  DATABASE    │
+│  (see 2.3)   │ │  APIs        │ │  LAYER       │
+│              │ │  Gemini ·    │ │  Neon PG16   │
+│              │ │  SendGrid ·  │ │  + read      │
+│              │ │  Google OAuth│ │  replica     │
 └──────────────┘ └──────────────┘ └──────────────┘
 ```
 
@@ -42,364 +64,244 @@ EdTech is an AI-powered examination platform that enables teachers to create, ma
 ## 2. Component Architecture
 
 ### 2.1 Frontend Layer
-**Technology:** HTML5, CSS3, Vanilla JavaScript (No Framework)
-**Deployment:** Vercel
+**Technology:** HTML5, CSS3, Vanilla JavaScript — no framework, no build step, no npm
+**Deployment:** Vercel (static hosting + SPA rewrites via `vercel.json`), PWA via `sw.js` + `manifest.json`
 
 **Components:**
-- **Authentication Module**
-  - OTP verification form
-  - Login/Register pages
-  - Password reset flow
-  - Session management (JWT in localStorage)
-
-- **Teacher Portal**
-  - Exam creation/editing dashboard
-  - Question bank management
-  - AI question generation interface
-  - Student roster and assignment management
-  - Real-time exam statistics and monitoring
-  - Report generation and distribution UI
-  - Class and section management
-
-- **Student Portal**
-  - Exam list and enrollment
-  - Timed exam interface with auto-save
-  - Results and analytics dashboard
-  - Practice mode
-  - Session review and answer walkthrough
-
----
+- **Authentication Module** — OTP login (`generate-otp` / `verify-otp`), OTP registration (`send-register-otp` / `verify-register-otp`), admin password login, password reset, Google OAuth redirect/callback, JWT in localStorage with `refresh-token`
+- **Teacher Portal** (13 pages) — dashboard, create-exam, edit-exam (incl. scheduling, deep links, publish, delete), questions (AI-generate + manual + bulk import), students, student-detail, classes, attendance, statistics (live per-exam, disqualify), reports (parent email delivery + history), parent-contacts, syllabus, profile
+- **Student Portal** (9 pages) — dashboard, exam screen (timed, auto-save, auto-submit), results, review, practice mode, classes, notifications, syllabus, profile
+- **Admin Portal** (8 pages) — dashboard, users, exams, classes, departments, teacher approvals, db-monitor
+- **Shared JS modules** — `api.js` (ApiClient, snake_case, error envelope), `auth.js` (requireRole, setupNavbar, session handling), role-specific helpers (`teacher.js`, `admin.js`, `nav.js`)
 
 ### 2.2 API Layer (ASP.NET Core 10)
-**Technology:** ASP.NET Core 10, C#
-**Deployment:** Railway
 
 **Core Components:**
 
-#### Authentication & Authorization
-- **Endpoints:**
-  - `POST /api/auth/generate-otp` — Send OTP to email
-  - `POST /api/auth/verify-otp` — Verify OTP and issue JWT
-  - `POST /api/auth/register` — New user registration
-  - `POST /api/auth/reset-password` — Password reset
-  - `POST /api/auth/refresh-token` — JWT refresh
-  - `GET /api/auth/me` — Current user profile
+#### Authentication & Authorization (`AuthController`, `GoogleAuthController`)
+- `POST /api/auth/generate-otp`, `POST /api/auth/verify-otp` — OTP login flow
+- `POST /api/auth/send-register-otp`, `POST /api/auth/verify-register-otp` — OTP registration (teacher accounts created with `approval_status = 'pending'`)
+- `POST /api/auth/admin-login` — password login for admins
+- `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`
+- `POST /api/auth/refresh-token`, `PUT /api/auth/profile`, `POST /api/auth/change-password`, `DELETE /api/auth/profile`, `POST /api/auth/external-session`
+- `GET /auth/google/login`, `GET /auth/google/callback`, `POST /auth/google/signin`, `GET /auth/google/config`
 
-- **Auth Mechanism:**
-  - JWT (JSON Web Tokens) with RS256/HS256 signing
-  - OTP via email (ZeptoMail/SMTP)
-  - Role-based access control (RBAC): Teacher, Student, Admin
-  - Custom `[RequireAuth]` and `[RequireRole]` middleware
+**Auth mechanism:** custom JWT middleware (`[RequireAuth]`) + role enforcement (`[RequireRole]`). JWT carries `userId`, `role`, `tokenVersion`; token version is checked against the DB on every request so password changes invalidate all existing sessions. Passwords hashed with BCrypt. OTPs expire after 5 minutes, are single-use, rate-limited (5 req/min), and never returned in API responses in production.
 
-#### Exam Management
-- **Endpoints:**
-  - `GET /api/exams` — List exams (paginated, filtered by role)
-  - `GET /api/exams/:id` — Detailed exam view
-  - `POST /api/exams` — Create exam (teacher-only)
-  - `PUT /api/exams/:id` — Update exam metadata
-  - `DELETE /api/exams/:id` — Delete exam
-  - `POST /api/exams/:id/activate` — Make exam live
-  - `POST /api/exams/:id/publish-questions` — Release questions to students
+#### Exam Management (`ExamController`)
+- `GET /api/exams` — paginated, role-filtered list (teachers own, students assigned)
+- `GET /api/exams/:id`, `POST /api/exams`, `PUT /api/exams/:id` (validated status transitions: draft → scheduled → active → ended), `DELETE /api/exams/:id`
+- `POST /api/exams/ai-create` — full exam generated by Gemini
+- `POST /api/exams/:id/activate`, `POST /api/exams/:id/publish-questions`, `POST /api/exams/:id/bulk-import`
+- `GET /api/exams/:id/statistics`, `GET /api/exams/:id/attendance`, `GET /api/exams/:id/export-pdf`
+- `GET /api/exams/:id/deep-link`, `GET /api/exams/deep-link/:code` — deep-link resolution (`edtech-exam://exam/{code}`)
 
-- **Core Logic:**
-  - Exam scheduling and time windows
-  - Question pool association
-  - Student assignment batching
-  - Attendance tracking
-  - Deep-link resolution for quick exam access
+#### Question & Session Management (`QuestionController`)
+- `POST /api/questions/generate` — Gemini AI generation; `POST /api/questions/generate-personalized`
+- `POST /api/questions/assign` — per-student question assignment
+- `POST /api/questions/create-session`, `POST /api/questions/submit` — session lifecycle with auto-grading (MCQ exact/partial matching), draft persistence
+- `GET /api/questions/session/:studentId/:examId` — resume state
+- `POST /api/questions/disqualify/:sessionId` — teacher disqualification with mandatory reason (min 3 chars)
+- `GET /api/questions/statistics/:examId`, `GET /api/questions/my-results/:studentId`
 
-#### Question & Session Management
-- **Endpoints:**
-  - `POST /api/questions/generate` — AI-generate questions via Gemini
-  - `POST /api/questions/assign` — Bulk assign questions to students
-  - `POST /api/questions/create-session` — Initialize exam session
-  - `POST /api/questions/submit` — Submit answers with auto-grading
-  - `GET /api/questions/session/:studentId/:examId` — Retrieve session state
-  - `POST /api/questions/disqualify/:sessionId` — Mark session invalid
-  - `GET /api/questions/statistics/:examId` — Question-wise analytics
+#### Teacher Dashboard (`TeacherController`)
+- Students: `GET/POST /api/teacher/students`, `GET /api/teacher/students/search-by-sid`, `GET /api/teacher/students/:id` (profile + classes + exam history), `DELETE /api/teacher/students/:id`
+- Question bank CRUD: `GET/POST /api/teacher/questions/:examId`, `PUT/DELETE /api/teacher/questions/:questionId`
+- Classes: `POST/GET /api/teacher/classes`, `GET /api/teacher/classes/:id`, `POST /api/teacher/classes/:id/students`, `DELETE /api/teacher/classes/:id/students/:studentId`, `DELETE /api/teacher/classes/:id`
+- `POST /api/teacher/announcement`, `PUT /api/teacher/schedule/:examId` (set or clear `scheduled_at`)
+- Parent contacts: `GET /api/teacher/parent-contacts`, `POST /api/teacher/parent-contacts/:studentId` (persists `relationship`), `DELETE /api/teacher/parent-contacts/:studentId`
+- `GET /api/teacher/report-history/:examId`
 
-- **Core Logic:**
-  - AI question generation (Gemini)
-  - Session timeout handling
-  - Answer validation and auto-grading (MCQ/Short Answer)
-  - Plagiarism detection placeholder
-  - Question randomization per student
+#### Student Portal (`StudentController`)
+- `GET /api/students/analytics/:studentId`, `GET /api/students/review/:sessionId`
+- `POST /api/students/practice/start`, `POST /api/students/practice/submit`
+- `GET /api/students/notifications`, `PUT /api/students/notifications/:id/read`, `PUT /api/students/notifications/read-all`, `GET /api/students/classes`
 
-#### Student Analytics
-- **Endpoints:**
-  - `GET /api/students/analytics/:studentId` — Performance metrics
-  - `GET /api/students/review/:sessionId` — Answer review
-  - `POST /api/students/practice/start` — Start practice session
-  - `GET /api/students/notifications` — Notification feed
+#### Reports (`ReportsController`)
+- `POST /api/reports/send/:examId`, `GET /api/reports/pending/:examId`, `POST /api/reports/test-email`, `POST /api/reports/test-sms`
 
-#### Teacher Dashboard
-- **Endpoints:**
-  - `GET /api/teacher/students` — Class roster
-  - `GET /api/teacher/classes` — List managed classes
-  - `GET /api/teacher/students/:id` — Individual student profile
-  - `POST /api/teacher/parent-contacts` — Add parent email
-  - `GET /api/teacher/report-history/:examId` — Historical reports
+#### Admin (`AdminController`)
+- `GET /api/admin/stats`, `GET /api/admin/users`, `GET /api/admin/exams`, `GET /api/admin/classes` (+ detail/delete)
+- `GET /api/admin/pending-teachers`, `POST /api/admin/teachers/:id/approve`, `POST /api/admin/teachers/:id/reject` — teacher approval workflow
+- `GET /api/admin/db-snapshot`, `POST /api/admin/backfill-student-ids`, `DELETE /api/admin/users/:id`
 
-#### Reports & Notifications
-- **Endpoints:**
-  - `POST /api/reports/send/:examId` — Generate & send parent reports
-  - `GET /api/reports/pending/:examId` — Pending report queue
-  - `POST /api/reports/test-email` — Email configuration test
+#### Syllabus & Departments
+- `GET /api/syllabus` (+ `/:id`, `/my`, `POST /upload`, `GET /:id/download`, `PATCH /:id`, `DELETE /:id`) — syllabus file distribution scoped to classes
+- `GET/POST/PUT/DELETE /api/departments` + `POST /api/departments/assign`, `POST /api/departments/remove-user/:userId`, `GET /api/departments/:id/users`
 
----
+#### Realtime (SignalR)
+- `/hubs/dashboard` — teacher dashboard live updates (exam status changes)
+- `/hubs/exam` — exam-group events (status, grading)
+- `/hubs/notification` — per-user notification delivery
 
 ### 2.3 Service Layer
 
-**Key Services:**
-
-1. **GeminiService**
-   - Calls Google Gemini API for intelligent question generation
-   - Supports MCQ, short-answer, and essay question types
-   - Caches generated questions
-   - Handles rate limiting and retry logic
-
-2. **JwtService**
-   - Token generation with custom claims (userId, role, exp)
-   - Token validation and refresh logic
-   - Expiration handling (short-lived tokens with refresh tokens)
-
-3. **OtpService**
-   - OTP generation (6-digit alphanumeric)
-   - Redis/In-memory caching with TTL (5-10 minutes)
-   - Rate limiting per email
-   - Verification logic
-
-4. **EmailService**
-   - SMTP/SendGrid integration
-   - OTP delivery
-   - Parent report generation and distribution
-   - Exam notifications
-
-5. **GoogleAuthService**
-   - Google OAuth 2.0 integration
-   - Token validation
-   - User profile mapping
-
-6. **AutoGradingService**
-   - MCQ evaluation (case-insensitive)
-   - Short-answer keyword matching
-   - Essay scoring placeholder (manual or ML-based)
-   - Score calculation and ranking
-
-7. **AttendanceService**
-   - Session start/end tracking
-   - Attendance marking
-   - Late submission detection
-
----
+| Service | Responsibility |
+|---------|----------------|
+| **AuthService** | Registration, OTP login, password reset, Google external session, token-version invalidation |
+| **JwtService** | JWT issuance/validation with `userId`, `role`, `tokenVersion` claims |
+| **OtpService** | OTP generation, 5-min TTL, single-use, rate limiting |
+| **EmailService** | SendGrid/SMTP delivery (OTPs, parent reports, announcements) |
+| **GeminiService** | AI question/exam generation with prompt templates + circuit breaker |
+| **GoogleAuthService** | Google OAuth 2.0 sign-in and token exchange |
+| **ExamService** | Exam CRUD, status transitions, scheduling, attendance, statistics, PDF export, deep links |
+| **QuestionService** | Question bank, AI generation, sessions, auto-grading, disqualification |
+| **TeacherService** | Students, classes, question bank, parent contacts, announcements, scheduling |
+| **StudentService** | Analytics, review, practice mode, notifications |
+| **ReportsService** | Parent report generation and delivery |
+| **SyllabusService** | Syllabus file upload/download scoped by class |
+| **DepartmentService** | Department CRUD and user assignment |
+| **HubService** | SignalR push fan-out to dashboard/exam/notification hubs |
+| **RedisCacheService** | Optional Redis cache (falls back to no-op when Redis is unavailable) |
+| **CircuitBreakerService** | Guards external dependencies (Gemini, Redis, SendGrid) |
+| **MigrationService** | Idempotent auto-migrations at startup (`_Migrations` ledger) |
+| **DbConnectionFactory** | Primary + optional read-replica `IDbConnection` factory (Npgsql) |
 
 ### 2.4 Database Layer
-**Technology:** PostgreSQL 16 (Neon), Dapper ORM, Npgsql
+**Technology:** PostgreSQL 16 (Neon), Dapper + Npgsql, automatic migrations on startup
 
-**Connection Strategy:**
-- Neon connection pool for serverless compatibility
-- SSL mode required for Railway deployment
-- Prepared statements via Dapper for performance
+**Connection strategy:** primary connection from `NEON_CONNECTION_STRING` (use `-pooler` hostname for Neon's pooled endpoint, `SSL Mode=Require` in production); optional `NeonReplica` connection string routes heavy reads to a read replica.
 
-**Core Tables:**
+**Core tables (all snake_case, migration-managed):**
 
-#### Users & Authentication
 ```sql
 users
-├── id (UUID PK)
-├── email (UNIQUE)
-├── password_hash
-├── otp_tokens (FK)
-├── role (enum: teacher, student, admin)
-├── first_name, last_name
-├── created_at, updated_at
-└── is_active
+├── id (INTEGER PK)                    -- all FKs are integer, not UUID
+├── name, email, phone
+├── password_hash (BCrypt)
+├── role (student | teacher | admin)
+├── student_id (VARCHAR(10) UNIQUE)    -- institution ID, backfillable by admin
+├── token_version (INT)                -- session invalidation
+├── department_id (FK departments, ON DELETE SET NULL)
+├── approval_status (approved | pending | rejected)   -- teacher approval flow
+├── rejection_reason, approved_at
+└── created_at, updated_at
 
-otp_tokens
-├── id (UUID PK)
-├── user_id (FK users)
-├── token (6-digit)
-├── expires_at
-└── is_used
-
-pending_registrations
-├── id (UUID PK)
-├── email
-├── otp_token
-├── temp_data (JSON)
-└── expires_at
-```
-
-#### Exams & Questions
-```sql
 exams
-├── id (UUID PK)
-├── created_by (FK users - teacher)
-├── title, description
-├── subject, class_level
-├── duration_minutes
-├── total_marks
-├── passing_percentage
-├── status (draft, scheduled, active, ended)
-├── start_time, end_time
-├── is_published
-├── deep_link_code (unique)
-└── metadata (JSON: rules, negative_marking, etc)
+├── id (INTEGER PK)
+├── teacher_id (FK users)
+├── title, subject
+├── syllabus_text, syllabus_pdf_path
+├── duration_minutes, total_questions
+├── status (draft | scheduled | active | ended)
+├── scheduled_at, scheduled_end_at     -- set/cleared via PUT /api/teacher/schedule/:id
+├── allow_reattempt (BOOL)
+├── deep_link_code (UNIQUE)
+└── created_at, updated_at
 
 question_pool
-├── id (UUID PK)
+├── id (INTEGER PK)
 ├── exam_id (FK exams)
-├── question_text
-├── question_type (mcq, short_answer, essay)
-├── options (JSONB for MCQ)
-├── correct_answer
-├── difficulty_level
-├── marks
-├── explanation
-├── created_by (FK users)
-└── is_active
+├── question_text, question_type
+├── option_a .. option_d, correct_answer (never sent to students)
+├── explanation, marks/difficulty
+└── status (draft | published)
 
-student_exam_assignments
-├── id (UUID PK)
-├── student_id (FK users)
-├── exam_id (FK exams)
-├── assigned_at
-├── question_ids (JSONB - randomized per student)
-└── is_submitted
-```
-
-#### Exam Sessions & Results
-```sql
 exam_sessions
-├── id (UUID PK)
-├── student_id (FK users)
-├── exam_id (FK exams)
-├── status (in_progress, submitted, disqualified)
-├── started_at
-├── submitted_at
-├── total_score
-├── percentage
-├── is_passed
-├── answers (JSONB: {q_id: answer, ...})
-├── metadata (JSON: device_info, location, etc)
-└── attempt_number
+├── id (INTEGER PK)
+├── student_id (FK users), exam_id (FK exams)
+├── score (DECIMAL), total_questions, answered_count
+├── status (in_progress | submitted | disqualified)
+├── disqualified_reason
+├── answers (JSONB: [{question_id, answer}])
+├── started_at, submitted_at, time_remaining_seconds
+├── ip_address, user_agent
+├── mode (exam | practice)
+└── created_at, updated_at
 
-attendance
-├── id (UUID PK)
-├── student_id (FK users)
-├── exam_id (FK exams)
-├── marked_at
-├── is_present
-└── session_id (FK exam_sessions)
-```
-
-#### Classes & Organization
-```sql
-classes
-├── id (UUID PK)
-├── teacher_id (FK users)
-├── name, section, academic_year
-└── created_at
-
-class_students
-├── id (UUID PK)
-├── class_id (FK classes)
-├── student_id (FK users)
-└── joined_at
-
-parent_contacts
-├── id (UUID PK)
-├── student_id (FK users)
-├── parent_email (can be multiple)
-├── parent_name
-├── relationship
-└── is_primary
-
-parent_notifications
-├── id (UUID PK)
-├── parent_id (FK parent_contacts)
-├── exam_id (FK exams)
-├── report_type (pdf, email_summary)
-├── sent_at
-└── content (JSONB)
-
-notifications
-├── id (UUID PK)
-├── user_id (FK users)
-├── type (exam_assigned, results_ready, exam_reminder)
-├── content
-├── is_read
-├── created_at
-└── read_at
+student_exam_assignments   -- per-student question assignment
+attendance                 -- exam attendance records
+notifications              -- in-app notifications (type, content, is_read)
+classes / class_students   -- teacher-owned classes (name, section, subject, academic_year)
+parent_contacts            -- parent_name, parent_email, parent_phone, relationship
+parent_notifications       -- report delivery log (report_type, sent_at, content JSONB)
+otp_tokens                 -- 5-min TTL, single-use OTPs
+pending_registrations      -- registration OTP staging
+syllabus_files             -- uploaded_by, class_id, file_data BYTEA, file_path
+departments                -- name, description; users.department_id FK
+_migrations                -- migration ledger
 ```
 
 ---
 
 ## 3. Data Flow & Use Cases
 
-### 3.1 Exam Creation Flow
+### 3.1 Teacher Registration & Approval Flow
+```
+Teacher             API (AuthService)          Admin Portal          Database
+   │                      │                        │                    │
+   ├─ send-register-otp ─>│                        │                    │
+   ├─ verify-register-otp>│  role=teacher          │                    │
+   │                      │  approval_status='pending' ───────────────>│
+   │<─ registered ────────│                        │                    │
+   │                      │                        ├─ pending-teachers ─>│
+   │                      │                        │<── pending list ────│
+   │                      │                        ├─ approve/:id ─────>│
+   │                      │                        │               approval_status='approved'
+   │<─ can log in now ────│                        │                    │
+```
+
+### 3.2 Exam Creation & Scheduling Flow
+```
+Teacher                 API                      Database
+   │                        │                        │
+   ├─ POST /api/exams ────>│  INSERT exam (draft) ──>│
+   ├─ POST /api/questions/generate (Gemini)          │
+   │                        ├─ call Gemini ──────────┼─ (external)
+   │                        ├─ validate & save ────>│  INSERT question_pool
+   ├─ PUT /api/teacher/schedule/:id                 │
+   │                        ├─ set scheduled_at ───>│  UPDATE exams
+   ├─ POST /api/exams/:id/activate                  │
+   │                        ├─ status: draft→active>│
+   ├─ POST /api/questions/assign                    │
+   │                        ├─ per-student assignment ─> INSERT student_exam_assignments
+   │                        └─ SignalR hub → student dashboard
+```
+
+### 3.3 Student Exam Taking Flow
+```
+Student                 API                    Database        SignalR
+   │                        │                        │            │
+   ├─ Login (OTP) ────────>│  generate/verify OTP    │            │
+   │<─ JWT token ──────────│  JwtService             │            │
+   │                        │                        │            │
+   ├─ Load Exam ──────────>│                        │            │
+   │                        ├─ Fetch assigned questions ─>        │
+   │<─ Questions ──────────│                        │            │
+   │                        │                        │            │
+   ├─ create-session ─────>│  INSERT exam_sessions  │            │
+   ├─ Submit (auto-save) ─>│  UPDATE answers JSONB  │            │
+   │                        │                        │            │
+   ├─ Final Submit ───────>│  AutoGrade (score,     │            │
+   │                        │   answered_count) ────>│            │
+   │                        │  status=submitted     │            │
+   │<─ Results ────────────│                        │            │
+   │                        │  notify teacher stats ─────────────>│  dashboard hub
+```
+
+### 3.4 Teacher Statistics & Disqualification Flow
 ```
 Teacher                 API                    Database
-   │                     │                         │
-   ├─ Create Exam ─────>│                         │
-   │                     ├─ Validate Auth ──────> │
-   │                     ├─ Create Exam ────────> │
-   │                     │                    INSERT exam
-   │                     │<─────── exam_id ───────│
-   │<─ Return exam_id ───│                         │
-   │                     │                         │
-   ├─ Generate Q's  ───>│                         │
-   │(via Gemini)        ├─ Call GeminiService    │
-   │                     ├─ Parse Response       │
-   │                     ├─ Save Questions ────> │
-   │                     │                    INSERT questions
-   │<─ Return Q's ───────│                         │
+   │                        │                        │
+   ├─ GET /api/exams/:id/statistics ────────────────>│  aggregate sessions
+   │<─ aggregates + student_results (incl. session_id)
+   ├─ Disqualify button ──>│  POST /api/questions/disqualify/:sessionId
+   │                        ├─ validate teacher owns exam
+   │                        ├─ reason (min 3 chars) ─> UPDATE status='disqualified'
+   │<─ success + refresh ──│                        │
 ```
 
-### 3.2 Student Exam Taking Flow
+### 3.5 Parent Report Flow
 ```
-Student                 API                    Database       Gemini
-   │                     │                         │              │
-   ├─ Login (OTP) ──────>│                         │              │
-   │                     ├─ Generate OTP ────────>│              │
-   │                     ├─ Send Email ──────────────────────────>│
-   │                     │                         │              │
-   ├─ Verify OTP ──────>│                         │              │
-   │                     ├─ Validate OTP ────────>│              │
-   │                     ├─ Create JWT            │              │
-   │<─ JWT Token ───────│                         │              │
-   │                     │                         │              │
-   ├─ Load Exam ───────>│                         │              │
-   │                     ├─ Fetch Questions ─────>│              │
-   │                     │<─ Questions ───────────│              │
-   │<─ Display Questions │                         │              │
-   │                     │                         │              │
-   ├─ Submit Answers ──>│                         │              │
-   │(every 30s)         ├─ Save Draft ──────────>│              │
-   │                     │                    UPDATE exam_session
-   │                     │                         │              │
-   ├─ Final Submit ────>│                         │              │
-   │                     ├─ AutoGrade ────────────┤              │
-   │                     ├─ Calculate Score ─────>│              │
-   │                     │                    UPDATE results
-   │<─ Results ─────────│                         │              │
-```
-
-### 3.3 Report Generation Flow
-```
-Teacher                 API                    Database       Email
-   │                     │                         │              │
-   ├─ Request Report ──>│                         │              │
-   │                     ├─ Fetch Results ───────>│              │
-   │                     │<─ Student Data ────────│              │
-   │                     ├─ Generate PDF          │              │
-   │                     │                         │              │
-   ├─ Trigger Send ────>│                         │              │
-   │                     ├─ Get Parent Email ────>│              │
-   │                     │<─ Parent Contacts ─────│              │
-   │                     ├─ Send Email ──────────────────────────>│
-   │                     │                         │          Email sent
-   │<─ Confirmation ────│                         │              │
+Teacher                 API                    Database        Email (SendGrid)
+   │                        │                        │            │
+   ├─ POST /api/reports/send/:examId                 │            │
+   │                        ├─ fetch results ───────>│            │
+   │                        ├─ fetch parent_contacts>│            │
+   │                        ├─ generate report      │            │
+   │                        ├─ send ────────────────────────────────────────>│
+   │                        ├─ log parent_notifications ─>                  │
+   │<─ confirmation ────────│                        │            │
 ```
 
 ---
@@ -407,130 +309,93 @@ Teacher                 API                    Database       Email
 ## 4. Security Architecture
 
 ### 4.1 Authentication & Authorization
-- **JWT Token Structure:**
-  ```json
-  {
-    "sub": "user-id",
-    "role": "student|teacher|admin",
-    "email": "user@example.com",
-    "exp": 1700000000,
-    "iat": 1699996400
-  }
-  ```
-- **Token Lifetime:** 1 hour (JWT), 7 days (Refresh Token)
-- **Refresh Token Storage:** Secure HttpOnly cookie or localStorage
+- **JWT structure:** claims `userId`, `role` (student/teacher/admin), `tokenVersion`, `exp`, `iat`; 24h expiry + refresh endpoint
+- **Token versioning:** `token_version` checked against DB on every authenticated request; password change/rotation invalidates all existing sessions immediately
+- **RBAC:** `[RequireAuth]` (default for all non-public routes) + `[RequireRole("teacher")]` style enforcement; explicit `[AllowAnonymous]` only for public endpoints
+- **Teacher approval:** teacher accounts start `pending`; login blocked until an admin approves
 
 ### 4.2 OTP Security
-- **Generation:** Cryptographically secure random 6-digit code
-- **Storage:** Redis with TTL (5-10 minutes)
-- **Rate Limiting:** Max 3 attempts per email per 5 minutes
-- **Delivery:** SMTP/SendGrid over TLS
+- Cryptographically secure random code, 5-minute TTL, single-use
+- Rate limiting (5 req/min) on auth/OTP endpoints
+- OTP codes never returned in API responses when `Environment.Name == production`
 
 ### 4.3 Password Security
-- **Hashing:** Bcrypt (ASP.NET Core Identity's default)
-- **Salt:** Auto-generated per password
-- **Reset Flow:** Email-based OTP verification
+- **BCrypt** (`BCrypt.Net`) with per-password salt
+- Reset via email OTP verification; `change-password` requires current password
 
 ### 4.4 API Security
-- **HTTPS:** Enforced in production (Railway/Vercel)
-- **CORS:** Configured for frontend domain(s)
-- **Rate Limiting:** API throttling per user/IP
-- **SQL Injection:** Prevented via Dapper prepared statements
-- **CSRF:** Token validation for state-changing requests
-- **Input Validation:** Server-side validation for all inputs
-- **Sensitive Data:** No passwords/secrets in logs or error responses
+- HTTPS in production; CORS restricted to configured origins (localhost dev + Vercel app)
+- SQL injection prevented via Dapper parameterized queries
+- Server-side validation on all inputs; ownership checks (teacher owns exam/class/student) before mutations
+- Secrets only via environment variables / secret managers — never in responses or logs
 
-### 4.5 Database Security
-- **SSL/TLS:** PostgreSQL connection with SSL Mode=Require
-- **Least Privilege:** Separate DB user with minimal permissions
-- **Backups:** Neon automated backup policy
-- **Data Encryption:** At-rest via Neon's managed encryption
+### 4.5 Exam Integrity
+- Students only ever see their own assigned questions; `correct_answer` and answer keys are never serialized to student endpoints
+- Sessions track `ip_address`, `user_agent`, and per-question answers; teachers can disqualify with a persisted reason
+- Draft answers persist in `answers` JSONB for resume/auto-submit
 
-### 4.6 External Service Security
-- **API Keys:** Stored in environment variables (never in code)
-- **OAuth:** Google OAuth 2.0 with secure redirect URIs
-- **Gemini API:** Rate limiting and usage monitoring
+### 4.6 Database & External Services
+- PostgreSQL with `SSL Mode=Require` in production; Neon managed encryption + automated backups
+- Gemini/SendGrid/Redis guarded by `CircuitBreakerService`; API keys in env vars only
 
 ---
 
 ## 5. Scalability & Performance
 
-### 5.1 Database Optimization
-- **Connection Pooling:** Neon connection pool for serverless
-- **Indexing Strategy:**
-  ```sql
-  -- High-traffic queries
-  CREATE INDEX idx_exams_created_by ON exams(created_by);
-  CREATE INDEX idx_exam_sessions_student ON exam_sessions(student_id, exam_id);
-  CREATE INDEX idx_questions_pool_exam ON question_pool(exam_id);
-  CREATE INDEX idx_student_assignments_exam ON student_exam_assignments(exam_id);
-  ```
-- **Query Optimization:** Dapper for lightweight ORM with hand-tuned SQL
-- **Pagination:** All list endpoints support offset/limit
+### 5.1 Database
+- Neon pooled connection (`-pooler` hostname) for serverless-friendly connection reuse
+- Optional read replica (`NeonReplica`) offloads reporting/analytics reads
+- Indexed foreign keys on high-traffic joins (exams.teacher_id, exam_sessions.student_id/exam_id, question_pool.exam_id)
+- List endpoints paginated (limit/offset); JSONB for answers to avoid normalized explosion
 
-### 5.2 API Performance
-- **Caching Strategy:**
-  - Questions: Redis cache (30 min TTL)
-  - User profiles: Redis cache (10 min TTL)
-  - Exam metadata: In-memory cache with cache-busting
-- **Async Operations:**
-  - Email dispatch via background jobs (Hangfire/Azure Service Bus)
-  - Report generation as async tasks
-  - Gemini API calls with timeout and retry
-- **Load Balancing:** Railway auto-scaling (horizontal pod autoscaling)
+### 5.2 API & Caching
+- **Redis** (optional) for query caching with `RedisCacheService`; `CircuitBreakerService` degrades gracefully to direct DB when Redis/Gemini/SendGrid fail
+- Async I/O throughout (Dapper async, Npgsql async)
+- Gemini generation timeouts + retry via circuit breaker
+- Stateless API — horizontally scalable on Railway
 
-### 5.3 Frontend Optimization
-- **Lazy Loading:** Questions loaded on-demand
-- **Compression:** Gzip for HTML/CSS/JS assets
-- **CDN:** Vercel global CDN for static assets
-- **Pagination:** Infinite scroll or page-based for exam lists
+### 5.3 Frontend
+- Static assets served from Vercel's global CDN; no build step
+- Lazy loading of exam questions client-side; auto-save drafts every 30s
+- PWA (`sw.js`) for offline-first shell + `manifest.json`
 
-### 5.4 Concurrent Exam Sessions
-- **Expected Capacity:** 1000+ concurrent students per exam
-- **Session Management:** In-memory session store with Redis fallback
-- **WebSocket Consideration:** For real-time notifications (future enhancement)
+### 5.4 Realtime
+- SignalR hubs push exam-status changes, notification events, and dashboard updates without polling
+- Hub fan-out is lightweight (in-memory groups; Redis backplane possible at scale)
 
 ---
 
 ## 6. Deployment & Infrastructure
 
-### 6.1 Backend Deployment (Railway)
-- **Platform:** Railway.app (Railway)
-- **Containerization:** Docker
-- **Process:** `dotnet run` or `dotnet EdTechApi.dll`
-- **Environment Variables:**
+### 6.1 Backend — Railway
+- **Container:** `edtech-web/EdTechApi/Dockerfile`
+- **Start command:** `dotnet EdTechApi.dll`
+- **Environment variables:**
   ```
-  NEON_CONNECTION_STRING=postgresql://...
-  JWT_SECRET=<32-char min secret>
-  GEMINI_API_KEY=<API key>
-  SENDGRID_API_KEY=<API key>
-  GOOGLE_CLIENT_ID=<OAuth ID>
-  GOOGLE_CLIENT_SECRET=<OAuth secret>
+  NEON_CONNECTION_STRING=postgresql://...pooler...;SSL Mode=Require;Trust Server Certificate=true
+  NEON_REPLICA_CONNECTION_STRING=<optional read replica>
+  JWT_SECRET=<32-char min>
+  GEMINI_API_KEY=<Gemini key>
+  SENDGRID_API_KEY=<SendGrid key>
+  REDIS_CONNECTION_STRING=<optional Redis>
+  GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET
+  SENTRY_DSN=<optional>
   ```
-- **Scaling:** CPU/Memory limits configured; auto-scales on traffic spikes
+- **Migrations:** run automatically at startup — no manual step
 
-### 6.2 Frontend Deployment (Vercel)
-- **Platform:** Vercel
-- **Build:** `npm build` or `npm run build`
-- **Deployment:** Automatic on master branch push
-- **Environment Variables:**
-  ```
-  REACT_APP_API_BASE_URL=https://api.edtech.com
-  REACT_APP_GEMINI_API_KEY=<API key (if client-side)>
-  ```
+### 6.2 Frontend — Vercel
+- **Deploy:** point Vercel at the repo; output directory `edtech-web/frontend`
+- **Rewrite:** `vercel.json` SPA rewrites map all routes to static files
+- **API base:** auto-detected (`/api` same-origin in production, `http://localhost:5000` in dev)
+- **PWA:** `sw.js` + `manifest.json` included
 
-### 6.3 Database Deployment (Neon)
-- **Platform:** Neon (PostgreSQL 16 as a Service)
-- **Connection Pool:** Neon-managed connection pooler
-- **Backups:** Automated daily backups with 30-day retention
-- **Monitoring:** Neon dashboard for metrics and alerts
+### 6.3 Database — Neon
+- Managed PostgreSQL 16; pooled connections; automated daily backups; monitoring dashboard
 
-### 6.4 CI/CD Pipeline
-- **Trigger:** Push to master branch
-- **Tests:** Unit tests (xUnit), integration tests
-- **Build:** Docker image creation
-- **Deploy:** Automatic Railway and Vercel deployment
-- **Monitoring:** GitHub Actions logs and Sentry for error tracking
+### 6.4 CI/CD & Testing
+- Push to `master` → Railway/Vercel auto-deploy
+- **Tests:** xUnit project `tests/EdTechApi.Tests` covering AuthService (OTP flows, bcrypt, token version), JwtService (issuance/validation), GeminiService (prompt parsing/validation); uses Moq + Microsoft.AspNetCore.Mvc.Testing
+- **Errors:** Sentry DSN wired in `Program.cs` for exception tracking
 
 ---
 
@@ -538,44 +403,35 @@ Teacher                 API                    Database       Email
 
 ### 7.1 Backup Strategy
 - **Database:** Neon automated backups (daily, 30-day retention)
-- **Application Code:** GitHub repository (version control)
-- **Secrets:** Managed via Railway/Vercel secrets vault
+- **Code:** GitHub (`https://github.com/Akshit7887/-edtech-web`)
+- **Secrets:** Railway/Vercel secret vaults — never in the repo
 
 ### 7.2 Recovery Plan
-- **RTO (Recovery Time Objective):** 1 hour
-- **RPO (Recovery Point Objective):** 24 hours
-- **Procedures:**
-  - Database restore from Neon backup
-  - Redeployment from GitHub via Railway
-  - DNS failover (if multi-region setup)
+- **RTO:** ~1 hour · **RPO:** 24 hours
+- Restore Neon backup → redeploy from GitHub; schema migrations are idempotent so restores and fresh deploys are safe
 
-### 7.3 Monitoring & Alerts
-- **Application:** Sentry for exception tracking
-- **Database:** Neon monitoring dashboard
-- **Infrastructure:** Railway metrics (CPU, memory, network)
-- **Uptime:** UptimeRobot or similar for endpoint monitoring
+### 7.3 Monitoring
+- Sentry for exceptions · Neon dashboard for DB · Railway metrics (CPU/memory/network)
 
 ---
 
 ## 8. Future Enhancements
 
 ### 8.1 Short Term
-- [ ] Advanced analytics dashboard (Grafana)
-- [ ] Plagiarism detection (Turnitin integration)
-- [ ] Mobile app (React Native or Flutter)
-- [ ] Video proctoring (basic integration)
+- [ ] Redis-backed SignalR backplane for multi-instance realtime
+- [ ] Question bank sharing across exams
+- [ ] Advanced analytics (per-topic breakdown, cohort trends)
 
 ### 8.2 Medium Term
-- [ ] Real-time notifications (WebSocket/SignalR)
-- [ ] Advanced ML-based auto-grading
-- [ ] Multi-language support
-- [ ] Payment gateway for premium features
+- [ ] Mobile app (React Native/Flutter) reusing the REST API + deep links
+- [ ] Video/audio proctoring
+- [ ] Essay auto-grading (LLM-assisted scoring)
+- [ ] SMS delivery for OTPs/reports (test-sms endpoint already reserved)
 
 ### 8.3 Long Term
-- [ ] AI-powered adaptive testing (difficulty adjustment)
+- [ ] AI-adaptive testing (difficulty adjustment per student)
 - [ ] Multi-tenant SaaS platform
 - [ ] Offline exam mode with sync
-- [ ] Advanced reporting with custom dashboards
 
 ---
 
@@ -583,13 +439,13 @@ Teacher                 API                    Database       Email
 
 | Requirement | Target | Implementation |
 |-------------|--------|-----------------|
-| **Availability** | 99.5% | Railway auto-scaling, Neon managed DB |
-| **Response Time** | <2s (p99) | Caching, query optimization, CDN |
-| **Throughput** | 1000 req/s | Load balancing, connection pooling |
-| **Data Consistency** | Strong | ACID transactions, referential integrity |
-| **Security** | SOC 2 compliant | Encryption, HTTPS, audit logs |
-| **Scalability** | Horizontal | Stateless API, managed database |
-| **Maintainability** | High | Code reviews, automated testing, documentation |
+| **Availability** | 99.5% | Railway + Neon managed services, graceful circuit-breaker fallbacks |
+| **Response Time** | <2s (p99) | Dapper + tuned SQL, Redis cache, CDN static assets |
+| **Throughput** | 1000 req/s | Stateless API, connection pooling, read replica |
+| **Data Consistency** | Strong | ACID transactions, FKs, single primary DB |
+| **Security** | High | BCrypt, JWT token-versioning, RBAC, teacher approval, ownership checks |
+| **Scalability** | Horizontal | Stateless API, SignalR hubs, Neon pooler |
+| **Maintainability** | High | Auto-migrations, xUnit tests, snake_case DTO contracts, structured services |
 
 ---
 
@@ -597,14 +453,18 @@ Teacher                 API                    Database       Email
 
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
-| Frontend | Vanilla JS (HTML/CSS) | Lightweight, no dependencies, fast load |
-| API | ASP.NET Core 10 | Performance, built-in security, enterprise-ready |
-| Database | PostgreSQL 16 (Neon) | ACID compliance, JSON support, serverless-friendly |
-| ORM | Dapper | Performance, flexibility, minimal overhead |
-| Auth | JWT + OTP | Stateless, scalable, widely supported |
-| AI | Google Gemini | State-of-the-art LLM, reliable API |
-| Email | SendGrid/SMTP | Reliable delivery, good deliverability |
-| Deployment | Railway + Vercel + Neon | Affordable, scalable, low maintenance |
+| Frontend | Vanilla JS (static) | Zero deps, zero build, CDN-fast, PWA |
+| API | ASP.NET Core 10 | Performance, security primitives, SignalR built-in |
+| Database | PostgreSQL 16 (Neon) | ACID, JSONB, serverless-friendly pooling |
+| ORM | Dapper + Npgsql | Minimal overhead, explicit SQL |
+| Auth | JWT + OTP + Google OAuth | Stateless, multi-factor-friendly |
+| AI | Google Gemini | State-of-the-art generation for questions/exams |
+| Email | SendGrid/SMTP | Reliable delivery for OTPs and parent reports |
+| Realtime | SignalR | Live dashboards and notifications without polling |
+| Caching | Redis (optional) | Cache + circuit-breaker degradation |
+| Observability | Sentry | Exception tracking |
+| Deployment | Railway + Vercel + Neon | Low-maintenance, auto-deploy on push |
+| Tests | xUnit + Moq | Unit + integration coverage for core services |
 
 ---
 
@@ -612,4 +472,4 @@ Teacher                 API                    Database       Email
 
 - **Repository:** https://github.com/Akshit7887/-edtech-web
 - **Issues:** GitHub Issues for bug reports and feature requests
-- **Documentation:** See README.md and API endpoints in README.md
+- **Documentation:** README.md (endpoints, setup, env vars) and this HLD
