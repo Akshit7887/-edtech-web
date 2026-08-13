@@ -75,7 +75,7 @@
           <div class="file-viewer-header">
             <button class="back-btn" id="viewer-back" type="button" aria-label="Back to files"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
             <h3 id="viewer-title">Document</h3>
-            <a href="#" id="viewer-download" class="btn btn-sm btn-primary" target="_blank" rel="noopener">Download</a>
+            <button type="button" class="btn btn-sm btn-primary" id="viewer-download">Download</button>
           </div>
           <iframe id="viewer-frame" class="file-viewer-frame" title="Document viewer"></iframe>
           <div id="viewer-unavailable" class="file-viewer-unavailable" style="display:none">
@@ -102,7 +102,8 @@
       window.addEventListener('beforeunload', stopPolling);
 
       document.getElementById('class-back').addEventListener('click', () => { currentClass = null; showSection('main-view'); });
-      document.getElementById('viewer-back').addEventListener('click', () => { showSection('class-section'); });
+      document.getElementById('viewer-back').addEventListener('click', closeViewer);
+      document.getElementById('viewer-download').addEventListener('click', downloadViewer);
     });
 
     async function loadFiles() {
@@ -194,7 +195,6 @@
       const ext = (f.file_name || '').split('.').pop().toUpperCase();
       const isPdf = ext === 'PDF';
       const size = f.file_size > 1024 * 1024 ? (f.file_size / 1024 / 1024).toFixed(1) + ' MB' : (f.file_size / 1024).toFixed(0) + ' KB';
-      const downloadUrl = `${API_BASE}/api/syllabus/${f.id}/download`;
       const icon = isPdf
         ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
         : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
@@ -208,32 +208,88 @@
             <span class="file-type-badge">${ext} &middot; ${size}</span>
             <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
               <button class="btn btn-sm btn-secondary" type="button" onclick="openFileViewer(${i})">View</button>
-              <a href="${downloadUrl}" class="btn btn-sm btn-primary" target="_blank" rel="noopener" aria-label="Download ${escHtml(f.title)}">Download</a>
+              <button class="btn btn-sm btn-primary" type="button" onclick="downloadFile(${i})">Download</button>
             </div>
           </div>
         </div>`;
     }
 
-    function openFileViewer(i) {
+    let viewerFile = null;
+    let viewerBlobUrl = null;
+    let viewerSeq = 0;
+
+    function releaseViewerUrl() {
+      if (viewerBlobUrl) { URL.revokeObjectURL(viewerBlobUrl); viewerBlobUrl = null; }
+    }
+
+    async function openFileViewer(i) {
       const f = currentClass.files[i];
       if (!f) return;
+      const seq = ++viewerSeq;
+      viewerFile = f;
       const ext = (f.file_name || '').split('.').pop().toLowerCase();
       document.getElementById('viewer-title').textContent = f.title;
-      const dl = document.getElementById('viewer-download');
-      dl.href = `${API_BASE}/api/syllabus/${f.id}/download`;
-      dl.setAttribute('aria-label', 'Download ' + f.title);
       const frame = document.getElementById('viewer-frame');
       const unavailable = document.getElementById('viewer-unavailable');
+      const unavailableMsg = unavailable.querySelector('p');
+      showSection('viewer-section');
+      releaseViewerUrl();
       if (ext === 'pdf' || ext === 'txt') {
         frame.style.display = 'block';
-        frame.src = `${API_BASE}/api/syllabus/${f.id}/view`;
         unavailable.style.display = 'none';
+        frame.src = 'about:blank';
+        try {
+          const url = await api.fetchBlobUrl(`/api/syllabus/${f.id}/download`);
+          if (seq !== viewerSeq) { URL.revokeObjectURL(url); return; }
+          viewerBlobUrl = url;
+          frame.src = url;
+        } catch (e) {
+          if (seq !== viewerSeq) return;
+          frame.style.display = 'none';
+          unavailable.style.display = 'flex';
+          unavailableMsg.textContent = 'Could not load this file: ' + (e.message || 'network error');
+        }
       } else {
         frame.style.display = 'none';
-        frame.src = '';
+        frame.src = 'about:blank';
         unavailable.style.display = 'flex';
+        unavailableMsg.textContent = 'Preview is not available for this file type.';
       }
-      showSection('viewer-section');
+    }
+
+    function downloadViewer() {
+      if (!viewerFile) return;
+      downloadFileById(viewerFile.id, viewerFile.file_name || viewerFile.title + '.pdf');
+    }
+
+    function downloadFile(i) {
+      const f = currentClass.files[i];
+      if (!f) return;
+      downloadFileById(f.id, f.file_name || f.title + '.pdf');
+    }
+
+    async function downloadFileById(id, filename) {
+      try {
+        const blob = await api.downloadFile(`/api/syllabus/${id}/download`);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      } catch (e) {
+        showAlert(e.message || 'Download failed', 'error');
+      }
+    }
+
+    function closeViewer() {
+      viewerSeq++;
+      releaseViewerUrl();
+      document.getElementById('viewer-frame').src = 'about:blank';
+      viewerFile = null;
+      showSection('class-section');
     }
 
     function showSection(id) {

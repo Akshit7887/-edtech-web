@@ -20,6 +20,7 @@ public class SyllabusController : ControllerBase
     }
 
     [HttpGet]
+    [RequireAuth]
     public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] int? class_id)
     {
         var files = await _syllabusService.GetAllAsync(search, class_id);
@@ -27,6 +28,7 @@ public class SyllabusController : ControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [RequireAuth]
     public async Task<IActionResult> GetById(int id)
     {
         var file = await _syllabusService.GetByIdAsync(id);
@@ -80,6 +82,7 @@ public class SyllabusController : ControllerBase
     }
 
     [HttpGet("{id:int}/download")]
+    [RequireAuth]
     public async Task<IActionResult> Download(int id)
     {
         var file = await _syllabusService.GetByIdAsync(id);
@@ -96,6 +99,7 @@ public class SyllabusController : ControllerBase
     }
 
     [HttpGet("{id:int}/view")]
+    [RequireAuth]
     public async Task<IActionResult> View(int id)
     {
         var file = await _syllabusService.GetByIdAsync(id);

@@ -16,22 +16,16 @@
     .syllabus-search input { flex: 1; min-width: 0; }
     .syllabus-search select { flex: 1 1 160px; min-width: 0; }
     .syllabus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
-    .syllabus-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); transition: all var(--duration-normal) var(--ease); display: flex; flex-direction: column; }
-    .syllabus-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
-    .syllabus-card-icon { font-size: 2rem; margin-bottom: var(--space-3); }
-    .syllabus-card h3 { font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-1); color: var(--text-heading); }
-    .syllabus-card p { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3); flex: 1; }
-    .syllabus-card-meta { font-size: var(--text-xs); color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-3); border-top: 1px solid var(--border-light); }
-    .syllabus-card-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
-    .file-type-badge { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-ghost); color: var(--accent); }
+    .file-type-badge { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-ghost); color: var(--accent); white-space: nowrap; }
     .empty-state { text-align: center; padding: var(--space-12); color: var(--text-muted); }
     .empty-state-icon { font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.5; }
     .class-syllabus-block { margin-bottom: var(--space-8); }
     .class-syllabus-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 2px solid var(--border-strong); }
-    .class-syllabus-header-icon { font-size: 1.5rem; }
-    .class-syllabus-header h2 { font-size: var(--text-lg); font-weight: 700; color: var(--text-heading); }
-    .class-syllabus-header .class-meta { font-size: var(--text-sm); color: var(--text-muted); margin-top: 2px; }
-    .class-syllabus-count { margin-left: auto; font-size: var(--text-xs); font-weight: 600; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 12px; border-radius: var(--radius-full); white-space: nowrap; }
+    .class-syllabus-header-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .class-syllabus-header > div { flex: 1; min-width: 0; }
+    .class-syllabus-header h2 { font-size: var(--text-lg); font-weight: 700; color: var(--text-heading); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .class-syllabus-header .class-meta { font-size: var(--text-sm); color: var(--text-muted); margin-top: 2px; overflow-wrap: anywhere; word-break: break-word; }
+    .class-syllabus-count { margin-left: auto; flex-shrink: 0; font-size: var(--text-xs); font-weight: 600; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 12px; border-radius: var(--radius-full); white-space: nowrap; }
     .class-syllabus-empty { padding: var(--space-4); border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); color: var(--text-muted); font-size: var(--text-sm); text-align: center; }
     .assign-class-select { width: 100%; margin-top: var(--space-1); font-size: var(--text-xs); }
   </style>
@@ -108,7 +102,7 @@
           <div class="file-viewer-header">
             <button class="back-btn" id="viewer-back" type="button" aria-label="Back to files"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
             <h3 id="viewer-title">Document</h3>
-            <a href="#" id="viewer-download" class="btn btn-sm btn-primary" target="_blank" rel="noopener">Download</a>
+            <button type="button" class="btn btn-sm btn-primary" id="viewer-download">Download</button>
           </div>
           <iframe id="viewer-frame" class="file-viewer-frame" title="Document viewer"></iframe>
           <div id="viewer-unavailable" class="file-viewer-unavailable" style="display:none">
@@ -128,6 +122,7 @@
   <script>
     let currentFile = null;
     let teacherClasses = [];
+    let allFiles = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
@@ -151,6 +146,7 @@
       });
 
       document.getElementById('viewer-back').addEventListener('click', closeFileViewer);
+      document.getElementById('viewer-download').addEventListener('click', downloadViewer);
 
       document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -178,7 +174,6 @@
           fd.append('file', currentFile);
           await api.uploadFile('/api/syllabus/upload', fd);
           cancelUpload();
-          alert('✅ File uploaded successfully!');
           showAlert('File uploaded successfully', 'success');
           loadFiles();
         } catch (e) {
@@ -231,37 +226,34 @@
       document.getElementById('file-preview').style.display = 'none';
       document.getElementById('file-preview').innerHTML = '';
       document.getElementById('upload-btn').disabled = false;
+      document.getElementById('file-title').value = '';
+      document.getElementById('file-desc').value = '';
       document.getElementById('file-class').value = '';
     }
 
     async function loadFiles() {
       const grid = document.getElementById('syllabus-grid');
-      grid.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading files...</p></div>';
+      if (!allFiles.length) grid.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading files...</p></div>';
       try {
         const res = await api.get('/api/syllabus');
-        renderFiles(res.data || []);
+        allFiles = res.data || [];
+        renderFiles(allFiles);
       } catch (e) {
-        grid.innerHTML = '<div class="empty-state"><p>Failed to load syllabus files</p></div>';
+        if (!allFiles.length) grid.innerHTML = '<div class="empty-state"><p>Failed to load syllabus files</p></div>';
       }
     }
 
     function applyFilter() {
       const q = document.getElementById('search-input').value.trim().toLowerCase();
       const classFilter = document.getElementById('class-filter').value;
-      const grid = document.getElementById('syllabus-grid');
-      grid.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Filtering...</p></div>';
-      api.get('/api/syllabus').then(res => {
-        let files = res.data || [];
-        if (classFilter) files = files.filter(f => String(f.class_id || '') === classFilter);
-        if (q) files = files.filter(f =>
-          (f.title || '').toLowerCase().includes(q) ||
-          (f.description || '').toLowerCase().includes(q) ||
-          (f.class_name || '').toLowerCase().includes(q)
-        );
-        renderFiles(files);
-      }).catch(() => {
-        grid.innerHTML = '<div class="empty-state"><p>Search failed</p></div>';
-      });
+      let files = allFiles;
+      if (classFilter) files = files.filter(f => String(f.class_id || '') === classFilter);
+      if (q) files = files.filter(f =>
+        (f.title || '').toLowerCase().includes(q) ||
+        (f.description || '').toLowerCase().includes(q) ||
+        (f.class_name || '').toLowerCase().includes(q)
+      );
+      renderFiles(files);
     }
 
     function renderFiles(files) {
@@ -320,7 +312,6 @@
       const ext = (f.file_name || '').split('.').pop().toUpperCase();
       const isPdf = ext === 'PDF';
       const size = f.file_size > 1024 * 1024 ? (f.file_size / 1024 / 1024).toFixed(1) + ' MB' : (f.file_size / 1024).toFixed(0) + ' KB';
-      const url = `${API_BASE}/api/syllabus/${f.id}/download`;
       const assign = f.class_id
         ? `<span class="file-type-badge" style="background:var(--bg-secondary);color:var(--text-muted);">&#x1F3EB; ${escHtml(f.class_name || '')}</span>`
         : `<select class="form-input assign-class-select" onchange="assignClass(${f.id}, this.value)"><option value="">Assign class...</option>${classOpts}</select>`;
@@ -337,7 +328,7 @@
             ${assign}
             <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
               <button class="btn btn-sm btn-secondary" type="button" onclick="openFileViewer(${f.id})">View</button>
-              <a href="${url}" class="btn btn-sm btn-primary" target="_blank" rel="noopener" aria-label="Download ${escHtml(f.title)}">Download</a>
+              <button class="btn btn-sm btn-primary" type="button" onclick="downloadFileById(${f.id})">Download</button>
               <button class="btn btn-sm btn-ghost-red" type="button" onclick="deleteFile(${f.id})">Delete</button>
             </div>
           </div>
@@ -345,35 +336,81 @@
     }
 
     let filesById = {};
+    let viewerFile = null;
+    let viewerBlobUrl = null;
+    let viewerSeq = 0;
 
-    function openFileViewer(id) {
+    function releaseViewerUrl() {
+      if (viewerBlobUrl) { URL.revokeObjectURL(viewerBlobUrl); viewerBlobUrl = null; }
+    }
+
+    async function openFileViewer(id) {
       const f = filesById[id];
       if (!f) return;
+      const seq = ++viewerSeq;
+      viewerFile = f;
       const ext = (f.file_name || '').split('.').pop().toLowerCase();
       document.getElementById('viewer-title').textContent = f.title;
-      const dl = document.getElementById('viewer-download');
-      dl.href = `${API_BASE}/api/syllabus/${f.id}/download`;
-      dl.setAttribute('aria-label', 'Download ' + f.title);
       const frame = document.getElementById('viewer-frame');
       const unavailable = document.getElementById('viewer-unavailable');
-      if (ext === 'pdf' || ext === 'txt') {
-        frame.style.display = 'block';
-        frame.src = `${API_BASE}/api/syllabus/${f.id}/view`;
-        unavailable.style.display = 'none';
-      } else {
-        frame.style.display = 'none';
-        frame.src = '';
-        unavailable.style.display = 'flex';
-      }
+      const unavailableMsg = unavailable.querySelector('p');
       document.getElementById('syllabus-grid').style.display = 'none';
       document.getElementById('viewer-section').classList.add('active');
       document.getElementById('viewer-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
       window.scrollBy(0, -90);
+      releaseViewerUrl();
+      if (ext === 'pdf' || ext === 'txt') {
+        frame.style.display = 'block';
+        unavailable.style.display = 'none';
+        frame.src = 'about:blank';
+        try {
+          const url = await api.fetchBlobUrl(`/api/syllabus/${f.id}/download`);
+          if (seq !== viewerSeq) { URL.revokeObjectURL(url); return; }
+          viewerBlobUrl = url;
+          frame.src = url;
+        } catch (e) {
+          if (seq !== viewerSeq) return;
+          frame.style.display = 'none';
+          unavailable.style.display = 'flex';
+          unavailableMsg.textContent = 'Could not load this file: ' + (e.message || 'network error');
+        }
+      } else {
+        frame.style.display = 'none';
+        frame.src = 'about:blank';
+        unavailable.style.display = 'flex';
+        unavailableMsg.textContent = 'Preview is not available for this file type.';
+      }
+    }
+
+    function downloadViewer() {
+      if (!viewerFile) return;
+      downloadFileById(viewerFile.id, viewerFile.file_name || viewerFile.title + '.pdf');
+    }
+
+    async function downloadFileById(id, filename) {
+      const f = filesById[id];
+      const name = filename || (f && f.file_name) || 'syllabus-file';
+      try {
+        const blob = await api.downloadFile(`/api/syllabus/${id}/download`);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      } catch (e) {
+        showAlert(e.message || 'Download failed', 'error');
+      }
     }
 
     function closeFileViewer() {
+      viewerSeq++;
+      releaseViewerUrl();
+      document.getElementById('viewer-frame').src = 'about:blank';
+      viewerFile = null;
       document.getElementById('viewer-section').classList.remove('active');
-      document.getElementById('viewer-frame').src = '';
       document.getElementById('syllabus-grid').style.display = '';
       document.getElementById('syllabus-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }

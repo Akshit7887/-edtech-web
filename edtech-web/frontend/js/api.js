@@ -88,6 +88,21 @@ class ApiClient {
       a.remove(); URL.revokeObjectURL(url);
     });
   }
+
+  async downloadFile(path) {
+    const opts = { method: 'GET', headers: this.getHeaders() };
+    const r = await fetch(`${API_BASE}${path}`, opts);
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({ error: 'Download failed' }));
+      throw new ApiError(err.error || 'Download failed', r.status);
+    }
+    return r.blob();
+  }
+
+  async fetchBlobUrl(path) {
+    const blob = await this.downloadFile(path);
+    return URL.createObjectURL(blob);
+  }
 }
 
 class ApiError extends Error {

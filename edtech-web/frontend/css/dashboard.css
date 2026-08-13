@@ -386,8 +386,15 @@
   justify-content: center;
   gap: var(--space-3);
   padding: var(--space-16) var(--space-6);
+  min-height: 420px;
   text-align: center;
   color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+  .file-viewer-unavailable {
+    min-height: 320px;
+  }
 }
 
 .file-viewer-unavailable .viewer-icon {
