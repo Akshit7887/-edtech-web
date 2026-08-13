@@ -193,17 +193,17 @@
             </div>
             <div class="ann-target-section">
               <label style="font-size:0.9rem;font-weight:600;color:var(--text-muted)">Send to:</label>
-              <div class="ann-target-options" style="display:flex;gap:var(--space-2);margin-top:var(--space-2)">
-                <label class="ann-target-option selected" id="target-classes" onclick="selectTarget('classes')" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
+              <div class="ann-target-options" style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2)">
+                <label class="ann-target-option selected" id="target-classes" onclick="selectTarget('classes')" style="flex:1 1 45%;min-width:120px;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
                   <input type="radio" name="target" value="classes" checked hidden> 📚 My Classes
                 </label>
-                <label class="ann-target-option" id="target-students" onclick="selectTarget('students')" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
+                <label class="ann-target-option" id="target-students" onclick="selectTarget('students')" style="flex:1 1 45%;min-width:120px;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
                   <input type="radio" name="target" value="students" hidden> 👩‍🎓 All Students
                 </label>
-                <label class="ann-target-option" id="target-teachers" onclick="selectTarget('teachers')" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
+                <label class="ann-target-option" id="target-teachers" onclick="selectTarget('teachers')" style="flex:1 1 45%;min-width:120px;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
                   <input type="radio" name="target" value="teachers" hidden> 👨‍🏫 All Teachers
                 </label>
-                <label class="ann-target-option" id="target-all" onclick="selectTarget('all')" style="flex:1;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
+                <label class="ann-target-option" id="target-all" onclick="selectTarget('all')" style="flex:1 1 45%;min-width:120px;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
                   <input type="radio" name="target" value="all" hidden> 🌐 Everyone
                 </label>
               </div>

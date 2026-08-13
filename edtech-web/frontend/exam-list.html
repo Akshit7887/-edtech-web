@@ -289,10 +289,10 @@
         return;
       }
       container.innerHTML = '<div class="exam-grid">' + filtered.map((e, i) => `
-        <div class="exam-card anim-fade-up" style="animation-delay:${i * 0.05}s" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${e.id}')` : `goTo('login.html')`}">
-          <div class="exam-card-title">${e.title}</div>
+        <div class="exam-card anim-fade-up" style="animation-delay:${i * 0.05}s" onclick="${api.getToken() ? `goTo('pages/student/exam.html?id=${encodeURIComponent(e.id)}')` : `goTo('login.html')`}">
+          <div class="exam-card-title">${escHtml(e.title)}</div>
           <div class="exam-card-meta">
-            <span>&#x1F4D6; ${e.subject}</span>
+            <span>&#x1F4D6; ${escHtml(e.subject)}</span>
             <span>&#x23F1; ${e.duration_minutes} min</span>
             <span>&#x1F4C4; ${e.total_questions} Q</span>
             ${statusBadge(e.status)}
@@ -303,6 +303,13 @@
           </div>
         </div>
       `).join('') + '</div>';
+    }
+
+    function escHtml(s) {
+      if (s === null || s === undefined) return '';
+      const d = document.createElement('div');
+      d.textContent = String(s);
+      return d.innerHTML;
     }
   </script>
   <script src="js/nav.js?v=5"></script>

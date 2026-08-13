@@ -800,6 +800,11 @@
   border-radius: var(--radius-lg);
 }
 
+.scroll-table {
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
 .row-high-pass { background: var(--success-light); }
 .row-high-fail { background: var(--error-light); }
 
@@ -1075,11 +1080,15 @@
   position: fixed;
   inset: 0;
   background: var(--overlay-strong);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   z-index: var(--z-modal, 300);
   animation: fadeIn 0.2s ease;
+}
+
+.modal-overlay.active {
+  display: flex;
 }
 
 .modal {
@@ -1305,6 +1314,7 @@
   display: block;
   font-size: var(--text-xs);
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 .mini-student-item .student-class-badge {
@@ -1436,6 +1446,7 @@
   display: flex;
   justify-content: space-between;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 /* ── Stagger Group ── */
@@ -2002,6 +2013,11 @@
   .footer-links { gap: var(--space-4); }
   .btn-lg { padding: var(--space-3) var(--space-6); }
   .navbar-brand { font-size: var(--text-xl); }
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: var(--space-3);
+  }
 }
 
 @media (max-width: 480px) {
@@ -2015,11 +2031,14 @@
   .carousel-card-title { font-size: var(--text-lg); }
   .mobile-menu { width: 100vw; }
   .navbar { height: 60px; padding: 0 var(--space-4); }
-  .navbar-brand { font-size: var(--text-lg); max-width: 70vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .navbar-brand { font-size: var(--text-lg); max-width: 55vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .hero-title { text-wrap: balance; }
   .hero-cta .btn { padding: var(--space-3) var(--space-4); font-size: var(--text-base); }
   .exam-card-title, .card h3 { overflow-wrap: break-word; word-break: break-word; }
   .section-header h2 { font-size: var(--text-2xl); }
+  .layout { padding-top: 60px; }
+  .exam-nav-btns { flex-direction: column; }
+  .exam-nav-btns .btn { width: 100%; }
 }
 
 /* PWA standalone / notched devices: keep fixed UI clear of safe areas */

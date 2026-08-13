@@ -67,8 +67,8 @@
         }
         container.innerHTML = items.map((n, i) => `
           <div class="card notification-card animate-fade-up" style="animation-delay:${i * 0.03}s;${n.is_read ? '' : 'border-left:3px solid var(--primary)'}" onclick="markRead(${n.id}, this)">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-3)">
+              <div style="min-width:0;flex:1;word-break:break-word;overflow-wrap:anywhere">
                 <h4 style="font-size:0.95rem;margin-bottom:4px">${n.title}</h4>
                 <p style="color:var(--text-muted);font-size:0.85rem">${n.message}</p>
               </div>

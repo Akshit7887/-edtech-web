@@ -75,18 +75,18 @@
       <form id="upload-form" style="display:none">
         <input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" required>
         <div id="file-preview" style="display:none;margin-bottom:var(--space-3);padding:var(--space-4);background:var(--accent-ghost);border-radius:var(--radius-lg);"></div>
-        <div class="form-group" style="margin-top:var(--space-3);display:flex;gap:var(--space-3);align-items:end;">
-          <div style="flex:1;">
+        <div class="form-group" style="margin-top:var(--space-3);display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:end;">
+          <div style="flex:1;min-width:180px;">
             <label class="form-label">Title</label>
             <input type="text" class="form-input" id="file-title" placeholder="e.g. Mathematics Syllabus" required>
           </div>
-          <div style="flex:1;">
+          <div style="flex:1;min-width:180px;">
             <label class="form-label">Class</label>
             <select class="form-input" id="file-class" required>
               <option value="">Select a class...</option>
             </select>
           </div>
-          <div style="flex:1;">
+          <div style="flex:1;min-width:180px;">
             <label class="form-label">Description (optional)</label>
             <input type="text" class="form-input" id="file-desc" placeholder="e.g. Unit 1 topics">
           </div>

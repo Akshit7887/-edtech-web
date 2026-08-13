@@ -116,7 +116,7 @@
   border-color: var(--accent);
   background: var(--accent-ghost);
   color: var(--accent);
-  box-shadow: 0 0 0 2px var(--error-light);
+  box-shadow: 0 0 0 2px var(--accent-light);
 }
 
 .role-option .role-icon {
