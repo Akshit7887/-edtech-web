@@ -158,15 +158,15 @@
   border-top: 1px solid var(--border-light);
 }
 
-/* ── Smart Card (compact horizontal file/document card) ── */
+/* ── Smart Card (compact Android-settings style row) ── */
 .smart-card {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-4);
   transition: all var(--duration-normal) var(--ease);
   min-width: 0;
   max-width: 100%;
@@ -174,13 +174,12 @@
 
 .smart-card:hover {
   border-color: var(--accent);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .smart-card-icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -198,8 +197,8 @@
 }
 
 .smart-card-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
 .smart-card-body {
@@ -209,7 +208,7 @@
 }
 
 .smart-card-title {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-heading);
   white-space: nowrap;
@@ -221,7 +220,7 @@
 .smart-card-subtitle {
   font-size: var(--text-xs);
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
