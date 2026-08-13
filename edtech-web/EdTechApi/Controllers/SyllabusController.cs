@@ -90,7 +90,30 @@ public class SyllabusController : ControllerBase
             return NotFound(new { success = false, message = "File data not found" });
 
         var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant();
-        var contentType = ext switch
+        var contentType = GetContentType(ext);
+
+        return File(file.FileData, contentType, file.FileName);
+    }
+
+    [HttpGet("{id:int}/view")]
+    public async Task<IActionResult> View(int id)
+    {
+        var file = await _syllabusService.GetByIdAsync(id);
+        if (file == null)
+            return NotFound(new { success = false, message = "File not found" });
+
+        if (file.FileData == null || file.FileData.Length == 0)
+            return NotFound(new { success = false, message = "File data not found" });
+
+        var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+        var contentType = GetContentType(ext);
+
+        return File(file.FileData, contentType);
+    }
+
+    private static string GetContentType(string? ext)
+    {
+        return ext switch
         {
             ".pdf" => "application/pdf",
             ".doc" => "application/msword",
@@ -100,8 +123,6 @@ public class SyllabusController : ControllerBase
             ".txt" => "text/plain",
             _ => "application/octet-stream"
         };
-
-        return File(file.FileData, contentType, file.FileName);
     }
 
     [HttpPatch("{id:int}")]

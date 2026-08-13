@@ -12,23 +12,11 @@
     .syllabus-search { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); }
     .syllabus-search input { flex: 1; }
     .syllabus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
-    .syllabus-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); transition: all var(--duration-normal) var(--ease); display: flex; flex-direction: column; }
-    .syllabus-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
-    .syllabus-card-icon { font-size: 2rem; margin-bottom: var(--space-3); }
-    .syllabus-card h3 { font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-1); color: var(--text-heading); }
-    .syllabus-card p { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-3); flex: 1; }
-    .syllabus-card-meta { font-size: var(--text-xs); color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; padding-top: var(--space-3); border-top: 1px solid var(--border-light); }
-    .syllabus-card-actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
-    .file-type-badge { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-ghost); color: var(--accent); }
+    .file-type-badge { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-full); background: var(--accent-ghost); color: var(--accent); white-space: nowrap; }
     .empty-state { text-align: center; padding: var(--space-12); color: var(--text-muted); }
     .empty-state-icon { font-size: 3rem; margin-bottom: var(--space-4); opacity: 0.5; }
-    .class-syllabus-block { margin-bottom: var(--space-8); }
-    .class-syllabus-header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 2px solid var(--border-strong); }
+    .class-syllabus-count { font-size: var(--text-xs); font-weight: 600; color: var(--text-muted); background: var(--bg-muted); padding: 4px 12px; border-radius: var(--radius-full); white-space: nowrap; }
     .class-syllabus-header-icon { font-size: 1.5rem; }
-    .class-syllabus-header h2 { font-size: var(--text-lg); font-weight: 700; color: var(--text-heading); }
-    .class-syllabus-header .class-meta { font-size: var(--text-sm); color: var(--text-muted); margin-top: 2px; }
-    .class-syllabus-count { margin-left: auto; font-size: var(--text-xs); font-weight: 600; color: var(--text-muted); background: var(--bg-secondary); padding: 4px 12px; border-radius: var(--radius-full); white-space: nowrap; }
-    .class-syllabus-empty { padding: var(--space-4); border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); color: var(--text-muted); font-size: var(--text-sm); text-align: center; }
   </style>
 </head>
 <body>
@@ -54,16 +42,49 @@
       <div class="page-header">
         <div>
           <h1>Syllabus</h1>
-          <p class="text-muted">Browse and download syllabus files for your classes</p>
+          <p class="text-muted">Pick a class to view its syllabus files</p>
         </div>
       </div>
       <div id="alert-container"></div>
 
-      <div class="syllabus-search">
-        <input type="text" class="form-input" id="search-input" placeholder="Search syllabus files..." oninput="applyFilter()">
-      </div>
+      <!-- MAIN VIEW: one card per class -->
+      <section id="main-view">
+        <div class="syllabus-search">
+          <input type="text" class="form-input" id="search-input" placeholder="Search classes or files..." oninput="applyFilter()">
+        </div>
+        <div id="class-grid" class="syllabus-grid"></div>
+      </section>
 
-      <div id="syllabus-grid" class="syllabus-grid"></div>
+      <!-- CLASS FILES VIEW: all files of the selected class -->
+      <section id="class-section" class="syllabus-section">
+        <div class="syllabus-section-header">
+          <button class="back-btn" id="class-back" type="button" aria-label="Back to classes"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+          <span class="class-syllabus-header-icon">&#x1F3EB;</span>
+          <div>
+            <h2 id="class-name">Class</h2>
+            <div class="class-meta" id="class-subject"></div>
+          </div>
+          <span class="class-syllabus-count" id="class-count"></span>
+        </div>
+        <div id="file-grid" class="syllabus-grid"></div>
+      </section>
+
+      <!-- FILE VIEWER: view / download the selected document -->
+      <section id="viewer-section" class="syllabus-section">
+        <div class="file-viewer-panel">
+          <div class="file-viewer-header">
+            <button class="back-btn" id="viewer-back" type="button" aria-label="Back to files"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+            <h3 id="viewer-title">Document</h3>
+            <a href="#" id="viewer-download" class="btn btn-sm btn-primary" target="_blank" rel="noopener">Download</a>
+          </div>
+          <iframe id="viewer-frame" class="file-viewer-frame" title="Document viewer"></iframe>
+          <div id="viewer-unavailable" class="file-viewer-unavailable" style="display:none">
+            <div class="viewer-icon">&#x1F4C1;</div>
+            <p>Preview is not available for this file type.</p>
+            <p class="text-sm">Use the Download button to open it.</p>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -71,21 +92,26 @@
   <script src="../../js/auth.js?v=5"></script>
   <script>
     let allFiles = [];
+    let groupsCache = [];
+    let currentClass = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
       await loadFiles();
       startPolling(loadFiles, 60000);
       window.addEventListener('beforeunload', stopPolling);
+
+      document.getElementById('class-back').addEventListener('click', () => { currentClass = null; showSection('main-view'); });
+      document.getElementById('viewer-back').addEventListener('click', () => { showSection('class-section'); });
     });
 
     async function loadFiles() {
-      const grid = document.getElementById('syllabus-grid');
+      const grid = document.getElementById('class-grid');
       grid.innerHTML = '<div class="empty-state"><div class="spinner"></div><p>Loading files...</p></div>';
       try {
         const res = await api.get('/api/syllabus/my');
         allFiles = res.data || [];
-        renderFiles(allFiles);
+        renderClasses(allFiles);
       } catch (e) {
         grid.innerHTML = '<div class="empty-state"><p>Failed to load syllabus files</p></div>';
       }
@@ -93,71 +119,138 @@
 
     function applyFilter() {
       const q = document.getElementById('search-input').value.trim().toLowerCase();
-      if (!q) { renderFiles(allFiles); return; }
+      if (!q) { renderClasses(allFiles); return; }
       const filtered = allFiles.filter(f =>
         (f.title || '').toLowerCase().includes(q) ||
         (f.description || '').toLowerCase().includes(q) ||
-        (f.class_name || '').toLowerCase().includes(q)
+        (f.class_name || '').toLowerCase().includes(q) ||
+        (f.class_subject || '').toLowerCase().includes(q)
       );
-      renderFiles(filtered);
+      renderClasses(filtered);
     }
 
-    function renderFiles(files) {
-      const grid = document.getElementById('syllabus-grid');
+    function groupByClass(files) {
+      const map = new Map();
+      files.forEach(f => {
+        const key = f.class_id ? String(f.class_id) : 'unassigned';
+        if (!map.has(key)) {
+          map.set(key, {
+            id: f.class_id,
+            name: f.class_name || 'General Syllabus',
+            subject: f.class_subject || '',
+            files: []
+          });
+        }
+        map.get(key).files.push(f);
+      });
+      return [...map.values()];
+    }
+
+    function renderClasses(files) {
+      const grid = document.getElementById('class-grid');
       if (!files.length) {
         grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F4DA;</div><p>No syllabus files available for your classes yet</p><p class="text-sm">Ask your teacher to upload syllabus files for your class.</p></div>';
         return;
       }
 
-      const grouped = new Map();
-      files.forEach(f => {
-        if (!grouped.has(f.class_id)) grouped.set(f.class_id, { id: f.class_id, name: f.class_name || 'My Class', subject: f.class_subject, files: [] });
-        grouped.get(f.class_id).files.push(f);
-      });
-
-      const blocks = [];
-      [...grouped.values()].forEach(g => {
-        blocks.push(`
-          <div class="class-syllabus-block">
-            <div class="class-syllabus-header">
-              <span class="class-syllabus-header-icon">&#x1F3EB;</span>
-              <div>
-                <h2>${escHtml(g.name)}</h2>
-                ${g.subject ? '<div class="class-meta">' + escHtml(g.subject) + '</div>' : ''}
-              </div>
-              <span class="class-syllabus-count">${g.files.length} file${g.files.length !== 1 ? 's' : ''}</span>
-            </div>
-            <div class="syllabus-grid">${g.files.map(fileCard).join('')}</div>
-          </div>`);
-      });
-
-      grid.innerHTML = blocks.join('');
+      groupsCache = groupByClass(files);
+      grid.innerHTML = groupsCache.map((g, i) => {
+        const count = g.files.length;
+        return `<div class="smart-card anim-fade-up" style="animation-delay:${i * 0.05}s">
+          <div class="smart-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
+          <div class="smart-card-body">
+            <div class="smart-card-title">${escHtml(g.name)}</div>
+            <div class="smart-card-subtitle">${g.subject ? escHtml(g.subject) : count + ' file' + (count !== 1 ? 's' : '') + ' available'}</div>
+          </div>
+          <div class="smart-card-actions">
+            <span class="file-type-badge">${count} file${count !== 1 ? 's' : ''}</span>
+            <button class="btn btn-sm btn-primary" type="button" onclick="openClass(${i})">View</button>
+          </div>
+        </div>`;
+      }).join('');
     }
 
-    function fileCard(f) {
+    function openClass(i) {
+      currentClass = groupsCache[i];
+      if (!currentClass) return;
+      document.getElementById('class-name').textContent = currentClass.name;
+      document.getElementById('class-subject').textContent = currentClass.subject || 'General Syllabus';
+      const count = currentClass.files.length;
+      document.getElementById('class-count').textContent = count + ' file' + (count !== 1 ? 's' : '');
+      renderFileGrid(currentClass.files);
+      showSection('class-section');
+    }
+
+    function renderFileGrid(files) {
+      const grid = document.getElementById('file-grid');
+      if (!files.length) {
+        grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">&#x1F4C1;</div><p>No files in this class yet</p></div>';
+        return;
+      }
+      grid.innerHTML = files.map((f, i) => fileCard(f, i)).join('');
+    }
+
+    function fileCard(f, i) {
       const ext = (f.file_name || '').split('.').pop().toUpperCase();
       const isPdf = ext === 'PDF';
       const size = f.file_size > 1024 * 1024 ? (f.file_size / 1024 / 1024).toFixed(1) + ' MB' : (f.file_size / 1024).toFixed(0) + ' KB';
-      const url = `${API_BASE}/api/syllabus/${f.id}/download`;
+      const downloadUrl = `${API_BASE}/api/syllabus/${f.id}/download`;
       const icon = isPdf
         ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
         : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
-      return `<div class="smart-card">
+      return `<div class="smart-card anim-fade-up" style="animation-delay:${i * 0.04}s">
           <div class="smart-card-icon">${icon}</div>
           <div class="smart-card-body">
             <div class="smart-card-title">${escHtml(f.title)}</div>
-            <div class="smart-card-subtitle">${f.description ? escHtml(f.description) : `${ext} &middot; ${size}`}</div>
+            <div class="smart-card-subtitle">${f.description ? escHtml(f.description) : `by ${escHtml(f.uploader_name || 'Unknown')}`}</div>
           </div>
           <div class="smart-card-actions">
-            <a href="${url}" class="btn btn-sm btn-primary" target="_blank" rel="noopener" aria-label="${isPdf ? 'View PDF' : 'Download'} ${escHtml(f.title)}">${isPdf ? 'View PDF' : 'Download'}</a>
+            <span class="file-type-badge">${ext} &middot; ${size}</span>
+            <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+              <button class="btn btn-sm btn-secondary" type="button" onclick="openFileViewer(${i})">View</button>
+              <a href="${downloadUrl}" class="btn btn-sm btn-primary" target="_blank" rel="noopener" aria-label="Download ${escHtml(f.title)}">Download</a>
+            </div>
           </div>
         </div>`;
     }
 
+    function openFileViewer(i) {
+      const f = currentClass.files[i];
+      if (!f) return;
+      const ext = (f.file_name || '').split('.').pop().toLowerCase();
+      document.getElementById('viewer-title').textContent = f.title;
+      const dl = document.getElementById('viewer-download');
+      dl.href = `${API_BASE}/api/syllabus/${f.id}/download`;
+      dl.setAttribute('aria-label', 'Download ' + f.title);
+      const frame = document.getElementById('viewer-frame');
+      const unavailable = document.getElementById('viewer-unavailable');
+      if (ext === 'pdf' || ext === 'txt') {
+        frame.style.display = 'block';
+        frame.src = `${API_BASE}/api/syllabus/${f.id}/view`;
+        unavailable.style.display = 'none';
+      } else {
+        frame.style.display = 'none';
+        frame.src = '';
+        unavailable.style.display = 'flex';
+      }
+      showSection('viewer-section');
+    }
+
+    function showSection(id) {
+      ['main-view', 'class-section', 'viewer-section'].forEach(s => {
+        document.getElementById(s).classList.toggle('active', s === id);
+      });
+      if (id !== 'main-view') {
+        const el = document.getElementById(id);
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollBy(0, -90);
+      }
+    }
+
     function escHtml(s) {
-      if (!s) return '';
+      if (s === null || s === undefined) return '';
       const d = document.createElement('div');
-      d.textContent = s;
+      d.textContent = String(s);
       return d.innerHTML;
     }
   </script>

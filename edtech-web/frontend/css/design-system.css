@@ -56,6 +56,10 @@
   --accent-dark:  var(--red-700);
   --accent-ghost: var(--red-100);
 
+  /* Legacy aliases (kept for backwards compatibility) */
+  --primary:      var(--accent);
+  --bg-secondary: var(--bg-muted);
+
   /* Semantic Status Colors */
   --success:       #22c55e;
   --success-light: #22c55e20;

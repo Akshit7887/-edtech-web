@@ -102,6 +102,22 @@
         <input type="text" class="form-input" id="search-input" placeholder="Search syllabus files..." oninput="applyFilter()">
       </div>
 
+      <section id="viewer-section" class="syllabus-section">
+        <div class="file-viewer-panel">
+          <div class="file-viewer-header">
+            <button class="back-btn" id="viewer-back" type="button" aria-label="Back to files"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
+            <h3 id="viewer-title">Document</h3>
+            <a href="#" id="viewer-download" class="btn btn-sm btn-primary" target="_blank" rel="noopener">Download</a>
+          </div>
+          <iframe id="viewer-frame" class="file-viewer-frame" title="Document viewer"></iframe>
+          <div id="viewer-unavailable" class="file-viewer-unavailable" style="display:none">
+            <div class="viewer-icon">&#x1F4C1;</div>
+            <p>Preview is not available for this file type.</p>
+            <p class="text-sm">Use the Download button to open it.</p>
+          </div>
+        </div>
+      </section>
+
       <div id="syllabus-grid" class="syllabus-grid"></div>
     </main>
   </div>
@@ -132,6 +148,8 @@
       document.getElementById('file-input').addEventListener('change', (e) => {
         if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
       });
+
+      document.getElementById('viewer-back').addEventListener('click', closeFileViewer);
 
       document.getElementById('upload-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -255,6 +273,7 @@
       const grouped = new Map();
       const unassigned = [];
       files.forEach(f => {
+        filesById[f.id] = f;
         if (!f.class_id) { unassigned.push(f); return; }
         if (!grouped.has(f.class_id)) grouped.set(f.class_id, { id: f.class_id, name: f.class_name || 'Class ' + f.class_id, subject: f.class_subject, files: [] });
         grouped.get(f.class_id).files.push(f);
@@ -316,11 +335,46 @@
           <div class="smart-card-actions">
             ${assign}
             <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
-              <a href="${url}" class="btn btn-sm btn-primary" target="_blank" rel="noopener" aria-label="${isPdf ? 'View PDF' : 'Download'} ${escHtml(f.title)}">${isPdf ? 'View PDF' : 'Download'}</a>
-              <button class="btn btn-sm btn-ghost-red" onclick="deleteFile(${f.id})">Delete</button>
+              <button class="btn btn-sm btn-secondary" type="button" onclick="openFileViewer(${f.id})">View</button>
+              <a href="${url}" class="btn btn-sm btn-primary" target="_blank" rel="noopener" aria-label="Download ${escHtml(f.title)}">Download</a>
+              <button class="btn btn-sm btn-ghost-red" type="button" onclick="deleteFile(${f.id})">Delete</button>
             </div>
           </div>
         </div>`;
+    }
+
+    let filesById = {};
+
+    function openFileViewer(id) {
+      const f = filesById[id];
+      if (!f) return;
+      const ext = (f.file_name || '').split('.').pop().toLowerCase();
+      document.getElementById('viewer-title').textContent = f.title;
+      const dl = document.getElementById('viewer-download');
+      dl.href = `${API_BASE}/api/syllabus/${f.id}/download`;
+      dl.setAttribute('aria-label', 'Download ' + f.title);
+      const frame = document.getElementById('viewer-frame');
+      const unavailable = document.getElementById('viewer-unavailable');
+      if (ext === 'pdf' || ext === 'txt') {
+        frame.style.display = 'block';
+        frame.src = `${API_BASE}/api/syllabus/${f.id}/view`;
+        unavailable.style.display = 'none';
+      } else {
+        frame.style.display = 'none';
+        frame.src = '';
+        unavailable.style.display = 'flex';
+      }
+      document.getElementById('syllabus-grid').style.display = 'none';
+      document.getElementById('viewer-section').classList.add('active');
+      document.getElementById('viewer-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.scrollBy(0, -90);
+    }
+
+    function closeFileViewer() {
+      document.getElementById('viewer-section').classList.remove('active');
+      document.getElementById('viewer-frame').src = '';
+      document.getElementById('syllabus-grid').style.display = '';
+      document.getElementById('syllabus-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     async function assignClass(id, classId) {

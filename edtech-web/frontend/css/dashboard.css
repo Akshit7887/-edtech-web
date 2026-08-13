@@ -255,6 +255,111 @@
   }
 }
 
+/* ── Syllabus Section Flow (class view / file viewer) ── */
+.syllabus-section {
+  display: none;
+  animation: fadeInUp 0.35s var(--ease) both;
+}
+
+.syllabus-section.active {
+  display: block;
+}
+
+.syllabus-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.syllabus-section-header h2 {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.syllabus-section-header .class-meta {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.syllabus-section-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.file-viewer-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.file-viewer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.file-viewer-header h3 {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-heading);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.file-viewer-frame {
+  width: 100%;
+  height: 70vh;
+  min-height: 420px;
+  border: none;
+  display: block;
+  background: var(--bg-subtle);
+}
+
+.file-viewer-unavailable {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-6);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.file-viewer-unavailable .viewer-icon {
+  font-size: 3rem;
+  opacity: 0.5;
+}
+
+@media (max-width: 480px) {
+  .file-viewer-frame {
+    height: 60vh;
+    min-height: 320px;
+  }
+  .file-viewer-header {
+    padding: var(--space-3) var(--space-4);
+  }
+  .file-viewer-header h3 {
+    white-space: normal;
+  }
+}
+
 /* ── Score Bar ── */
 .score-bar {
   display: flex;
