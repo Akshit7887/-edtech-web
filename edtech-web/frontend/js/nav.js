@@ -486,8 +486,8 @@
       setTheme(currentTheme() === 'dark' ? 'light' : 'dark', true);
     });
 
-    var hamburger = navbar.querySelector('.hamburger-btn');
-    if (hamburger) navbar.insertBefore(btn, hamburger);
+    var brand = navbar.querySelector('.navbar-brand');
+    if (brand) navbar.insertBefore(btn, brand);
     else navbar.appendChild(btn);
     setTheme(currentTheme(), false);
 

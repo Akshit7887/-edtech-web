@@ -1,10 +1,9 @@
 /* global self, caches, fetch, URL */
 
-var CACHE_NAME = 'edtech-v3';
+var CACHE_NAME = 'edtech-v4';
 
 var CACHE_FIRST = [
   /\/css\//,
-  /\/js\/(?!signalr-client|nav\.js)/,
   /\/icons\//,
   /\/manifest\.json$/,
   /\.(woff2?|ttf|otf)$/

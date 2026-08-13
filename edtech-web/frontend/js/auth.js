@@ -60,7 +60,9 @@ function saveSession(token, user) {
 function clearSession() {
   api.setToken(null);
   try { if (typeof stopPolling === 'function') stopPolling(); } catch (e) {}
-  Object.keys(localStorage).forEach(k => { if (k !== 'api_base') localStorage.removeItem(k); });
+  Object.keys(localStorage).forEach(k => {
+    if (k !== 'api_base' && k !== 'edtech-theme') localStorage.removeItem(k);
+  });
   Object.keys(sessionStorage).forEach(k => sessionStorage.removeItem(k));
 }
 

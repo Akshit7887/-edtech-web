@@ -555,6 +555,7 @@ input[type="radio"] {
   color: var(--text-body);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease);
+  margin-right: var(--space-3);
 }
 
 .theme-toggle:hover {
