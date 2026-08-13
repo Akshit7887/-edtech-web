@@ -168,6 +168,8 @@
   border-radius: var(--radius-lg);
   padding: var(--space-4) var(--space-5);
   transition: all var(--duration-normal) var(--ease);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .smart-card:hover {
@@ -203,6 +205,7 @@
 .smart-card-body {
   flex: 1;
   min-width: 0;
+  max-width: 100%;
 }
 
 .smart-card-title {
@@ -212,6 +215,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .smart-card-subtitle {
@@ -221,15 +225,34 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .smart-card-actions {
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 100%;
   display: flex;
   align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.smart-card-actions .btn {
+  min-width: 0;
+}
+
+.smart-card-actions .assign-class-select {
+  width: auto;
+  min-width: 150px;
+  flex: 1 1 150px;
+}
+
+@media (max-width: 768px) {
+  .syllabus-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -253,6 +276,10 @@
   .smart-card-actions .btn {
     width: 100%;
   }
+  .smart-card-actions .assign-class-select {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 /* ── Syllabus Section Flow (class view / file viewer) ── */
@@ -272,16 +299,37 @@
   margin-bottom: var(--space-6);
 }
 
+.syllabus-section-header > div {
+  flex: 1;
+  min-width: 0;
+}
+
 .syllabus-section-header h2 {
   font-size: var(--text-xl);
   font-weight: 700;
   color: var(--text-heading);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .syllabus-section-header .class-meta {
   font-size: var(--text-sm);
   color: var(--text-muted);
   margin-top: 2px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.syllabus-section-header .class-syllabus-count {
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .syllabus-section-header h2 {
+    white-space: normal;
+  }
 }
 
 .syllabus-section-toolbar {

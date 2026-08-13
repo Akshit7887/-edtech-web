@@ -12,8 +12,9 @@
     .syllabus-upload { margin-bottom: var(--space-6); padding: var(--space-6); background: var(--bg-card); border: 2px dashed var(--border-strong); border-radius: var(--radius-lg); text-align: center; transition: border-color var(--duration-normal) var(--ease); }
     .syllabus-upload.dragover { border-color: var(--accent); background: var(--accent-ghost); }
     .syllabus-upload input[type="file"] { display: none; }
-    .syllabus-search { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); }
-    .syllabus-search input { flex: 1; }
+    .syllabus-search { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
+    .syllabus-search input { flex: 1; min-width: 0; }
+    .syllabus-search select { flex: 1 1 160px; min-width: 0; }
     .syllabus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
     .syllabus-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); transition: all var(--duration-normal) var(--ease); display: flex; flex-direction: column; }
     .syllabus-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
