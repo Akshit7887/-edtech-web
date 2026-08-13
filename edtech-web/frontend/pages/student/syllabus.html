@@ -157,11 +157,14 @@
       groupsCache = groupByClass(files);
       grid.innerHTML = groupsCache.map((g, i) => {
         const count = g.files.length;
+        const fileList = g.files.slice(0, 3).map(f => `<li title="${escHtml(f.title)}">${escHtml(f.title)}</li>`).join('');
+        const more = count > 3 ? `<li class="more">+${count - 3} more file${count - 3 !== 1 ? 's' : ''}</li>` : '';
         return `<div class="smart-card anim-fade-up" style="animation-delay:${i * 0.05}s">
           <div class="smart-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
           <div class="smart-card-body">
             <div class="smart-card-title">${escHtml(g.name)}</div>
             <div class="smart-card-subtitle">${g.subject ? escHtml(g.subject) : count + ' file' + (count !== 1 ? 's' : '') + ' available'}</div>
+            ${fileList ? `<ul class="smart-card-files">${fileList}${more}</ul>` : ''}
           </div>
           <div class="smart-card-actions">
             <span class="file-type-badge">${count} file${count !== 1 ? 's' : ''}</span>
