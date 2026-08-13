@@ -309,27 +309,53 @@
   .smart-card {
     flex-wrap: wrap;
     row-gap: var(--space-2);
+    padding: 10px 14px;
+    gap: 10px;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  .smart-card-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .smart-card-icon svg {
+    width: 17px;
+    height: 17px;
   }
   .smart-card-body {
-    flex: 1 1 calc(100% - 56px);
+    flex: 1 1 calc(100% - 54px);
+  }
+  .smart-card-title {
+    font-size: 12px;
+  }
+  .smart-card-subtitle {
+    font-size: 11px;
+  }
+  .smart-card-files li {
+    font-size: 10.5px;
   }
   .smart-card-actions {
     flex-basis: 100%;
     justify-content: flex-start;
+    gap: var(--space-1);
   }
   .smart-card-actions .file-type-badge {
+    font-size: 0.55rem;
+    padding: 1px 5px;
     margin-right: auto;
   }
   .smart-card-actions .btn {
     flex: 1 1 calc(50% - 2px);
     width: auto;
-    min-height: 34px;
+    min-height: 30px;
+    padding: 2px 6px;
+    font-size: 11px;
   }
   .smart-card-actions .assign-class-select {
     width: 100%;
     min-width: 0;
     flex-basis: 100%;
-    min-height: 34px;
+    min-height: 30px;
   }
   .smart-card-files li {
     justify-content: flex-start;
