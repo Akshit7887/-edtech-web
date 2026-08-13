@@ -19,15 +19,18 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
+        <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
         <li><a href="exams.html" class="active"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
       <div class="dashboard-header" data-aos="fade-up">
         <h1>Exams</h1>
-        <p>View all exams across the platform</p>
+        <p>View, inspect and manage all exams across the platform</p>
       </div>
       <div id="alert-container"></div>
       <div id="exam-list" data-aos="fade-up" data-aos-delay="100">
@@ -36,6 +39,7 @@
           <div class="skeleton-card"><div class="skeleton-block"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text short"></div></div></div>
         </div>
       </div>
+      <div class="pagination" id="exams-pagination" data-aos="fade-up" data-aos-delay="150"></div>
     </main>
   </div>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -43,37 +47,126 @@
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script>
+    let examPage = 1;
+    let examPagination = null;
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
       setupNavbar();
-      await loadExams();
+      await loadExams(1);
     });
 
-    async function loadExams() {
+    async function loadExams(page) {
+      examPage = page || examPage;
       try {
-        const res = await api.get('/api/admin/exams?page=1&limit=20');
+        const res = await api.get(`/api/admin/exams?page=${examPage}&limit=12`);
         const exams = res.data || [];
+        examPagination = res.pagination || { page: 1, total_pages: 1 };
         const container = document.getElementById('exam-list');
-        if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No exams found</h3></div>'; return; }
+        if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No exams found</h3></div>'; renderExamPagination(); return; }
         container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
           <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s">
-            <div class="exam-card-title">${e.title}</div>
+            <div class="exam-card-title">${escHtml(e.title)}</div>
             <div class="exam-card-meta">
-              <span>📖 ${e.subject}</span>
+              <span>📖 ${escHtml(e.subject)}</span>
               <span>⏱ ${e.duration_minutes} min</span>
               <span>📄 ${e.total_questions} Q</span>
               ${statusBadge(e.status)}
             </div>
             <div class="exam-card-footer">
               <span style="color:var(--text-dim);font-size:0.85rem">${formatDate(e.created_at)}</span>
-              <span style="font-size:0.8rem;color:var(--text-muted)">Teacher: ${e.teacher_name || 'N/A'}</span>
+              <span style="font-size:0.8rem;color:var(--text-muted)">Teacher: ${escHtml(e.teacher_name || 'N/A')}</span>
+            </div>
+            <div style="display:flex;gap:var(--space-2);margin-top:var(--space-3)">
+              <button class="btn btn-sm btn-info" onclick="viewExam(${e.id})">👁 View</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteExam(${e.id}, '${escHtml(e.title).replace(/'/g, "\\'")}')">🗑 Delete</button>
             </div>
           </div>
         `).join('') + '</div>';
+        renderExamPagination();
       } catch (e) {
         document.getElementById('exam-list').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
       }
     }
+
+    function renderExamPagination() {
+      const p = examPagination;
+      const el = document.getElementById('exams-pagination');
+      if (!p || p.total_pages <= 1) { el.innerHTML = ''; return; }
+      el.innerHTML = `<button onclick="loadExams(1)" ${p.page <= 1 ? 'disabled' : ''}>«</button>
+        <button onclick="loadExams(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>‹</button>
+        <span class="pagination-info">Page ${p.page} of ${p.total_pages} (${p.total} total)</span>
+        <button onclick="loadExams(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>›</button>
+        <button onclick="loadExams(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>»</button>`;
+    }
+
+    async function viewExam(id) {
+      try {
+        const res = await api.get(`/api/admin/exams/${id}`);
+        const d = res.data;
+        const e = d.exam;
+        const stats = d.stats || {};
+        const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'exam-view-modal';
+        overlay.innerHTML = `
+          <div class="modal" style="max-width:720px">
+            <div class="modal-header"><h3>${escHtml(e.title)}</h3><button class="modal-close" onclick="closeExamModal()">×</button></div>
+            <div class="modal-body">
+              <div class="exam-card-meta" style="margin-bottom:var(--space-4)">
+                <span>📖 ${escHtml(e.subject)}</span>
+                <span>👨‍🏫 ${escHtml(e.teacher_name || 'N/A')}</span>
+                <span>⏱ ${e.duration_minutes} min</span>
+                <span>📄 ${e.total_questions} Q</span>
+                ${statusBadge(e.status)}
+                ${e.scheduled_at ? `<span>📅 ${formatDate(e.scheduled_at)}</span>` : ''}
+              </div>
+              <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));margin-bottom:var(--space-5)">
+                <div class="stat-card"><div class="stat-value">${stats.total_sessions || 0}</div><div class="stat-label">Sessions</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.completed_sessions || 0}</div><div class="stat-label">Completed</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.in_progress_sessions || 0}</div><div class="stat-label">In Progress</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.disqualified_sessions || 0}</div><div class="stat-label">Disqualified</div></div>
+                <div class="stat-card"><div class="stat-value">${stats.avg_score != null ? Number(stats.avg_score).toFixed(1) : '-'}</div><div class="stat-label">Avg Score</div></div>
+              </div>
+              <h4 style="margin:var(--space-4) 0 var(--space-2)">Questions (${(d.questions || []).length})</h4>
+              <div class="scroll-table" style="max-height:200px">
+                <table class="db-table" style="width:100%">
+                  <thead><tr><th>ID</th><th>Question</th><th>Type</th><th>Status</th></tr></thead>
+                  <tbody>
+                    ${(d.questions || []).map(q => `<tr><td>${q.id}</td><td>${escHtml(q.question_text)}</td><td>${escHtml(q.question_type || 'mcq')}</td><td>${statusBadge(q.status || 'draft')}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;padding:12px;color:var(--text-dim)">No questions</td></tr>'}
+                  </tbody>
+                </table>
+              </div>
+              <h4 style="margin:var(--space-4) 0 var(--space-2)">Recent Sessions (${(d.sessions || []).length})</h4>
+              <div class="scroll-table" style="max-height:220px">
+                <table class="db-table" style="width:100%">
+                  <thead><tr><th>ID</th><th>Student</th><th>Score</th><th>Total</th><th>Status</th><th>Submitted</th></tr></thead>
+                  <tbody>
+                    ${(d.sessions || []).map(s => `<tr><td>${s.id}</td><td>${escHtml(s.student_name || s.student_id)}</td><td>${s.score}</td><td>${s.total_questions}</td><td>${statusBadge(s.status)}</td><td>${formatDate(s.submitted_at)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:12px;color:var(--text-dim)">No sessions yet</td></tr>'}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-danger" onclick="deleteExam(${e.id}, '${escHtml(e.title).replace(/'/g, "\\'")}', true)">🗑 Delete Exam</button>
+              <button class="btn btn-secondary" onclick="closeExamModal()">Close</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    function closeExamModal() { const m = document.getElementById('exam-view-modal'); if (m) m.remove(); }
+
+    async function deleteExam(id, title, fromModal) {
+      if (!confirm(`Delete exam "${title}"? This removes its questions, sessions and attendance permanently.`)) return;
+      try {
+        await api.del(`/api/admin/exams/${id}`);
+        showAlert('Exam deleted', 'success');
+        if (fromModal) closeExamModal();
+        await loadExams(examPage);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
   </script>
   <script src="../../js/nav.js"></script>
 </body>

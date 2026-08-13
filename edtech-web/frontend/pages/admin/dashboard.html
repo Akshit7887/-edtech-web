@@ -18,9 +18,11 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html" class="active"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
         <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
         <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
@@ -157,13 +159,13 @@
       try {
         const res = await api.get('/api/admin/stats');
         const d = res.data || {};
-        animateCounter('stat-users', d.totalUsers || 0);
-        animateCounter('stat-students', d.totalStudents || 0);
-        animateCounter('stat-teachers', d.totalTeachers || 0);
-        animateCounter('stat-exams', d.totalExams || 0);
-        animateCounter('stat-departments', d.totalDepartments || 0);
-        animateCounter('stat-classes', d.totalClasses || 0);
-        animateCounter('stat-pending-teachers', d.pendingTeachers || 0);
+        animateCounter('stat-users', d.total_users || 0);
+        animateCounter('stat-students', d.total_students || 0);
+        animateCounter('stat-teachers', d.total_teachers || 0);
+        animateCounter('stat-exams', d.total_exams || 0);
+        animateCounter('stat-departments', d.total_departments || 0);
+        animateCounter('stat-classes', d.total_classes || 0);
+        animateCounter('stat-pending-teachers', d.pending_teachers || 0);
       } catch (e) {
         document.getElementById('stats-grid').innerHTML = '<div class="alert alert-error">Failed to load stats</div>';
       }

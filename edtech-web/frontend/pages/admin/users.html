@@ -18,9 +18,11 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html" class="active"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
         <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
         <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
@@ -30,7 +32,7 @@
           <h1>Users</h1>
           <p class="text-muted">Manage all platform users</p>
         </div>
-        <div style="display:flex;gap:var(--space-3)">
+        <div style="display:flex;gap:var(--space-3);align-items:center">
           <select id="role-filter" class="form-input" style="width:auto" onchange="loadUsers(1)">
             <option value="">All Roles</option>
             <option value="student">Students</option>
@@ -43,6 +45,7 @@
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
+          <button class="btn btn-primary" onclick="showAddUserModal()">➕ Add User</button>
         </div>
       </div>
       <div id="alert-container"></div>
@@ -104,6 +107,7 @@
             if (isTeacher && approval !== 'approved') actions.push(`<button class="btn btn-sm btn-primary" onclick="approveTeacher(${u.id})">Approve</button>`);
             if (isTeacher && approval === 'pending') actions.push(`<button class="btn btn-sm btn-danger" onclick="rejectTeacher(${u.id})">Reject</button>`);
             if (approval === 'rejected' && u.rejection_reason) actions.push(`<button class="btn btn-sm btn-ghost" onclick="showRejectReason('${(u.rejection_reason || '').replace(/'/g, "\\'")}')">Why?</button>`);
+            actions.push(`<button class="btn btn-sm btn-secondary" onclick="showEditUserModal(${u.id})">✏️</button>`);
             actions.push(`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id}, '${(u.name || '').replace(/'/g, "\\'")}')">Delete</button>`);
             return `
             <tr>
@@ -160,11 +164,150 @@
     }
 
     function deleteUser(id, name) {
-      if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
+      if (!confirm(`Delete user "${name}"? This permanently removes the account and all related data.`)) return;
       api.del(`/api/admin/users/${id}`).then(() => {
         showAlert('User deleted', 'success');
         loadUsers(currentPage);
       }).catch(e => showAlert(e.message, 'error'));
+    }
+
+    let departmentsCache = [];
+
+    async function loadDepts() {
+      if (departmentsCache.length) return departmentsCache;
+      try {
+        const res = await api.get('/api/departments');
+        departmentsCache = res.data || [];
+      } catch (e) { departmentsCache = []; }
+      return departmentsCache;
+    }
+
+    function deptOptions(selectedId) {
+      return `<option value="">No department</option>` + departmentsCache.map(d => `<option value="${d.id}" ${selectedId === d.id ? 'selected' : ''}>${escHtml(d.name)}</option>`).join('');
+    }
+
+    function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    async function showAddUserModal() {
+      await loadDepts();
+      const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'user-modal';
+      overlay.innerHTML = `
+        <div class="modal" style="max-width:520px">
+          <div class="modal-header"><h3>➕ Add User</h3><button class="modal-close" onclick="closeUserModal()">×</button></div>
+          <div class="modal-body">
+            <div class="form-group form-floating"><input class="form-input" id="u-name" placeholder=" "><label class="form-label">Full Name *</label></div>
+            <div class="form-group form-floating"><input class="form-input" id="u-email" type="email" placeholder=" "><label class="form-label">Email *</label></div>
+            <div class="form-group form-floating"><input class="form-input" id="u-phone" placeholder=" "><label class="form-label">Phone</label></div>
+            <div class="form-group form-floating"><input class="form-input" id="u-password" type="password" placeholder=" "><label class="form-label">Password (min 6 chars) *</label></div>
+            <div class="form-group form-floating"><input class="form-input" id="u-student-id" placeholder=" "><label class="form-label">Student ID (optional)</label></div>
+            <div class="row">
+              <div class="col-2">
+                <div class="form-group"><label class="form-label">Role</label>
+                  <select class="form-input" id="u-role"><option value="student">Student</option><option value="teacher">Teacher</option><option value="admin">Admin</option></select>
+                </div>
+              </div>
+              <div class="col-2">
+                <div class="form-group"><label class="form-label">Department</label>
+                  <select class="form-input" id="u-dept">${deptOptions(null)}</select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group" id="u-approval-wrap" style="display:none"><label class="form-label">Approval Status</label>
+              <select class="form-input" id="u-approval"><option value="approved">Approved</option><option value="pending">Pending</option><option value="rejected">Rejected</option></select>
+            </div>
+          </div>
+          <div class="modal-footer"><button class="btn btn-secondary" onclick="closeUserModal()">Cancel</button><button class="btn btn-primary" onclick="handleAddUser()">Create User</button></div>
+        </div>`;
+      document.body.appendChild(overlay);
+      document.getElementById('u-role').addEventListener('change', () => {
+        document.getElementById('u-approval-wrap').style.display = document.getElementById('u-role').value === 'teacher' ? 'block' : 'none';
+      });
+    }
+
+    function closeUserModal() { const m = document.getElementById('user-modal'); if (m) m.remove(); }
+
+    async function handleAddUser() {
+      const payload = {
+        name: document.getElementById('u-name').value.trim(),
+        email: document.getElementById('u-email').value.trim(),
+        phone: document.getElementById('u-phone').value.trim() || null,
+        password: document.getElementById('u-password').value,
+        role: document.getElementById('u-role').value,
+        student_id: document.getElementById('u-student-id').value.trim() || null,
+        department_id: parseInt(document.getElementById('u-dept').value) || null
+      };
+      if (!payload.name || !payload.email || !payload.password) { showAlert('Name, email and password are required', 'error'); return; }
+      if (payload.password.length < 6) { showAlert('Password must be at least 6 characters', 'error'); return; }
+      if (payload.role === 'teacher') payload.approval_status = document.getElementById('u-approval').value;
+      try {
+        await api.post('/api/admin/users', payload);
+        showAlert('User created!', 'success');
+        closeUserModal();
+        loadUsers(currentPage);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function showEditUserModal(id) {
+      const res = await api.get('/api/admin/users?page=1&limit=1000');
+      const user = (res.data || []).find(u => u.id === id);
+      if (!user) { showAlert('User not found', 'error'); return; }
+      await loadDepts();
+      const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'user-modal';
+      overlay.innerHTML = `
+        <div class="modal" style="max-width:520px">
+          <div class="modal-header"><h3>✏️ Edit User</h3><button class="modal-close" onclick="closeUserModal()">×</button></div>
+          <div class="modal-body">
+            <div class="form-group form-floating"><input class="form-input" id="u-name" placeholder=" " value="${escHtml(user.name)}"><label class="form-label">Full Name</label></div>
+            <div class="form-group form-floating"><input class="form-input" id="u-email" type="email" placeholder=" " value="${escHtml(user.email || '')}"><label class="form-label">Email</label></div>
+            <div class="form-group form-floating"><input class="form-input" id="u-phone" placeholder=" " value="${escHtml(user.phone || '')}"><label class="form-label">Phone</label></div>
+            <div class="form-group form-floating"><input class="form-input" id="u-password" type="password" placeholder=" "><label class="form-label">New Password (leave blank to keep)</label></div>
+            <div class="form-group form-floating"><input class="form-input" id="u-student-id" placeholder=" " value="${escHtml(user.student_id || '')}"><label class="form-label">Student ID</label></div>
+            <div class="row">
+              <div class="col-2">
+                <div class="form-group"><label class="form-label">Role</label>
+                  <select class="form-input" id="u-role">
+                    <option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option>
+                    <option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option>
+                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-2">
+                <div class="form-group"><label class="form-label">Department</label>
+                  <select class="form-input" id="u-dept">${deptOptions(user.department_id || null)}</select>
+                </div>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">Approval Status</label>
+              <select class="form-input" id="u-approval">
+                <option value="approved" ${user.approval_status === 'approved' ? 'selected' : ''}>Approved</option>
+                <option value="pending" ${user.approval_status === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="rejected" ${user.approval_status === 'rejected' ? 'selected' : ''}>Rejected</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer"><button class="btn btn-secondary" onclick="closeUserModal()">Cancel</button><button class="btn btn-primary" onclick="handleEditUser(${user.id})">Save Changes</button></div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+
+    async function handleEditUser(id) {
+      const payload = {
+        name: document.getElementById('u-name').value.trim() || null,
+        email: document.getElementById('u-email').value.trim() || null,
+        phone: document.getElementById('u-phone').value.trim() || '',
+        password: document.getElementById('u-password').value || null,
+        role: document.getElementById('u-role').value,
+        student_id: document.getElementById('u-student-id').value.trim() || '',
+        department_id: parseInt(document.getElementById('u-dept').value) || null,
+        approval_status: document.getElementById('u-approval').value
+      };
+      try {
+        await api.put(`/api/admin/users/${id}`, payload);
+        showAlert('User updated!', 'success');
+        closeUserModal();
+        loadUsers(currentPage);
+      } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
   <script src="../../js/nav.js"></script>

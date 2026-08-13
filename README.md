@@ -157,13 +157,20 @@ Base URL: `/api`. All responses use the envelope `{ "success": true, "data": ...
 | GET | `/api/admin/pending-teachers` | Teacher approval queue |
 | POST | `/api/admin/teachers/:id/approve` | Approve teacher |
 | POST | `/api/admin/teachers/:id/reject` | Reject teacher |
-| GET | `/api/admin/users` | List users |
-| GET | `/api/admin/exams` | All exams |
+| GET | `/api/admin/users` | List users (role/status filters, paginated) |
+| POST | `/api/admin/users` | Create user (any role, sets approval) |
+| PUT | `/api/admin/users/:id` | Update user (profile, role, department, status, password) |
+| DELETE | `/api/admin/users/:id` | Delete user + all related data |
+| GET | `/api/admin/exams` | All exams (paginated) |
+| GET | `/api/admin/exams/:id` | Exam detail (questions, sessions, stats) |
+| DELETE | `/api/admin/exams/:id` | Delete exam + related data |
 | GET | `/api/admin/db-snapshot` | DB monitor snapshot |
-| GET | `/api/admin/classes` | All classes |
-| GET/DELETE | `/api/admin/classes/:id` | Class detail/delete |
+| GET | `/api/admin/classes` | All classes (paginated) |
+| GET | `/api/admin/classes/:id` | Class detail + students |
+| POST | `/api/admin/classes/:id/students` | Add student to class |
+| DELETE | `/api/admin/classes/:id/students/:studentId` | Remove student from class |
+| DELETE | `/api/admin/classes/:id` | Delete class |
 | POST | `/api/admin/backfill-student-ids` | Backfill missing student IDs |
-| DELETE | `/api/admin/users/:id` | Delete user |
 
 ### Syllabus
 | Method | Endpoint | Description |

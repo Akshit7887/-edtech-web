@@ -18,9 +18,11 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
         <li><a href="departments.html" class="active"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
         <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
@@ -152,7 +154,7 @@
           <div class="modal-header"><h3>✏️ Edit Department</h3><button class="modal-close" onclick="closeModal('edit-dept-modal')">×</button></div>
           <div class="modal-body">
             <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
-              <input class="form-input" id="edit-dept-name" placeholder " " value="${dept.name}">
+              <input class="form-input" id="edit-dept-name" placeholder=" " value="${dept.name}">
               <label class="form-label">Department Name</label>
             </div>
             <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
@@ -257,22 +259,23 @@
       try {
         const res = await api.get(`/api/departments/${id}/users`);
         const users = res.data || [];
+        const membersHtml = users.length ? users.map(u => `
+          <div class="mini-student-item">
+            <div class="student-avatar-sm">${(u.name || '?').charAt(0).toUpperCase()}</div>
+            <div class="student-info">
+              <strong>${u.name}</strong>
+              <span>${u.email || '-'}</span>
+            </div>
+            <span class="student-class-badge">${u.role || 'N/A'}</span>
+            <button class="btn btn-sm btn-danger" onclick="removeUser(${id}, ${u.id}, this)">Remove</button>
+          </div>
+        `).join('') : '<div class="empty-state"><p>No members in this department.</p></div>';
         const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'view-dept-modal';
         overlay.innerHTML = `
           <div class="modal" style="max-width:600px">
             <div class="modal-header"><h3>👥 ${name} Members</h3><button class="modal-close" onclick="closeModal('view-dept-modal')">×</button></div>
             <div class="modal-body">
-              ${users.length ? users.map(u => \`
-                <div class="mini-student-item">
-                  <div class="student-avatar-sm">\${(u.name || '?').charAt(0).toUpperCase()}</div>
-                  <div class="student-info">
-                    <strong>\${u.name}</strong>
-                    <span>\${u.email || '-'}</span>
-                  </div>
-                  <span class="student-class-badge">\${u.role || 'N/A'}</span>
-                  <button class="btn btn-sm btn-danger" onclick="removeUser(${id}, ${u.id}, this)">Remove</button>
-                </div>
-              \`).join('') : '<div class="empty-state"><p>No members in this department.</p></div>'}
+              ${membersHtml}
             </div>
             <div class="modal-footer">
               <button class="btn btn-secondary" onclick="closeModal('view-dept-modal')">Close</button>

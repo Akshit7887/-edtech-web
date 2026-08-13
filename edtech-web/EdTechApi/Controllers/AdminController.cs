@@ -35,7 +35,15 @@ public class AdminController : ControllerBase
         var totalExams = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Exams\"");
         var totalDepartments = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Departments\"");
         var totalClasses = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Classes\"");
-        return Ok(new { success = true, data = new { totalUsers, totalStudents, totalTeachers, pendingTeachers, totalExams, totalDepartments, totalClasses } });
+        return Ok(new { success = true, data = new {
+            total_users = totalUsers,
+            total_students = totalStudents,
+            total_teachers = totalTeachers,
+            pending_teachers = pendingTeachers,
+            total_exams = totalExams,
+            total_departments = totalDepartments,
+            total_classes = totalClasses
+        } });
     }
 
     [HttpGet("pending-teachers")]
@@ -177,14 +185,14 @@ public class AdminController : ControllerBase
             notifications = await conn.QueryAsync("SELECT \"id\", \"user_id\", \"title\", \"message\", \"type\", \"is_read\", \"created_at\" FROM \"Notifications\" ORDER BY \"created_at\" DESC LIMIT 20"),
             stats = new
             {
-                totalUsers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\""),
-                totalStudents = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'student'"),
-                totalTeachers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'teacher'"),
-                totalExams = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Exams\""),
-                totalSessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\""),
-                totalClasses = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Classes\""),
-                activeExams = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Exams\" WHERE \"status\" = 'active'"),
-                completedSessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\" WHERE \"status\" = 'completed'")
+                total_users = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\""),
+                total_students = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'student'"),
+                total_teachers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'teacher'"),
+                total_exams = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Exams\""),
+                total_sessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\""),
+                total_classes = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Classes\""),
+                active_exams = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Exams\" WHERE \"status\" = 'active'"),
+                completed_sessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\" WHERE \"status\" = 'completed'")
             }
         };
         return Ok(new { success = true, data = tasks });
@@ -268,7 +276,213 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> DeleteUser(int userId)
     {
         using var conn = _db.CreateConnection();
+        var user = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"id\" = @Id", new { Id = userId });
+        if (user == null) return NotFound(new { success = false, error = "User not found" });
+
+        await conn.ExecuteAsync("DELETE FROM \"OtpTokens\" WHERE \"user_id\" = @Id", new { Id = userId });
+        await conn.ExecuteAsync("DELETE FROM \"Notifications\" WHERE \"user_id\" = @Id", new { Id = userId });
+        await conn.ExecuteAsync("DELETE FROM \"ParentContacts\" WHERE \"student_id\" = @Id", new { Id = userId });
+        await conn.ExecuteAsync("DELETE FROM \"ExamSessions\" WHERE \"student_id\" = @Id", new { Id = userId });
+        await conn.ExecuteAsync("DELETE FROM \"StudentExamAssignments\" WHERE \"student_id\" = @Id", new { Id = userId });
+        await conn.ExecuteAsync("DELETE FROM \"Attendance\" WHERE \"student_id\" = @Id", new { Id = userId });
+        await conn.ExecuteAsync("DELETE FROM \"ClassStudents\" WHERE \"student_id\" = @Id", new { Id = userId });
+
+        if (user.Role == "teacher")
+        {
+            await conn.ExecuteAsync("DELETE FROM \"QuestionPool\" WHERE \"exam_id\" IN (SELECT \"id\" FROM \"Exams\" WHERE \"teacher_id\" = @Id)", new { Id = userId });
+            await conn.ExecuteAsync("DELETE FROM \"StudentExamAssignments\" WHERE \"exam_id\" IN (SELECT \"id\" FROM \"Exams\" WHERE \"teacher_id\" = @Id)", new { Id = userId });
+            await conn.ExecuteAsync("DELETE FROM \"ExamSessions\" WHERE \"exam_id\" IN (SELECT \"id\" FROM \"Exams\" WHERE \"teacher_id\" = @Id)", new { Id = userId });
+            await conn.ExecuteAsync("DELETE FROM \"Attendance\" WHERE \"exam_id\" IN (SELECT \"id\" FROM \"Exams\" WHERE \"teacher_id\" = @Id)", new { Id = userId });
+            await conn.ExecuteAsync("DELETE FROM \"Exams\" WHERE \"teacher_id\" = @Id", new { Id = userId });
+        }
+
+        await conn.ExecuteAsync("UPDATE \"Departments\" SET \"head_id\" = NULL WHERE \"head_id\" = @Id", new { Id = userId });
         await conn.ExecuteAsync("DELETE FROM \"Users\" WHERE \"id\" = @Id", new { Id = userId });
         return Ok(new { success = true, message = "User deleted" });
+    }
+
+    [HttpPost("users")]
+    public async Task<IActionResult> CreateUser([FromBody] AdminCreateUserRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name)) return BadRequest(new { success = false, error = "Name is required" });
+        if (string.IsNullOrWhiteSpace(request.Email)) return BadRequest(new { success = false, error = "Email is required" });
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
+            return BadRequest(new { success = false, error = "Password must be at least 6 characters" });
+        if (request.Role is not ("student" or "teacher" or "admin"))
+            return BadRequest(new { success = false, error = "Invalid role" });
+
+        using var conn = _db.CreateConnection();
+        var email = request.Email.Trim().ToLowerInvariant();
+        var existing = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE LOWER(\"email\") = @Email", new { Email = email });
+        if (existing != null) return BadRequest(new { success = false, error = "A user with this email already exists" });
+
+        var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+        var now = DateTime.UtcNow;
+        var approval = request.Role == "teacher" && request.ApprovalStatus != "approved"
+            ? (request.ApprovalStatus == "rejected" ? "rejected" : "pending")
+            : "approved";
+
+        var user = await conn.QuerySingleAsync<User>(@"
+            INSERT INTO ""Users"" (""name"", ""email"", ""phone"", ""password_hash"", ""role"", ""student_id"", ""department_id"", ""approval_status"", ""created_at"", ""updated_at"")
+            VALUES (@Name, @Email, @Phone, @Hash, @Role, @StudentId, @DepartmentId, @Approval, @Now, @Now)
+            RETURNING *", new
+        {
+            Name = request.Name.Trim(),
+            Email = email,
+            Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim(),
+            Hash = hash,
+            Role = request.Role,
+            StudentId = string.IsNullOrWhiteSpace(request.StudentId) ? null : request.StudentId.Trim(),
+            DepartmentId = request.DepartmentId,
+            Approval = approval,
+            Now = now
+        });
+
+        if (request.Role == "teacher" && approval != "approved")
+        {
+            await conn.ExecuteAsync(
+                @"INSERT INTO ""Notifications"" (""user_id"", ""title"", ""message"", ""type"", ""created_at"")
+                  VALUES (@UserId, 'Account created', 'Your teacher account was created by the admin and is pending approval.', 'admin', @Now)",
+                new { UserId = user.Id, Now = now });
+        }
+
+        return Ok(new { success = true, data = user, message = "User created" });
+    }
+
+    [HttpPut("users/{userId:int}")]
+    public async Task<IActionResult> UpdateUser(int userId, [FromBody] AdminUpdateUserRequest request)
+    {
+        using var conn = _db.CreateConnection();
+        var user = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"id\" = @Id", new { Id = userId });
+        if (user == null) return NotFound(new { success = false, error = "User not found" });
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            var email = request.Email.Trim().ToLowerInvariant();
+            var clash = await conn.QueryFirstOrDefaultAsync<User>(
+                "SELECT * FROM \"Users\" WHERE LOWER(\"email\") = @Email AND \"id\" != @Id", new { Email = email, Id = userId });
+            if (clash != null) return BadRequest(new { success = false, error = "A user with this email already exists" });
+        }
+
+        var sql = @"UPDATE ""Users"" SET
+            ""name"" = COALESCE(@Name, ""name""),
+            ""email"" = COALESCE(@Email, ""email""),
+            ""phone"" = @Phone,
+            ""role"" = COALESCE(@Role, ""role""),
+            ""student_id"" = @StudentId,
+            ""department_id"" = @DepartmentId,
+            ""approval_status"" = COALESCE(@Approval, ""approval_status""),
+            ""updated_at"" = @Now
+            WHERE ""id"" = @Id RETURNING *";
+
+        var updated = await conn.QuerySingleAsync<User>(sql, new
+        {
+            Id = userId,
+            Name = string.IsNullOrWhiteSpace(request.Name) ? null : request.Name.Trim(),
+            Email = string.IsNullOrWhiteSpace(request.Email) ? null : request.Email.Trim().ToLowerInvariant(),
+            Phone = request.Phone == null ? null : (string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim()),
+            Role = request.Role,
+            StudentId = request.StudentId == null ? null : (string.IsNullOrWhiteSpace(request.StudentId) ? null : request.StudentId.Trim()),
+            DepartmentId = request.DepartmentId,
+            Approval = request.ApprovalStatus,
+            Now = DateTime.UtcNow
+        });
+
+        if (!string.IsNullOrWhiteSpace(request.Password))
+        {
+            if (request.Password.Length < 6) return BadRequest(new { success = false, error = "Password must be at least 6 characters" });
+            var hash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            await conn.ExecuteAsync(
+                "UPDATE \"Users\" SET \"password_hash\" = @Hash, \"token_version\" = \"token_version\" + 1 WHERE \"id\" = @Id",
+                new { Hash = hash, Id = userId });
+        }
+
+        if (user.ApprovalStatus != "approved" && updated.ApprovalStatus == "approved")
+        {
+            await conn.ExecuteAsync(
+                @"INSERT INTO ""Notifications"" (""user_id"", ""title"", ""message"", ""type"", ""created_at"")
+                  VALUES (@UserId, 'Account approved', 'Your account has been approved by the admin. You can now log in.', 'admin', @Now)",
+                new { UserId = userId, Now = DateTime.UtcNow });
+        }
+
+        return Ok(new { success = true, data = updated, message = "User updated" });
+    }
+
+    [HttpGet("exams/{examId:int}")]
+    public async Task<IActionResult> GetExamDetail(int examId)
+    {
+        using var conn = _db.CreateConnection();
+        var exam = await conn.QueryFirstOrDefaultAsync(@"
+            SELECT e.*, u.""name"" AS teacher_name
+            FROM ""Exams"" e
+            LEFT JOIN ""Users"" u ON u.""id"" = e.""teacher_id""
+            WHERE e.""id"" = @Id", new { Id = examId });
+        if (exam == null) return NotFound(new { success = false, error = "Exam not found" });
+
+        var questions = await conn.QueryAsync(@"
+            SELECT ""id"", ""question_text"", ""question_type"", ""status""
+            FROM ""QuestionPool"" WHERE ""exam_id"" = @ExamId ORDER BY ""id""", new { ExamId = examId });
+        var sessions = await conn.QueryAsync(@"
+            SELECT s.""id"", s.""student_id"", u.""name"" AS student_name, s.""score"", s.""total_questions"",
+                   s.""answered_count"", s.""status"", s.""submitted_at"", s.""created_at""
+            FROM ""ExamSessions"" s
+            JOIN ""Users"" u ON u.""id"" = s.""student_id""
+            WHERE s.""exam_id"" = @ExamId ORDER BY s.""created_at"" DESC LIMIT 100", new { ExamId = examId });
+        var stats = new
+        {
+            total_sessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\" WHERE \"exam_id\" = @Id", new { Id = examId }),
+            completed_sessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\" WHERE \"exam_id\" = @Id AND \"status\" = 'completed'", new { Id = examId }),
+            in_progress_sessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\" WHERE \"exam_id\" = @Id AND \"status\" = 'in_progress'", new { Id = examId }),
+            disqualified_sessions = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"ExamSessions\" WHERE \"exam_id\" = @Id AND \"status\" = 'disqualified'", new { Id = examId }),
+            avg_score = await conn.QuerySingleAsync<decimal?>("SELECT AVG(\"score\") FROM \"ExamSessions\" WHERE \"exam_id\" = @Id AND \"status\" = 'completed'", new { Id = examId })
+        };
+
+        return Ok(new { success = true, data = new { exam, questions, sessions, stats } });
+    }
+
+    [HttpDelete("exams/{examId:int}")]
+    public async Task<IActionResult> DeleteExam(int examId)
+    {
+        using var conn = _db.CreateConnection();
+        var exam = await conn.QueryFirstOrDefaultAsync<Exam>(
+            "SELECT * FROM \"Exams\" WHERE \"id\" = @Id", new { Id = examId });
+        if (exam == null) return NotFound(new { success = false, error = "Exam not found" });
+
+        await conn.ExecuteAsync("DELETE FROM \"QuestionPool\" WHERE \"exam_id\" = @ExamId", new { ExamId = examId });
+        await conn.ExecuteAsync("DELETE FROM \"StudentExamAssignments\" WHERE \"exam_id\" = @ExamId", new { ExamId = examId });
+        await conn.ExecuteAsync("DELETE FROM \"ExamSessions\" WHERE \"exam_id\" = @ExamId", new { ExamId = examId });
+        await conn.ExecuteAsync("DELETE FROM \"Attendance\" WHERE \"exam_id\" = @ExamId", new { ExamId = examId });
+        await conn.ExecuteAsync("DELETE FROM \"Exams\" WHERE \"id\" = @Id", new { Id = examId });
+        return Ok(new { success = true, message = "Exam deleted" });
+    }
+
+    [HttpPost("classes/{classId:int}/students")]
+    public async Task<IActionResult> AddClassStudent(int classId, [FromBody] AdminAddClassStudentRequest request)
+    {
+        using var conn = _db.CreateConnection();
+        var cls = await conn.QueryFirstOrDefaultAsync("SELECT * FROM \"Classes\" WHERE \"id\" = @Id", new { Id = classId });
+        if (cls == null) return NotFound(new { success = false, error = "Class not found" });
+        var student = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT * FROM \"Users\" WHERE \"id\" = @Id AND \"role\" = 'student'", new { Id = request.StudentId });
+        if (student == null) return BadRequest(new { success = false, error = "Student not found" });
+
+        await conn.ExecuteAsync(@"
+            INSERT INTO ""ClassStudents"" (""class_id"", ""student_id"", ""joined_at"")
+            VALUES (@ClassId, @StudentId, @Now)
+            ON CONFLICT DO NOTHING", new { ClassId = classId, StudentId = request.StudentId, Now = DateTime.UtcNow });
+        return Ok(new { success = true, message = "Student added to class" });
+    }
+
+    [HttpDelete("classes/{classId:int}/students/{studentId:int}")]
+    public async Task<IActionResult> RemoveClassStudent(int classId, int studentId)
+    {
+        using var conn = _db.CreateConnection();
+        await conn.ExecuteAsync(
+            "DELETE FROM \"ClassStudents\" WHERE \"class_id\" = @ClassId AND \"student_id\" = @StudentId",
+            new { ClassId = classId, StudentId = studentId });
+        return Ok(new { success = true, message = "Student removed from class" });
     }
 }

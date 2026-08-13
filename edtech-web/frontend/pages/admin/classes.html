@@ -23,6 +23,7 @@
         <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
         <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
@@ -42,16 +43,21 @@
   <script src="../../js/api.js"></script>
   <script src="../../js/auth.js"></script>
   <script>
+    let classPage = 1;
+    let classPagination = null;
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
       setupNavbar();
-      await loadClasses();
+      await loadClasses(1);
     });
 
-    async function loadClasses() {
+    async function loadClasses(page) {
+      classPage = page || classPage;
       try {
-        const res = await api.get('/api/admin/classes');
+        const res = await api.get(`/api/admin/classes?page=${classPage}&limit=50`);
         const data = res.data || [];
+        classPagination = res.pagination || { page: 1, total_pages: 1 };
         const container = document.getElementById('classes-container');
         if (!data.length) {
           container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏫</div><h3>No classes</h3><p>No classes have been created yet.</p></div>';
@@ -59,7 +65,7 @@
         }
         container.innerHTML = `
           <table class="data-table" style="width:100%">
-            <thead><tr><th>Name</th><th>Subject</th><th>Teacher</th><th>Students</th><th>Created</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>Subject</th><th>Teacher</th><th>Students</th><th>Created</th><th>Actions</th></tr></thead>
             <tbody>
               ${data.map(c => `
                 <tr>
@@ -68,24 +74,118 @@
                   <td>${escHtml(c.teacher_name||'Unknown')}</td>
                   <td>${c.student_count||0}</td>
                   <td>${formatDate(c.created_at)}</td>
-                  <td><button class="btn btn-sm btn-danger" onclick="handleDeleteClass(${c.id})">Delete</button></td>
+                  <td>
+                    <div style="display:flex;gap:6px">
+                      <button class="btn btn-sm btn-info" onclick="viewClass(${c.id})">👁 View</button>
+                      <button class="btn btn-sm btn-danger" onclick="handleDeleteClass(${c.id})">Delete</button>
+                    </div>
+                  </td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
-          <div style="margin-top:16px;color:var(--text-muted);font-size:0.85rem">${res.pagination ? 'Page ' + res.pagination.page + ' of ' + res.pagination.total_pages + ' (' + res.pagination.total + ' total)' : ''}</div>
+          <div style="margin-top:16px;color:var(--text-muted);font-size:0.85rem;display:flex;justify-content:space-between;align-items:center">
+            <span>${classPagination.total || data.length} classes total</span>
+            <span class="pagination">
+              <button onclick="loadClasses(${classPagination.page - 1})" ${classPagination.page <= 1 ? 'disabled' : ''}>‹</button>
+              <span class="pagination-info">Page ${classPagination.page} of ${classPagination.total_pages}</span>
+              <button onclick="loadClasses(${classPagination.page + 1})" ${classPagination.page >= classPagination.total_pages ? 'disabled' : ''}>›</button>
+            </span>
+          </div>
         `;
       } catch (e) {
         document.getElementById('classes-container').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
       }
     }
 
+    async function viewClass(id) {
+      try {
+        const res = await api.get(`/api/admin/classes/${id}`);
+        const d = res.data;
+        const c = d.cls;
+        const students = d.students || [];
+        const allRes = await api.get('/api/admin/users?page=1&limit=1000&role=student');
+        const allStudents = allRes.data || [];
+        const inClass = new Set(students.map(s => s.id));
+        const available = allStudents.filter(s => !inClass.has(s.id));
+        const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'class-view-modal';
+        overlay.innerHTML = `
+          <div class="modal" style="max-width:640px">
+            <div class="modal-header"><h3>🏫 ${escHtml(c.name)}</h3><button class="modal-close" onclick="closeClassModal()">×</button></div>
+            <div class="modal-body">
+              <div class="exam-card-meta" style="margin-bottom:var(--space-4)">
+                <span>📖 ${escHtml(c.subject || 'General')}</span>
+                <span>👨‍🏫 ${escHtml(c.teacher_name || 'Unknown')}</span>
+                <span>👥 ${c.student_count || 0} students</span>
+                ${formatDate(c.created_at)}
+              </div>
+              <div class="form-group" style="margin-bottom:var(--space-4)">
+                <label class="form-label">Add Student</label>
+                <div style="display:flex;gap:var(--space-2)">
+                  <select class="form-input" id="class-add-student">
+                    <option value="">Select a student...</option>
+                    ${available.map(s => `<option value="${s.id}">${escHtml(s.name)}${s.student_id ? ' (' + escHtml(s.student_id) + ')' : ''}</option>`).join('')}
+                  </select>
+                  <button class="btn btn-primary" onclick="addStudentToClass(${c.id})" ${available.length ? '' : 'disabled'}>Add</button>
+                </div>
+              </div>
+              <h4 style="margin:var(--space-3) 0 var(--space-2)">Students (${students.length})</h4>
+              <div style="max-height:300px;overflow-y:auto">
+                ${students.length ? students.map(s => `
+                  <div class="mini-student-item">
+                    <div class="student-avatar-sm">${(s.name || '?').charAt(0).toUpperCase()}</div>
+                    <div class="student-info">
+                      <strong>${escHtml(s.name)}</strong>
+                      <span>${escHtml(s.email || '-')}${s.student_id ? ' · ID: ' + escHtml(s.student_id) : ''}</span>
+                    </div>
+                    <button class="btn btn-sm btn-danger" onclick="removeStudentFromClass(${c.id}, ${s.id}, this)">Remove</button>
+                  </div>
+                `).join('') : '<div class="empty-state" style="padding:var(--space-6)"><p>No students in this class yet.</p></div>'}
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-danger" onclick="handleDeleteClass(${c.id})">🗑 Delete Class</button>
+              <button class="btn btn-secondary" onclick="closeClassModal()">Close</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    function closeClassModal() { const m = document.getElementById('class-view-modal'); if (m) m.remove(); }
+
+    async function addStudentToClass(classId) {
+      const sel = document.getElementById('class-add-student');
+      const studentId = parseInt(sel.value);
+      if (!studentId) { showAlert('Select a student first', 'error'); return; }
+      try {
+        await api.post(`/api/admin/classes/${classId}/students`, { student_id: studentId });
+        showAlert('Student added to class', 'success');
+        closeClassModal();
+        await viewClass(classId);
+        await loadClasses(classPage);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function removeStudentFromClass(classId, studentId, btn) {
+      if (!confirm('Remove this student from the class?')) return;
+      btn.disabled = true; btn.textContent = '...';
+      try {
+        await api.del(`/api/admin/classes/${classId}/students/${studentId}`);
+        showAlert('Student removed', 'success');
+        closeClassModal();
+        await viewClass(classId);
+        await loadClasses(classPage);
+      } catch (e) { showAlert(e.message, 'error'); }
+    }
+
     async function handleDeleteClass(id) {
-      if (!await confirmAction('Delete this class permanently?')) return;
+      if (!await confirmAction('Delete this class permanently? Students will be removed from it.')) return;
       try {
         await api.del('/api/admin/classes/' + id);
         showAlert('Class deleted', 'success');
-        await loadClasses();
+        closeClassModal();
+        await loadClasses(classPage);
       } catch (e) { showAlert(e.message, 'error'); }
     }
 

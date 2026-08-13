@@ -43,9 +43,11 @@
       <ul class="sidebar-nav">
         <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
         <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
         <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
         <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
         <li><a href="db-monitor.html" class="active"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
         <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
       </ul>
     </aside>
@@ -120,9 +122,9 @@
         renderTable('exams', data.exams, ['id', 'title', 'subject', 'status', 'created_at']);
         renderTable('sessions', data.sessions, ['id', 'student_id', 'exam_id', 'score', 'total_questions', 'status', 'submitted_at', 'created_at']);
         renderTable('notifications', data.notifications, ['id', 'user_id', 'title', 'type', 'is_read', 'created_at']);
-        document.getElementById('users-count').textContent = '(' + data.stats.totalUsers + ' total)';
-        document.getElementById('exams-count').textContent = '(' + data.stats.totalExams + ' total)';
-        document.getElementById('sessions-count').textContent = '(' + data.stats.totalSessions + ' total)';
+        document.getElementById('users-count').textContent = '(' + data.stats.total_users + ' total)';
+        document.getElementById('exams-count').textContent = '(' + data.stats.total_exams + ' total)';
+        document.getElementById('sessions-count').textContent = '(' + data.stats.total_sessions + ' total)';
         document.getElementById('notifications-count').textContent = '(' + (data.notifications?.length || 0) + ' recent)';
         document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
       } catch (e) {
@@ -135,14 +137,14 @@
     function renderStats(stats) {
       const grid = document.getElementById('stats-grid-db');
       const items = [
-        { label: 'Users', value: stats.totalUsers },
-        { label: 'Students', value: stats.totalStudents },
-        { label: 'Teachers', value: stats.totalTeachers },
-        { label: 'Exams', value: stats.totalExams },
-        { label: 'Active Exams', value: stats.activeExams },
-        { label: 'Sessions', value: stats.totalSessions },
-        { label: 'Completed', value: stats.completedSessions },
-        { label: 'Classes', value: stats.totalClasses }
+        { label: 'Users', value: stats.total_users },
+        { label: 'Students', value: stats.total_students },
+        { label: 'Teachers', value: stats.total_teachers },
+        { label: 'Exams', value: stats.total_exams },
+        { label: 'Active Exams', value: stats.active_exams },
+        { label: 'Sessions', value: stats.total_sessions },
+        { label: 'Completed', value: stats.completed_sessions },
+        { label: 'Classes', value: stats.total_classes }
       ];
       grid.innerHTML = items.map(s => `
         <div class="stat-item-db" id="stat-${s.label.toLowerCase().replace(/\s+/g,'-')}">
