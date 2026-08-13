@@ -165,7 +165,7 @@
           </div>
           <div class="smart-card-actions">
             <span class="file-type-badge">${count} file${count !== 1 ? 's' : ''}</span>
-            <button class="btn btn-sm btn-primary" type="button" onclick="openClass(${i})">View</button>
+            <button class="btn btn-xs btn-primary" type="button" onclick="openClass(${i})">View</button>
           </div>
         </div>`;
       }).join('');
@@ -207,8 +207,8 @@
           <div class="smart-card-actions">
             <span class="file-type-badge">${ext} &middot; ${size}</span>
             <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
-              <button class="btn btn-sm btn-secondary" type="button" onclick="openFileViewer(${i})">View</button>
-              <button class="btn btn-sm btn-primary" type="button" onclick="downloadFile(${i})">Download</button>
+              <button class="btn btn-xs btn-secondary" type="button" onclick="openFileViewer(${i})">View</button>
+              <button class="btn btn-xs btn-primary" type="button" onclick="downloadFile(${i})">Download</button>
             </div>
           </div>
         </div>`;

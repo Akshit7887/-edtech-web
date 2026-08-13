@@ -313,6 +313,14 @@
   font-size: var(--text-sm);
 }
 
+.btn-xs {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
 .btn-block {
   width: 100%;
 }
