@@ -250,9 +250,10 @@ public class QuestionService : IQuestionService
                 }
 
                 assignment.QuestionIds = savedIds;
+                var savedIdsJson = System.Text.Json.JsonSerializer.Serialize(savedIds);
                 await conn.ExecuteAsync(
-                    "UPDATE \"StudentExamAssignments\" SET \"question_ids\" = @Ids, \"updated_at\" = @Now WHERE \"id\" = @Id",
-                    new { Ids = savedIds, Now = DateTime.UtcNow, Id = assignment.Id });
+                    "UPDATE \"StudentExamAssignments\" SET \"question_ids\" = @Ids::jsonb, \"updated_at\" = @Now WHERE \"id\" = @Id",
+                    new { Ids = savedIdsJson, Now = DateTime.UtcNow, Id = assignment.Id });
                 totalGenerated += savedIds.Count;
             }
             catch (Exception ex)
@@ -282,9 +283,10 @@ public class QuestionService : IQuestionService
             var qIds = shuffled.Take(exam?.TotalQuestions ?? shuffled.Count).Select(q => q.Id).ToList();
 
             var now = DateTime.UtcNow;
+            var questionIdsJson = System.Text.Json.JsonSerializer.Serialize(qIds);
             await conn.ExecuteAsync(
-                "INSERT INTO \"StudentExamAssignments\" (\"student_id\", \"exam_id\", \"question_ids\", \"created_at\", \"updated_at\") VALUES (@StudentId, @ExamId, @QuestionIds, @Now, @Now) ON CONFLICT (\"student_id\", \"exam_id\") DO UPDATE SET \"question_ids\" = @QuestionIds, \"updated_at\" = @Now",
-                new { StudentId = studentId, ExamId = examId, QuestionIds = qIds, Now = now });
+                "INSERT INTO \"StudentExamAssignments\" (\"student_id\", \"exam_id\", \"question_ids\", \"created_at\", \"updated_at\") VALUES (@StudentId, @ExamId, @QuestionIds::jsonb, @Now, @Now) ON CONFLICT (\"student_id\", \"exam_id\") DO UPDATE SET \"question_ids\" = @QuestionIds::jsonb, \"updated_at\" = @Now",
+                new { StudentId = studentId, ExamId = examId, QuestionIds = questionIdsJson, Now = now });
 
             assignments.Add(new { studentId, questionCount = qIds.Count });
         }

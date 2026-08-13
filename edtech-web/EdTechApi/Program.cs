@@ -65,6 +65,7 @@ builder.Configuration["Google:ClientId"] = googleClientId;
 builder.Configuration["Google:ClientSecret"] = googleClientSecret;
 
 // ── Dapper type maps ──
+JsonbTypeHandlers.Register();
 SqlMapper.SetTypeMap(typeof(SyllabusFile), new CustomPropertyTypeMap(
     typeof(SyllabusFile),
     (type, columnName) => type.GetProperties().FirstOrDefault(p =>

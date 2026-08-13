@@ -229,7 +229,7 @@ public class TeacherService : ITeacherService
                 CorrectAnswer = data.CorrectAnswer,
                 Difficulty = data.Difficulty ?? "medium",
                 Points = data.Points > 0 ? data.Points : 1,
-                Status = data.Status ?? "pending",
+                Status = string.IsNullOrEmpty(data.Status) ? "pending" : data.Status,
                 CreatedAt = now,
                 UpdatedAt = now
             });

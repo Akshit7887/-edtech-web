@@ -434,11 +434,12 @@ public class ExamService : IExamService
 
                 var shuffled = FisherYatesShuffle(allPool);
                 var qIds = shuffled.Take(exam.TotalQuestions).Select(q => q.Id).ToList();
+                var qIdsJson = System.Text.Json.JsonSerializer.Serialize(qIds);
                 var now2 = DateTime.UtcNow;
 
                 await conn.ExecuteAsync(
-                    "INSERT INTO \"StudentExamAssignments\" (\"student_id\", \"exam_id\", \"question_ids\", \"created_at\", \"updated_at\") VALUES (@StudentId, @ExamId, @QuestionIds, @Now, @Now) ON CONFLICT (\"student_id\", \"exam_id\") DO UPDATE SET \"question_ids\" = @QuestionIds, \"updated_at\" = @Now",
-                    new { StudentId = student.Id, ExamId = examId, QuestionIds = qIds, Now = now2 });
+                    "INSERT INTO \"StudentExamAssignments\" (\"student_id\", \"exam_id\", \"question_ids\", \"created_at\", \"updated_at\") VALUES (@StudentId, @ExamId, @QuestionIds::jsonb, @Now, @Now) ON CONFLICT (\"student_id\", \"exam_id\") DO UPDATE SET \"question_ids\" = @QuestionIds::jsonb, \"updated_at\" = @Now",
+                    new { StudentId = student.Id, ExamId = examId, QuestionIds = qIdsJson, Now = now2 });
                 imported++;
             }
             catch (Exception ex)
