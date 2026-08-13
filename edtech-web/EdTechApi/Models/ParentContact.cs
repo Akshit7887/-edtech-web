@@ -19,6 +19,9 @@ public class ParentContact
     [JsonPropertyName("parent_email")]
     public string? ParentEmail { get; set; }
 
+    [JsonPropertyName("relationship")]
+    public string? Relationship { get; set; }
+
     [JsonPropertyName("teacher_id")]
     public int TeacherId { get; set; }
 

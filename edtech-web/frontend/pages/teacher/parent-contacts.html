@@ -25,9 +25,12 @@
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" data-aos="fade-up">
-        <h1>Parent Contacts</h1>
-        <p>Manage parent contact information for students</p>
+      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center" data-aos="fade-up">
+        <div>
+          <h1>Parent Contacts</h1>
+          <p>Manage parent contact information for students</p>
+        </div>
+        <button class="btn btn-primary" onclick="showAddContactModal()">➕ Add Contact</button>
       </div>
       <div id="alert-container"></div>
       <div class="table-container" data-aos="fade-up" data-aos-delay="100">
@@ -102,6 +105,51 @@
     }
 
     function closePcModal() { const m = document.getElementById('pc-modal'); if (m) m.remove(); }
+
+    async function showAddContactModal() {
+      let students = [];
+      try {
+        const res = await api.get('/api/teacher/students?limit=1000');
+        students = res.data.data || [];
+      } catch (e) {
+        showAlert('Failed to load students: ' + (e.message || ''), 'error');
+        return;
+      }
+      const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'pc-add-modal';
+      overlay.innerHTML = `
+        <div class="modal"><div class="modal-header"><h3>Add Parent Contact</h3><button class="modal-close" onclick="closeAddPcModal()">×</button></div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Student</label>
+            <select class="form-select" id="pc-student">
+              <option value="">Select a student...</option>
+              ${students.map(s => `<option value="${s.id}">${escHtml(s.name)}${s.student_id ? ' (' + escHtml(s.student_id) + ')' : ''}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group form-floating"><input class="form-input" id="pc-name" placeholder=" "><label class="form-label">Parent Name</label></div>
+          <div class="form-group form-floating"><input class="form-input" id="pc-email" placeholder=" "><label class="form-label">Parent Email</label></div>
+          <div class="form-group form-floating"><input class="form-input" id="pc-phone" placeholder=" "><label class="form-label">Parent Phone</label></div>
+          <div class="form-group form-floating"><input class="form-input" id="pc-rel" placeholder=" "><label class="form-label">Relationship</label></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" onclick="closeAddPcModal()">Cancel</button><button class="btn btn-primary" onclick="handleAddContact()">Save</button></div></div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    function closeAddPcModal() { const m = document.getElementById('pc-add-modal'); if (m) m.remove(); }
+
+    async function handleAddContact() {
+      const studentId = parseInt(document.getElementById('pc-student').value);
+      if (!studentId) { showAlert('Select a student first', 'error'); return; }
+      const data = {
+        parent_name: document.getElementById('pc-name').value.trim(),
+        parent_email: document.getElementById('pc-email').value.trim() || null,
+        parent_phone: document.getElementById('pc-phone').value.trim() || null,
+        relationship: document.getElementById('pc-rel').value.trim() || null
+      };
+      if (!data.parent_name) { showAlert('Parent name is required', 'error'); return; }
+      try { await saveParentContact(studentId, data); showAlert('Contact saved!', 'success'); closeAddPcModal(); await loadContacts(); } catch (e) { showAlert(e.message, 'error'); }
+    }
 
     async function handleSaveContact(studentId) {
       const data = {

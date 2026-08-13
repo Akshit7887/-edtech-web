@@ -40,20 +40,25 @@
       const examId = parseInt(getQueryParam('id'));
       if (!examId) {
         document.getElementById('back-link').href = 'dashboard.html';
-        await renderExamPicker('reports-content', 'Parent Reports', 'reports.html?id=');
+        const latestId = await renderExamPicker('reports-content', 'Parent Reports', 'reports.html?id=');
+        if (latestId) {
+          document.getElementById('back-link').href = `edit-exam.html?id=${latestId}`;
+          await loadReports(latestId, 'latest-exam-content');
+        }
         return;
       }
       document.getElementById('back-link').href = `edit-exam.html?id=${examId}`;
       await loadReports(examId);
     });
 
-    async function loadReports(examId) {
+    async function loadReports(examId, containerId = 'reports-content') {
+      const container = document.getElementById(containerId);
       try {
         const [history, pending] = await Promise.all([
           loadReportHistory(examId),
           getPendingReports(examId)
         ]);
-        document.getElementById('reports-content').innerHTML = `
+        container.innerHTML = `
           <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
             <div><h1>Parent Reports</h1><p>Send exam results to parents</p></div>
             <button class="btn btn-primary" onclick="handleSendReports(${examId})">📧 Send Parent Reports</button>
@@ -88,7 +93,7 @@
           </div>
         `;
       } catch (e) {
-        document.getElementById('reports-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        container.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
       }
     }
 

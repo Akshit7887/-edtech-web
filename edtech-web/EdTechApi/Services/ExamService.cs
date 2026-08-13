@@ -507,7 +507,7 @@ public class ExamService : IExamService
             throw new AppException(404, "Exam not found or access denied");
 
         var attendance = (await conn.QueryAsync<Attendance>(
-            "SELECT a.*, u.\"name\" as \"StudentName\" FROM \"Attendance\" a JOIN \"Users\" u ON a.\"student_id\" = u.\"id\" WHERE a.\"exam_id\" = @ExamId ORDER BY a.\"created_at\" ASC",
+            "SELECT a.*, u.\"name\" as \"StudentName\", u.\"email\" as \"StudentEmail\" FROM \"Attendance\" a JOIN \"Users\" u ON a.\"student_id\" = u.\"id\" WHERE a.\"exam_id\" = @ExamId ORDER BY a.\"created_at\" ASC",
             new { ExamId = examId })).ToList();
 
         var present = attendance.Count(a => a.Status == "present");
@@ -524,6 +524,7 @@ public class ExamService : IExamService
             {
                 studentId = a.StudentId,
                 studentName = a.StudentName,
+                studentEmail = a.StudentEmail,
                 status = a.Status,
                 markedAt = a.MarkedAt
             })

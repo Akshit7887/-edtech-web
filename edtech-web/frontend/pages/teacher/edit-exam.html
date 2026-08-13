@@ -37,13 +37,19 @@
   <script src="../../js/teacher.js"></script>
   <script>
     let examId = 0;
+    let contentContainer = 'exam-content';
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
       setupNavbar();
       examId = parseInt(getQueryParam('id'));
       if (!examId) {
-        await renderExamPicker('exam-content', 'Edit Exam', 'edit-exam.html?id=');
+        const latestId = await renderExamPicker('exam-content', 'Edit Exam', 'edit-exam.html?id=');
+        if (latestId) {
+          examId = latestId;
+          contentContainer = 'latest-exam-content';
+          await loadExam();
+        }
         return;
       }
 
@@ -51,10 +57,11 @@
     });
 
     async function loadExam() {
+      const container = document.getElementById(contentContainer);
       try {
         const exam = await getExamDetail(examId);
-        if (!exam) { document.getElementById('exam-content').innerHTML = '<div class="alert alert-error">Exam not found</div>'; return; }
-        document.getElementById('exam-content').innerHTML = `
+        if (!exam) { container.innerHTML = '<div class="alert alert-error">Exam not found</div>'; return; }
+        container.innerHTML = `
           <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
             <div>
               <h1>${exam.title}</h1>
@@ -110,6 +117,25 @@
           </div>
 
           <div class="card" style="margin-bottom:20px">
+            <div class="card-header"><h3 class="card-title">Schedule</h3></div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-2">
+                  <div class="form-group form-floating">
+                    <input type="datetime-local" class="form-input" id="edit-schedule" value="${exam.scheduled_at ? new Date(exam.scheduled_at).toISOString().slice(0,16) : ''}" placeholder=" ">
+                    <label class="form-label">Scheduled Date &amp; Time</label>
+                  </div>
+                </div>
+                <div class="col-2" style="display:flex;align-items:end;gap:var(--space-3)">
+                  <button class="btn btn-primary" onclick="handleSchedule()">💡 Save Schedule</button>
+                  <button class="btn btn-ghost" onclick="handleSchedule(true)">Clear</button>
+                </div>
+              </div>
+              ${exam.scheduled_at ? `<p class="text-muted" style="margin-top:var(--space-3);font-size:0.85rem">Currently scheduled: <strong>${formatDate(exam.scheduled_at)}</strong></p>` : ''}
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
             <div class="card-header"><h3 class="card-title">Bulk Import Students</h3></div>
             <div class="card-body">
               <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:8px">Paste CSV with headers: name, phone, email</p>
@@ -128,7 +154,7 @@
         `;
         await refreshDeepLink();
       } catch (e) {
-        document.getElementById('exam-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        container.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
       }
     }
 
@@ -138,15 +164,29 @@
         title: document.getElementById('edit-title').value.trim(),
         subject: document.getElementById('edit-subject').value.trim(),
         syllabus_text: document.getElementById('edit-syllabus').value.trim() || null,
-        duration_minutes: parseInt(document.getElementById('edit-duration').value),
-        total_questions: parseInt(document.getElementById('edit-total-q').value),
+        duration_minutes: parseInt(document.getElementById('edit-duration').value) || 0,
+        total_questions: parseInt(document.getElementById('edit-total-q').value) || 0,
         status: document.getElementById('edit-status').value
       };
+      if (!data.title || !data.subject) { showAlert('Title and subject are required', 'error'); return; }
+      if (data.duration_minutes <= 0) { showAlert('Duration must be at least 1 minute', 'error'); return; }
       try { await updateExam(examId, data); showAlert('Exam updated', 'success'); } catch (e) { showAlert(e.message, 'error'); }
     }
 
     async function handleActivate() {
       try { await activateExam(examId); showAlert('Exam activated', 'success'); await loadExam(); } catch (e) { showAlert(e.message, 'error'); }
+    }
+
+    async function handleSchedule(clear = false) {
+      clearAlerts();
+      const input = document.getElementById('edit-schedule');
+      const value = clear ? null : input.value;
+      if (!clear && !value) { showAlert('Pick a date and time to schedule', 'error'); return; }
+      try {
+        await scheduleExam(examId, value || '');
+        showAlert(clear ? 'Schedule cleared' : 'Exam scheduled!', 'success');
+        await loadExam();
+      } catch (e) { showAlert(e.message, 'error'); }
     }
 
     async function handleDelete() {

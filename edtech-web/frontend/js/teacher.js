@@ -281,21 +281,21 @@ async function renderStudentPicker(containerId, pageUrl) {
     return;
   }
   container.innerHTML = `
-    <div class="dashboard-header"><h1>Student Detail</h1><p>Select a student to continue</p></div>
-    <div class="table-container">
-      <table>
-        <thead><tr><th>Name</th><th>Student ID</th><th>Email</th><th>Phone</th><th></th></tr></thead>
-        <tbody>
-          ${students.map(s => `
-            <tr>
-              <td><strong>${escHtml(s.name)}</strong></td>
-              <td>${escHtml(s.student_id || '-')}</td>
-              <td>${escHtml(s.email || '-')}</td>
-              <td>${escHtml(s.phone || '-')}</td>
-              <td><button class="btn btn-sm btn-primary" onclick="goTo('${pageUrl}${s.id}')">View</button></td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
+    <div class="dashboard-header"><h1>Student Detail</h1><p>${students.length} student(s) — select one to view details</p></div>
+    <div class="exam-grid">
+      ${students.map(s => `
+        <div class="exam-card" onclick="goTo('${pageUrl}${s.id}')">
+          <div class="exam-card-title">${escHtml(s.name)}</div>
+          <div class="exam-card-meta">
+            <span>ID: ${escHtml(s.student_id || '-')}</span>
+            <span>${escHtml(s.email || '-')}</span>
+            <span>${escHtml(s.phone || '-')}</span>
+          </div>
+          <div class="exam-card-footer">
+            <span class="badge badge-green">Student</span>
+            <button class="btn btn-sm btn-primary">View</button>
+          </div>
+        </div>`).join('')}
     </div>`;
 }
 
@@ -306,42 +306,48 @@ function escHtml(str) {
 
 async function renderExamPicker(containerId, title, pageUrl) {
   const container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container) return null;
   let exams = [];
   try {
     const res = await api.get('/api/exams?page=1&limit=100');
     exams = (res && res.data) || [];
   } catch (e) {
     container.innerHTML = '<div class="alert alert-error">Failed to load exams</div>';
-    return;
+    return null;
   }
   if (!exams.length) {
     container.innerHTML = `
-      <div class="dashboard-header"><h1>${escHtml(title)}</h1><p>Select an exam to continue</p></div>
+      <div class="dashboard-header"><h1>${escHtml(title)}</h1><p>Create an exam to get started</p></div>
       <div class="empty-state">
         <div class="empty-state-icon">📝</div>
         <h3>No exams yet</h3>
-        <p>Create an exam first — you can open this page from the exam after that.</p>
+        <p>Create an exam first, then return here to manage it.</p>
         <button class="btn btn-primary" onclick="goTo('create-exam.html')">Create Exam</button>
       </div>`;
-    return;
+    return null;
   }
+  const latestId = exams[0].id;
   container.innerHTML = `
-    <div class="dashboard-header"><h1>${escHtml(title)}</h1><p>Select an exam to continue</p></div>
-    <div class="table-container">
-      <table>
-        <thead><tr><th>Exam</th><th>Subject</th><th>Questions</th><th>Status</th><th>Created</th><th></th></tr></thead>
-        <tbody>
-          ${exams.map(e => `
-            <tr>
-              <td><strong>${escHtml(e.title)}</strong></td>
-              <td>${escHtml(e.subject || '-')}</td>
-              <td>${e.total_questions || 0}</td>
-              <td>${statusBadge(e.status)}</td>
-              <td>${formatDate(e.created_at)}</td>
-              <td><button class="btn btn-sm btn-primary" onclick="goTo('${pageUrl}${e.id}')">Open</button></td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+    <div class="dashboard-header">
+      <h1>${escHtml(title)}</h1>
+      <p>${exams.length} exam(s) — select one, or the latest is loaded below</p>
+    </div>
+    <div class="exam-grid">
+      ${exams.map(e => `
+        <div class="exam-card" onclick="goTo('${pageUrl}${e.id}')">
+          <div class="exam-card-title">${escHtml(e.title)}</div>
+          <div class="exam-card-meta">
+            <span>${escHtml(e.subject || 'General')}</span>
+            <span>${e.total_questions || 0} questions</span>
+            <span>${formatDate(e.created_at)}</span>
+          </div>
+          <div class="exam-card-footer">
+            ${statusBadge(e.status)}
+            <button class="btn btn-sm btn-primary">Open</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    <h3 style="margin:24px 0 12px">Latest Exam: ${escHtml(exams[0].title)}</h3>
+    <div id="latest-exam-content"><div class="loading-overlay"><div class="spinner"></div><span>Loading...</span></div></div>`;
+  return latestId;
 }

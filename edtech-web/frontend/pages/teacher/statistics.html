@@ -34,24 +34,35 @@
   <script src="../../js/auth.js"></script>
   <script src="../../js/teacher.js"></script>
   <script>
+    let statsContainerId = 'stats-content';
+    let currentExamId = 0;
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
       setupNavbar();
       const examId = parseInt(getQueryParam('id'));
       if (!examId) {
         document.getElementById('back-link').href = 'dashboard.html';
-        await renderExamPicker('stats-content', 'Exam Statistics', 'statistics.html?id=');
+        const latestId = await renderExamPicker('stats-content', 'Exam Statistics', 'statistics.html?id=');
+        if (latestId) {
+          currentExamId = latestId;
+          statsContainerId = 'latest-exam-content';
+          document.getElementById('back-link').href = `edit-exam.html?id=${latestId}`;
+          await loadStats(latestId, statsContainerId);
+        }
         return;
       }
+      currentExamId = examId;
       document.getElementById('back-link').href = `edit-exam.html?id=${examId}`;
       await loadStats(examId);
     });
 
-    async function loadStats(examId) {
+    async function loadStats(examId, containerId = 'stats-content') {
+      const container = document.getElementById(containerId);
       try {
         const stats = await getExamStatistics(examId);
-        if (!stats) { document.getElementById('stats-content').innerHTML = '<div class="alert alert-error">Failed to load statistics</div>'; return; }
-        document.getElementById('stats-content').innerHTML = `
+        if (!stats) { container.innerHTML = '<div class="alert alert-error">Failed to load statistics</div>'; return; }
+        container.innerHTML = `
           <div class="dashboard-header">
             <h1>${stats.exam_title}</h1>
             <p>${stats.subject} · Exam Statistics</p>
@@ -82,7 +93,7 @@
           <h3 style="margin:24px 0 12px">Student Results</h3>
           <div class="table-container">
             <table>
-              <thead><tr><th>Student</th><th>Score</th><th>Total</th><th>Percentage</th><th>Status</th><th>Time Used</th><th>Submitted</th></tr></thead>
+              <thead><tr><th>Student</th><th>Score</th><th>Total</th><th>Percentage</th><th>Status</th><th>Time Used</th><th>Submitted</th><th>Actions</th></tr></thead>
               <tbody>
                 ${(stats.student_results || []).map(r => `
                   <tr class="${r.status === 'completed' ? (r.score >= stats.max_possible_score * 0.4 ? 'row-high-pass' : 'row-high-fail') : ''}">
@@ -93,16 +104,27 @@
                     <td>${statusBadge(r.status)}</td>
                     <td>${r.time_used ? Math.floor(r.time_used / 60) + 'm ' + (r.time_used % 60) + 's' : '-'}</td>
                     <td>${formatDate(r.submitted_at)}</td>
+                    <td>${r.status === 'in_progress' ? `<button class="btn btn-sm btn-danger" onclick="handleDisqualify(${r.session_id}, '${(r.student_name || '').replace(/'/g, "\\'")}')">Disqualify</button>` : ''}</td>
                   </tr>
                 `).join('')}
-                ${(!stats.student_results || !stats.student_results.length) ? '<tr><td colspan="7"><div class="empty-state" style="padding:20px">No results yet</div></td></tr>' : ''}
+                ${(!stats.student_results || !stats.student_results.length) ? '<tr><td colspan="8"><div class="empty-state" style="padding:20px">No results yet</div></td></tr>' : ''}
               </tbody>
             </table>
           </div>
         `;
       } catch (e) {
-        document.getElementById('stats-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        container.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
       }
+    }
+
+    async function handleDisqualify(sessionId, studentName) {
+      const reason = prompt(`Reason for disqualifying ${studentName || 'this student'}?`);
+      if (!reason || reason.trim().length < 3) { showAlert('A reason of at least 3 characters is required', 'error'); return; }
+      try {
+        await disqualifyStudent(sessionId, reason.trim());
+        showAlert('Student disqualified', 'success');
+        if (currentExamId) await loadStats(currentExamId, statsContainerId);
+      } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
   <script src="../../js/nav.js"></script>

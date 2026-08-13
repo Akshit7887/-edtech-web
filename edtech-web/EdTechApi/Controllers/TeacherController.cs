@@ -160,8 +160,6 @@ public class TeacherController : ControllerBase
     public async Task<IActionResult> ScheduleExam(int examId, [FromBody] ScheduleBody body)
     {
         var teacherId = GetUserId();
-        if (string.IsNullOrEmpty(body.ScheduledAt))
-            return BadRequest(new { success = false, error = "Scheduled date is required" });
 
         var exam = await _teacherService.ScheduleExamAsync(examId, teacherId, body.ScheduledAt);
         return Ok(new { success = true, data = exam });

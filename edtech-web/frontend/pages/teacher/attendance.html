@@ -40,18 +40,23 @@
       const examId = parseInt(getQueryParam('id'));
       if (!examId) {
         document.getElementById('back-link').href = 'dashboard.html';
-        await renderExamPicker('attendance-content', 'Attendance Report', 'attendance.html?id=');
+        const latestId = await renderExamPicker('attendance-content', 'Attendance Report', 'attendance.html?id=');
+        if (latestId) {
+          document.getElementById('back-link').href = `edit-exam.html?id=${latestId}`;
+          await loadAttendance(latestId, 'latest-exam-content');
+        }
         return;
       }
       document.getElementById('back-link').href = `edit-exam.html?id=${examId}`;
       await loadAttendance(examId);
     });
 
-    async function loadAttendance(examId) {
+    async function loadAttendance(examId, containerId = 'attendance-content') {
+      const container = document.getElementById(containerId);
       try {
         const report = await getAttendanceReport(examId);
-        if (!report) { document.getElementById('attendance-content').innerHTML = '<div class="alert alert-error">Failed to load attendance</div>'; return; }
-        document.getElementById('attendance-content').innerHTML = `
+        if (!report) { container.innerHTML = '<div class="alert alert-error">Failed to load attendance</div>'; return; }
+        container.innerHTML = `
           <div class="dashboard-header">
             <h1>Attendance Report</h1>
             <p>Exam attendance tracking</p>
@@ -79,7 +84,7 @@
           </div>
         `;
       } catch (e) {
-        document.getElementById('attendance-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        container.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
       }
     }
   </script>

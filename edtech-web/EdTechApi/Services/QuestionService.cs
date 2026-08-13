@@ -148,6 +148,7 @@ public class QuestionService : IQuestionService
 
         var studentResults = sessions.Select(s => new StudentResultItem
         {
+            SessionId = s.Id,
             StudentId = s.StudentId,
             StudentName = students.ContainsKey(s.StudentId) ? students[s.StudentId].Name : "Unknown",
             Email = students.ContainsKey(s.StudentId) ? students[s.StudentId].Email : "",

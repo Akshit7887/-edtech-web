@@ -72,12 +72,23 @@ public class TeacherService : ITeacherService
 
         var sessionsByStudent = sessions.GroupBy(s => s.StudentId).ToDictionary(g => g.Key, g => g.ToList());
 
+        var classMemberships = (await conn.QueryAsync<dynamic>(
+            @"SELECT cs.""student_id"", c.""id"" as ""class_id"", c.""name"" as ""class_name""
+              FROM ""ClassStudents"" cs
+              JOIN ""Classes"" c ON c.""id"" = cs.""class_id""
+              WHERE cs.""student_id"" = ANY(@Ids)",
+            new { Ids = studentIds }))
+            .GroupBy(x => (int)x.student_id)
+            .ToDictionary(g => g.Key, g => g.Select(x => (ClassId: (int)x.class_id, ClassName: (string)x.class_name)).ToList());
+
         var data = students.Select(s =>
         {
             var sess = sessionsByStudent.ContainsKey(s.Id) ? sessionsByStudent[s.Id] : new List<ExamSession>();
             var completed = sess.Where(x => x.Status == "completed").ToList();
             var totalScore = completed.Sum(x => (double)x.Score);
             var maxScore = completed.Sum(x => (double)(exams.ContainsKey(x.ExamId) ? exams[x.ExamId].TotalQuestions : x.TotalQuestions));
+            var memberships = classMemberships.ContainsKey(s.Id) ? classMemberships[s.Id] : new List<(int ClassId, string ClassName)>();
+            var primaryClass = memberships.FirstOrDefault();
 
             return new
             {
@@ -86,7 +97,9 @@ public class TeacherService : ITeacherService
                 email = s.Email,
                 phone = s.Phone,
                 student_id = s.StudentId,
-                registeredAt = s.CreatedAt,
+                registered_at = s.CreatedAt,
+                class_id = primaryClass.ClassId > 0 ? (int?)primaryClass.ClassId : null,
+                class_name = primaryClass.ClassName ?? null,
                 totalExams = sess.Count,
                 completedExams = completed.Count,
                 totalScore,
@@ -159,6 +172,7 @@ public class TeacherService : ITeacherService
             name = student.Name,
             email = student.Email,
             phone = student.Phone,
+            role = student.Role,
             student_id = student.StudentId,
             registeredAt = student.CreatedAt,
             totalExams = sessions.Count,
@@ -485,11 +499,16 @@ public class TeacherService : ITeacherService
         if (exam == null || exam.TeacherId != teacherId)
             throw new AppException(404, "Exam not found");
 
-        if (!DateTime.TryParse(scheduledAt, out var scheduleDate))
-            throw new AppException(400, "Invalid scheduled date");
+        DateTime? scheduleDate = null;
+        if (!string.IsNullOrEmpty(scheduledAt))
+        {
+            if (!DateTime.TryParse(scheduledAt, out var parsed))
+                throw new AppException(400, "Invalid scheduled date");
+            scheduleDate = parsed;
+        }
 
         exam = await conn.QuerySingleAsync<Exam>(
-            "UPDATE \"Exams\" SET \"scheduled_at\" = @ScheduledAt, \"status\" = 'draft', \"updated_at\" = @Now WHERE \"id\" = @Id RETURNING *",
+            "UPDATE \"Exams\" SET \"scheduled_at\" = @ScheduledAt, \"updated_at\" = @Now WHERE \"id\" = @Id RETURNING *",
             new { ScheduledAt = scheduleDate, Now = DateTime.UtcNow, Id = examId });
 
         return exam;
@@ -514,7 +533,8 @@ public class TeacherService : ITeacherService
             StudentName = c.StudentName ?? "Unknown",
             ParentName = c.ParentName,
             ParentPhone = c.ParentPhone,
-            ParentEmail = c.ParentEmail
+            ParentEmail = c.ParentEmail,
+            Relationship = c.Relationship
         }).ToList();
     }
 
@@ -533,16 +553,16 @@ public class TeacherService : ITeacherService
 
         if (existing != null)
         {
-            await conn.ExecuteAsync(
-                @"UPDATE ""ParentContacts"" SET ""parent_name"" = @ParentName, ""parent_phone"" = @ParentPhone, ""parent_email"" = @ParentEmail, ""updated_at"" = @Now WHERE ""id"" = @Id",
-                new { ParentName = data.ParentName, ParentPhone = data.ParentPhone ?? "", ParentEmail = data.ParentEmail ?? "", Now = now, Id = existing.Id });
-            return new { contact = existing, created = false };
+            var updated = await conn.QuerySingleAsync<ParentContact>(
+                @"UPDATE ""ParentContacts"" SET ""parent_name"" = @ParentName, ""parent_phone"" = @ParentPhone, ""parent_email"" = @ParentEmail, ""relationship"" = @Relationship, ""updated_at"" = @Now WHERE ""id"" = @Id RETURNING *",
+                new { ParentName = data.ParentName, ParentPhone = data.ParentPhone ?? "", ParentEmail = data.ParentEmail ?? "", Relationship = data.Relationship ?? "", Now = now, Id = existing.Id });
+            return new { contact = updated, created = false };
         }
 
         var contact = await conn.QuerySingleAsync<ParentContact>(
-            @"INSERT INTO ""ParentContacts"" (""student_id"", ""parent_name"", ""parent_phone"", ""parent_email"", ""teacher_id"", ""created_at"", ""updated_at"")
-              VALUES (@StudentId, @ParentName, @ParentPhone, @ParentEmail, @TeacherId, @CreatedAt, @UpdatedAt) RETURNING *",
-            new { StudentId = studentId, ParentName = data.ParentName, ParentPhone = data.ParentPhone ?? "", ParentEmail = data.ParentEmail ?? "", TeacherId = teacherId, CreatedAt = now, UpdatedAt = now });
+            @"INSERT INTO ""ParentContacts"" (""student_id"", ""parent_name"", ""parent_phone"", ""parent_email"", ""relationship"", ""teacher_id"", ""created_at"", ""updated_at"")
+              VALUES (@StudentId, @ParentName, @ParentPhone, @ParentEmail, @Relationship, @TeacherId, @CreatedAt, @UpdatedAt) RETURNING *",
+            new { StudentId = studentId, ParentName = data.ParentName, ParentPhone = data.ParentPhone ?? "", ParentEmail = data.ParentEmail ?? "", Relationship = data.Relationship ?? "", TeacherId = teacherId, CreatedAt = now, UpdatedAt = now });
 
         return new { contact, created = true };
     }

@@ -35,6 +35,7 @@
   <script src="../../js/teacher.js"></script>
   <script>
     let examId = 0;
+    let contentContainer = 'questions-content';
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
@@ -42,7 +43,13 @@
       examId = parseInt(getQueryParam('examId'));
       if (!examId) {
         document.getElementById('back-to-exam').href = 'dashboard.html';
-        await renderExamPicker('questions-content', 'Question Bank', 'questions.html?examId=');
+        const latestId = await renderExamPicker('questions-content', 'Question Bank', 'questions.html?examId=');
+        if (latestId) {
+          examId = latestId;
+          contentContainer = 'latest-exam-content';
+          document.getElementById('back-to-exam').href = `edit-exam.html?id=${examId}`;
+          await loadQuestions();
+        }
         return;
       }
       document.getElementById('back-to-exam').href = `edit-exam.html?id=${examId}`;
@@ -50,9 +57,9 @@
     });
 
     async function loadQuestions() {
+      const container = document.getElementById(contentContainer);
       try {
         const questions = await getQuestionBank(examId);
-        const container = document.getElementById('questions-content');
         const exam = await getExamDetail(examId).catch(() => null);
         container.innerHTML = `
           <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
@@ -95,7 +102,7 @@
           </div>
         `;
       } catch (e) {
-        document.getElementById('questions-content').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        container.innerHTML = `<div class="alert alert-error">${e.message}</div>`;
       }
     }
 

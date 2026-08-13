@@ -116,6 +116,9 @@ public class ExamStatisticsResponse
 
 public class StudentResultItem
 {
+    [JsonPropertyName("session_id")]
+    public int SessionId { get; set; }
+
     [JsonPropertyName("student_id")]
     public int StudentId { get; set; }
 
