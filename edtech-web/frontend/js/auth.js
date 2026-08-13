@@ -124,7 +124,6 @@ function showLogoutConfirm() {
       </div>
       <div class="modal-body">
         <p style="margin-bottom:8px">Are you sure you want to log out?</p>
-        <p style="color:var(--text-muted);font-size:0.85rem">All your session data will be removed from this device. You will need to log in again.</p>
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" type="button" onclick="closeLogoutConfirm()">Cancel</button>
