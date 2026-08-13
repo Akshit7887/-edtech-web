@@ -14,7 +14,7 @@
       }
       if (!document.querySelector('meta[name="theme-color"]')) {
         var theme = document.createElement('meta');
-        theme.name = 'theme-color'; theme.content = '#b91c1c';
+        theme.name = 'theme-color'; theme.content = '#be123c';
         document.head.appendChild(theme);
       }
       if (!document.querySelector('meta[name="mobile-web-app-capable"]')) {
@@ -433,10 +433,76 @@
     sidebar.appendChild(liLogout);
   }
 
+  // ── Theme toggle ──
+  var SUN_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+  var MOON_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+
+  function currentTheme() {
+    try {
+      var saved = localStorage.getItem('edtech-theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+    } catch (e) {}
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  function setTheme(t, persist) {
+    var root = document.documentElement;
+    if (t === 'dark') root.setAttribute('data-theme', 'dark');
+    else if (t === 'light') root.setAttribute('data-theme', 'light');
+    else root.removeAttribute('data-theme');
+
+    if (persist) {
+      try {
+        if (t === 'dark' || t === 'light') localStorage.setItem('edtech-theme', t);
+        else localStorage.removeItem('edtech-theme');
+      } catch (e) {}
+    }
+
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = (t === 'dark') ? '#0b0b0f' : '#be123c';
+
+    var btn = document.querySelector('.theme-toggle');
+    if (btn) {
+      btn.innerHTML = (t === 'dark') ? SUN_ICON : MOON_ICON;
+      btn.setAttribute('aria-label', t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+  }
+
+  function initTheme() {
+    var explicit = document.documentElement.getAttribute('data-theme');
+    if (explicit === 'dark' || explicit === 'light') {
+      setTheme(explicit, false);
+    } else {
+      setTheme(currentTheme(), false);
+    }
+
+    var navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+
+    var btn = document.createElement('button');
+    btn.className = 'theme-toggle';
+    btn.setAttribute('type', 'button');
+    btn.addEventListener('click', function () {
+      setTheme(currentTheme() === 'dark' ? 'light' : 'dark', true);
+    });
+
+    var hamburger = navbar.querySelector('.hamburger-btn');
+    if (hamburger) navbar.insertBefore(btn, hamburger);
+    else navbar.appendChild(btn);
+    setTheme(currentTheme(), false);
+
+    try {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+        if (!localStorage.getItem('edtech-theme')) setTheme(e.matches ? 'dark' : 'light', false);
+      });
+    } catch (err) {}
+  }
+
   initPWA();
   initPageFlip();
   initLogoAnim();
   initBackButton();
+  initTheme();
   if (!isExamPage) {
     initHamburger();
     initSidebar();

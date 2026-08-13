@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Teacher Dashboard - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=4">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=4">
+  <link rel="stylesheet" href="../../css/main.css?v=5">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=5">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -65,22 +66,22 @@
         </div>
         <div class="quick-actions">
           <div class="quick-action-card anim-fade-up stagger-1" onclick="goTo('create-exam.html')">
-            <div class="qa-icon" style="background:#eef2ff;color:#4f46e5">📝</div>
+            <div class="qa-icon indigo">📝</div>
             <div class="qa-label">Create Exam</div>
             <div class="qa-desc">Design a new exam with AI or manually</div>
           </div>
           <div class="quick-action-card anim-fade-up stagger-2" onclick="goTo('students.html')">
-            <div class="qa-icon" style="background:#f0fdf4;color:#16a34a">👥</div>
+            <div class="qa-icon green">👥</div>
             <div class="qa-label">Manage Students</div>
             <div class="qa-desc">Add, view, or remove students</div>
           </div>
           <div class="quick-action-card anim-fade-up stagger-3" onclick="goTo('classes.html')">
-            <div class="qa-icon" style="background:#fff7ed;color:#d97706">🏫</div>
+            <div class="qa-icon orange">🏫</div>
             <div class="qa-label">Manage Classes</div>
             <div class="qa-desc">Organize students into classes</div>
           </div>
           <div class="quick-action-card anim-fade-up stagger-4" onclick="goTo('students.html')">
-            <div class="qa-icon" style="background:#fef2f2;color:#dc2626">📢</div>
+            <div class="qa-icon red">📢</div>
             <div class="qa-label">Send Announcement</div>
             <div class="qa-desc">Notify all students instantly</div>
           </div>

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Dashboard - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=4">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=4">
+  <link rel="stylesheet" href="../../css/main.css?v=5">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=5">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -81,27 +82,27 @@
         </div>
         <div class="quick-actions">
           <div class="quick-action-card anim-fade-up stagger-1" onclick="goTo('users.html')">
-            <div class="qa-icon" style="background:#eef2ff;color:#4f46e5">👥</div>
+            <div class="qa-icon indigo">👥</div>
             <div class="qa-label">Manage Users</div>
             <div class="qa-desc">View and manage all platform users</div>
           </div>
           <div class="quick-action-card anim-fade-up stagger-2" onclick="goTo('departments.html')">
-            <div class="qa-icon" style="background:#f0fdf4;color:#16a34a">🏛️</div>
+            <div class="qa-icon green">🏛️</div>
             <div class="qa-label">Departments</div>
             <div class="qa-desc">Create and manage departments</div>
           </div>
           <div class="quick-action-card anim-fade-up stagger-3" onclick="goTo('exams.html')">
-            <div class="qa-icon" style="background:#fff7ed;color:#d97706">📝</div>
+            <div class="qa-icon orange">📝</div>
             <div class="qa-label">View Exams</div>
             <div class="qa-desc">Browse all exams across departments</div>
           </div>
           <div class="quick-action-card anim-fade-up stagger-4" onclick="backfillStudentIds()">
-            <div class="qa-icon" style="background:#fef2f2;color:#dc2626">🔢</div>
+            <div class="qa-icon red">🔢</div>
             <div class="qa-label">Fix Student IDs</div>
             <div class="qa-desc">Assign student_id to all students missing one</div>
           </div>
           <div class="quick-action-card anim-fade-up stagger-5" onclick="goTo('users.html?filter=pending')">
-            <div class="qa-icon" style="background:#fffbeb;color:#d97706">⏳</div>
+            <div class="qa-icon amber">⏳</div>
             <div class="qa-label">Teacher Approvals</div>
             <div class="qa-desc">Approve or reject pending teacher registrations</div>
           </div>
@@ -206,7 +207,7 @@
         }
         container.innerHTML = '<div class="mini-student-list">' + depts.slice(0, 5).map(d => `
           <div class="mini-student-item anim-fade-right">
-            <div class="student-avatar-sm" style="background:#fff7ed;color:#d97706">${d.name.charAt(0).toUpperCase()}</div>
+            <div class="student-avatar-sm" style="background:var(--orange-soft);color:var(--orange-strong)">${d.name.charAt(0).toUpperCase()}</div>
             <div class="student-info">
               <strong>${d.name}</strong>
               <span>${d.head_name ? 'Head: ' + d.head_name : 'No head assigned'}</span>

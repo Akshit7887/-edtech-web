@@ -1,5 +1,5 @@
 /* ============================================================
-   EdTech Web - Dashboard Styles (White & Red Minimal)
+   EdTech Web - Dashboard Styles (Crimson Rose / Deep Slate)
    ============================================================ */
 
 /* ── Dashboard Header ── */
@@ -19,7 +19,7 @@
   font-size: var(--text-sm);
 }
 
-/* ── Stats Row ── */
+/* ── Stats Row (label + value cards) ── */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -35,7 +35,7 @@
   transition: all var(--duration-normal) var(--ease);
 }
 
-.stat-card:hover {
+.stats-row .stat-card:hover {
   border-color: var(--border-strong);
   box-shadow: var(--shadow-md);
 }
@@ -57,6 +57,52 @@
   color: var(--accent);
 }
 
+/* ── Stats Grid (icon cards) ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.stats-grid .stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  text-align: center;
+}
+
+.stats-grid .stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-ghost);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xl);
+}
+
+.stat-value {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--text-heading);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
 /* ── Exam Grid ── */
 .exam-grid {
   display: grid;
@@ -66,41 +112,43 @@
 
 .exam-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: var(--space-6);
-  transition: all var(--duration-normal) var(--ease);
   cursor: pointer;
+  transition: all var(--duration-normal) var(--ease);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .exam-card:hover {
-  border-color: var(--accent-light);
-  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent);
 }
 
 .exam-card-title {
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-heading);
-  margin-bottom: var(--space-3);
 }
 
 .exam-card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-4);
   font-size: var(--text-sm);
   color: var(--text-muted);
-  margin-bottom: var(--space-4);
 }
 
 .exam-card-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border);
+  margin-top: auto;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-light);
 }
 
 /* ── Score Bar ── */
@@ -156,27 +204,29 @@
 /* ── Tabs ── */
 .tabs {
   display: flex;
-  gap: var(--space-1);
-  border-bottom: 1px solid var(--border);
+  gap: 0;
+  border-bottom: 2px solid var(--border-light);
   margin-bottom: var(--space-6);
 }
 
 .tab {
   padding: var(--space-3) var(--space-5);
-  border: none;
-  background: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-family: var(--font-sans);
   font-size: var(--text-sm);
   font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
   border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
   transition: all var(--duration-fast) var(--ease);
-  margin-bottom: -1px;
+  background: none;
+  border-top: none;
+  border-left: none;
+  border-right: none;
 }
 
 .tab:hover {
   color: var(--text);
+  border-bottom-color: var(--border-strong);
 }
 
 .tab.active {
@@ -223,12 +273,12 @@ tbody tr:hover {
 /* ── Empty State ── */
 .empty-state {
   text-align: center;
-  padding: var(--space-16) var(--space-6);
+  padding: var(--space-16) var(--space-8);
   color: var(--text-muted);
 }
 
 .empty-state-icon {
-  font-size: var(--text-5xl);
+  font-size: 3rem;
   margin-bottom: var(--space-4);
   opacity: 0.5;
 }
@@ -236,12 +286,14 @@ tbody tr:hover {
 .empty-state h3 {
   font-size: var(--text-lg);
   font-weight: 600;
-  color: var(--text-heading);
+  color: var(--text);
   margin-bottom: var(--space-2);
 }
 
 .empty-state p {
   font-size: var(--text-sm);
+  max-width: 360px;
+  margin: 0 auto;
 }
 
 /* ── Breadcrumb ── */
@@ -251,15 +303,16 @@ tbody tr:hover {
   gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--text-muted);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 .breadcrumb a {
-  color: var(--text-muted);
+  color: var(--accent);
+  text-decoration: none;
 }
 
 .breadcrumb a:hover {
-  color: var(--accent);
+  text-decoration: underline;
 }
 
 .breadcrumb .sep {
@@ -271,14 +324,19 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
   flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
 }
 
 .page-header h1 {
   font-size: var(--text-2xl);
   font-weight: 700;
+}
+
+.page-header p {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
 }
 
 /* ── Sidebar Layout ── */
@@ -337,55 +395,25 @@ tbody tr:hover {
   min-width: 0;
 }
 
-/* ── Stats Grid (admin/teacher) ── */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
-}
+/* Desktop: show the sidebar alongside the hamburger menu */
+@media (min-width: 1024px) {
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 264px;
+    position: sticky;
+    top: 72px;
+    height: calc(100vh - 72px);
+    overflow-y: auto;
+    padding: var(--space-6) var(--space-4);
+    border-right: 1px solid var(--border-light);
+    background: var(--bg-subtle);
+  }
 
-.stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  text-align: center;
-  transition: all var(--duration-normal) var(--ease);
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--accent-ghost);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xl);
-}
-
-.stat-value {
-  font-size: var(--text-3xl);
-  font-weight: 800;
-  color: var(--text-heading);
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  font-weight: 500;
+  .sidebar-nav {
+    flex: 1;
+  }
 }
 
 /* ── Pagination ── */
@@ -434,66 +462,6 @@ tbody tr:hover {
   margin-left: var(--space-3);
 }
 
-/* ── Course card variant ── */
-.exam-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  cursor: pointer;
-  transition: all var(--duration-normal) var(--ease);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.exam-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--accent);
-}
-
-.exam-card-title {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--text-heading);
-}
-
-.exam-card-meta {
-  display: flex;
-  gap: var(--space-4);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
-.exam-card-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: auto;
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--border-light);
-}
-
-/* ── Page Header ── */
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-4);
-  margin-bottom: var(--space-8);
-}
-
-.page-header h1 {
-  font-size: var(--text-2xl);
-  font-weight: 700;
-}
-
-.page-header p {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
 /* ── Profile Avatar ── */
 .profile-avatar {
   width: 64px;
@@ -531,141 +499,6 @@ tbody tr:hover {
   color: var(--accent);
 }
 
-/* ── Breadcrumb ── */
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  margin-bottom: var(--space-6);
-}
-
-.breadcrumb a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-.breadcrumb a:hover {
-  text-decoration: underline;
-}
-
-.breadcrumb span {
-  color: var(--text-dim);
-}
-
-/* ── Tabs ── */
-.tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--border-light);
-  margin-bottom: var(--space-6);
-}
-
-.tab {
-  padding: var(--space-3) var(--space-5);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: all var(--duration-fast) var(--ease);
-  background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-}
-
-.tab:hover {
-  color: var(--text);
-  border-bottom-color: var(--border-strong);
-}
-
-.tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-
-/* ── Empty State ── */
-.empty-state {
-  text-align: center;
-  padding: var(--space-16) var(--space-8);
-  color: var(--text-muted);
-}
-
-.empty-state-icon {
-  font-size: 3rem;
-  margin-bottom: var(--space-4);
-  opacity: 0.5;
-}
-
-.empty-state h3 {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: var(--space-2);
-}
-
-.empty-state p {
-  font-size: var(--text-sm);
-  max-width: 360px;
-  margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    padding: var(--space-4);
-  }
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .page-header h1 { font-size: var(--text-xl); }
-  .dashboard-header h1 { font-size: var(--text-2xl); }
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-3);
-  }
-  .stat-card { padding: var(--space-4); }
-  .stat-card-value { font-size: var(--text-2xl); }
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-3);
-  }
-  .exam-grid {
-    grid-template-columns: 1fr;
-  }
-  .tabs {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    flex-wrap: nowrap;
-  }
-  .tab {
-    white-space: nowrap;
-    padding: var(--space-3) var(--space-4);
-  }
-  .section-grid-2 {
-    grid-template-columns: 1fr;
-  }
-  .quick-actions {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  /* Stack table rows as cards */
-  .table-wrap table,
-  .table-container table {
-    min-width: 600px;
-  }
-  .breadcrumb {
-    flex-wrap: wrap;
-  }
-}
-
 /* ── Student Checklist (Add to Class modal) ── */
 .student-checklist {
   max-height: 350px;
@@ -683,7 +516,19 @@ tbody tr:hover {
   border-radius: var(--radius);
   transition: background var(--duration-fast) var(--ease);
   border-bottom: 1px solid var(--border-light);
+  animation: checklist-fade-in 0.3s ease both;
 }
+
+.student-checklist-item:nth-child(1) { animation-delay: 0s; }
+.student-checklist-item:nth-child(2) { animation-delay: 0.03s; }
+.student-checklist-item:nth-child(3) { animation-delay: 0.06s; }
+.student-checklist-item:nth-child(4) { animation-delay: 0.09s; }
+.student-checklist-item:nth-child(5) { animation-delay: 0.12s; }
+.student-checklist-item:nth-child(6) { animation-delay: 0.15s; }
+.student-checklist-item:nth-child(7) { animation-delay: 0.18s; }
+.student-checklist-item:nth-child(8) { animation-delay: 0.21s; }
+.student-checklist-item:nth-child(9) { animation-delay: 0.24s; }
+.student-checklist-item:nth-child(10) { animation-delay: 0.27s; }
 
 .student-checklist-item:last-child {
   border-bottom: none;
@@ -803,20 +648,59 @@ tbody tr:hover {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.student-checklist-item {
-  animation: checklist-fade-in 0.3s ease both;
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: var(--space-4);
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .page-header h1 { font-size: var(--text-xl); }
+  .dashboard-header h1 { font-size: var(--text-2xl); }
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+  .stat-card { padding: var(--space-4); }
+  .stat-card-value { font-size: var(--text-2xl); }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+  .exam-grid {
+    grid-template-columns: 1fr;
+  }
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+  .tab {
+    white-space: nowrap;
+    padding: var(--space-3) var(--space-4);
+  }
+  .section-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .quick-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .table-wrap,
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-wrap table,
+  .table-container table {
+    min-width: 600px;
+  }
+  .breadcrumb {
+    flex-wrap: wrap;
+  }
 }
-
-.student-checklist-item:nth-child(1) { animation-delay: 0s; }
-.student-checklist-item:nth-child(2) { animation-delay: 0.03s; }
-.student-checklist-item:nth-child(3) { animation-delay: 0.06s; }
-.student-checklist-item:nth-child(4) { animation-delay: 0.09s; }
-.student-checklist-item:nth-child(5) { animation-delay: 0.12s; }
-.student-checklist-item:nth-child(6) { animation-delay: 0.15s; }
-.student-checklist-item:nth-child(7) { animation-delay: 0.18s; }
-.student-checklist-item:nth-child(8) { animation-delay: 0.21s; }
-.student-checklist-item:nth-child(9) { animation-delay: 0.24s; }
-.student-checklist-item:nth-child(10) { animation-delay: 0.27s; }
 
 @media (max-width: 480px) {
   .stats-row {
@@ -834,22 +718,17 @@ tbody tr:hover {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-2);
   }
+  .quick-action-card {
+    padding: var(--space-4) var(--space-3);
+  }
   .page-header h1 { font-size: var(--text-lg); }
   .page-header .btn { width: 100%; }
   .exam-card-title { font-size: var(--text-base); }
   .exam-card { padding: var(--space-4); }
-  .sidebar { width: 280px; }
   .main-content { padding: var(--space-3); }
   .breadcrumb { font-size: var(--text-xs); }
   .sidebar-nav a { font-size: var(--text-sm); padding: var(--space-2) var(--space-4); }
   .class-card, .section-card, .student-row { padding: var(--space-4); }
-}
-  .quick-action-card {
-    padding: var(--space-4) var(--space-3);
-  }
-  .exam-card { padding: var(--space-4); }
-  .page-header h1 { font-size: var(--text-lg); }
-  .main-content { padding: var(--space-3); }
   .pagination {
     flex-wrap: wrap;
     gap: var(--space-1);

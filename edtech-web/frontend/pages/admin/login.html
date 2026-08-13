@@ -1,33 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Login - EdTech AI Test & Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=4">
+  <link rel="stylesheet" href="../../css/main.css?v=5">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    .admin-login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); }
-    .admin-login-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+    .admin-login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--admin-login-grad); }
+    .admin-login-card { background: var(--admin-login-card); border: 1px solid var(--admin-login-border); border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 400px; box-shadow: var(--shadow-black); }
     .admin-login-card .logo { text-align: center; margin-bottom: 32px; }
-    .admin-login-card .logo svg { color: #6366f1; }
-    .admin-login-card .logo h1 { color: #f1f5f9; font-size: 1.25rem; margin-top: 12px; font-weight: 700; }
+    .admin-login-card .logo svg { color: var(--accent); }
+    .admin-login-card .logo h1 { color: var(--admin-login-text); font-size: 1.25rem; margin-top: 12px; font-weight: 700; }
     .admin-login-card .logo p { color: #64748b; font-size: 0.85rem; margin-top: 4px; }
     .admin-login-card .form-group { margin-bottom: 20px; }
     .admin-login-card .form-group label { display: block; color: #94a3b8; font-size: 0.8rem; font-weight: 500; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .admin-login-card .form-group input { width: 100%; padding: 12px 16px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #f1f5f9; font-size: 0.95rem; outline: none; transition: border 0.2s; box-sizing: border-box; }
-    .admin-login-card .form-group input:focus { border-color: #6366f1; }
+    .admin-login-card .form-group input { width: 100%; padding: 12px 16px; background: var(--admin-login-input); border: 1px solid var(--admin-login-border); border-radius: 8px; color: var(--admin-login-text); font-size: 0.95rem; outline: none; transition: border 0.2s; box-sizing: border-box; }
+    .admin-login-card .form-group input:focus { border-color: var(--accent); }
     .admin-login-card .form-group input::placeholder { color: #475569; }
-    .admin-login-card .btn-admin { width: 100%; padding: 12px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-    .admin-login-card .btn-admin:hover { background: #4f46e5; }
+    .admin-login-card .btn-admin { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .admin-login-card .btn-admin:hover { background: var(--accent-dark); }
     .admin-login-card .btn-admin:disabled { opacity: 0.6; cursor: not-allowed; }
     .admin-login-card .error-msg { color: #ef4444; font-size: 0.85rem; text-align: center; margin-top: 12px; display: none; }
     .admin-login-card .footer { text-align: center; margin-top: 24px; color: #475569; font-size: 0.75rem; }
     .admin-login-card .lock-icon { text-align: center; margin-bottom: 16px; }
-    .admin-login-card .lock-icon .shield { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: rgba(99,102,241,0.15); }
+    .admin-login-card .lock-icon .shield { display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: var(--accent-ghost); color: var(--accent); }
     .admin-login-card .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 8px; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .admin-login-page .hamburger-btn { color: #f1f5f9; }
+    .admin-login-page .navbar { background: rgba(15,23,42,0.95); border-bottom-color: var(--admin-login-border); }
+    .admin-login-page .navbar-brand { color: var(--admin-login-text); }
+    .admin-login-page .theme-toggle { background: rgba(255,255,255,0.08); border-color: var(--admin-login-border); color: var(--admin-login-text); }
+    .admin-login-page .theme-toggle:hover { background: var(--accent-ghost); border-color: var(--accent); color: var(--accent); }
+    .admin-login-page .hamburger-btn { color: var(--admin-login-text); }
     .admin-login-page .hamburger-btn:hover { color: #fff; background: rgba(255,255,255,0.1); }
     .admin-login-card .alert { padding: 10px 14px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 16px; display: none; }
     .alert-error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
@@ -36,8 +41,8 @@
 </head>
 <body class="admin-login-page">
 
-  <nav class="navbar" style="background:rgba(15,23,42,0.95);border-bottom-color:#334155;">
-    <a href="../../index.html" class="navbar-brand" style="color:#f1f5f9;">
+  <nav class="navbar">
+    <a href="../../index.html" class="navbar-brand">
       <span class="brand-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></span>
       EdTech AI Test &amp; Learning App
     </a>

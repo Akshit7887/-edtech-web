@@ -170,7 +170,7 @@
   gap: var(--space-3);
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  background: var(--white);
+  background: var(--bg-card);
   color: var(--text-body);
   border: 1px solid var(--border);
   border-radius: var(--radius);

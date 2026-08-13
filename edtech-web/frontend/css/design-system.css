@@ -1,22 +1,25 @@
 /* ============================================================
-   EdTech Web - White & Red Minimal Design System
-   Unified color palette, typography, and spacing
+   EdTech Web - Design System (Crimson Rose / Deep Slate)
+   Unified tokens for light + dark themes.
+   Light tokens are the default; dark is applied via
+   [data-theme="dark"] or the OS prefers-color-scheme
+   (unless the user pinned [data-theme="light"]).
    ============================================================ */
 
 :root {
-  /* ── Brand Colors ── */
-  --red-50:  #fef2f2;
-  --red-100: #fee2e2;
-  --red-200: #fecaca;
-  --red-300: #fca5a5;
-  --red-400: #f87171;
-  --red-500: #ef4444;
-  --red-600: #dc2626;
-  --red-700: #b91c1c;
-  --red-800: #991b1b;
-  --red-900: #7f1d1d;
+  /* ── Brand Colors (Crimson Rose) ── */
+  --red-50:  #fff1f2;
+  --red-100: #ffe4e6;
+  --red-200: #fecdd3;
+  --red-300: #fda4af;
+  --red-400: #fb7185;
+  --red-500: #f43f5e;
+  --red-600: #e11d48;
+  --red-700: #be123c;
+  --red-800: #9f1239;
+  --red-900: #881337;
 
-  /* ── Neutral Colors ── */
+  /* ── Neutral Colors (Zinc) ── */
   --white: #ffffff;
   --gray-50:  #fafafa;
   --gray-100: #f4f4f5;
@@ -29,7 +32,7 @@
   --gray-800: #27272a;
   --gray-900: #18181b;
 
-  /* ── Semantic Colors ── */
+  /* ── Semantic Colors (Light) ── */
   --bg:           var(--white);
   --bg-subtle:    var(--gray-50);
   --bg-card:      var(--white);
@@ -47,10 +50,10 @@
   --border-light: var(--gray-100);
   --border-strong:var(--gray-300);
 
-  /* Accent - Deeper/Darker Red */
-  --accent:       var(--red-700);
-  --accent-light: var(--red-600);
-  --accent-dark:  var(--red-800);
+  /* Accent - Crimson Rose */
+  --accent:       var(--red-600);
+  --accent-light: var(--red-500);
+  --accent-dark:  var(--red-700);
   --accent-ghost: var(--red-100);
 
   /* Semantic Status Colors */
@@ -64,13 +67,42 @@
   --error-light:   var(--accent-ghost);
   --error-dark:    var(--accent-dark);
 
-  /* ── Shadows (Minimal, soft) ── */
-  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow:      0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md:   0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
-  --shadow-lg:   0 10px 15px rgba(0, 0, 0, 0.04), 0 4px 6px rgba(0, 0, 0, 0.02);
-  --shadow-xl:   0 20px 25px rgba(0, 0, 0, 0.04), 0 10px 10px rgba(0, 0, 0, 0.02);
-  --shadow-red:  0 4px 14px rgba(153, 27, 27, 0.25);
+  /* ── Theme Surfaces (light) ── */
+  --glass-bg:          rgba(255, 255, 255, 0.85);
+  --glass-header-bg:   rgba(250, 250, 250, 0.7);
+  --glass-border:      rgba(255, 255, 255, 0.3);
+  --overlay-soft:      rgba(0, 0, 0, 0.35);
+  --overlay-dim:       rgba(255, 255, 255, 0.9);
+  --overlay-strong:    rgba(0, 0, 0, 0.5);
+  --hover-surface:     rgba(0, 0, 0, 0.04);
+  --divider-grad:      rgba(0, 0, 0, 0.08);
+
+  /* Accent soft states (nav hover/active) */
+  --accent-soft:       rgba(225, 29, 72, 0.07);
+  --accent-soft-strong:rgba(225, 29, 72, 0.13);
+
+  /* Soft status icons (qa-icon, avatars) */
+  --indigo-soft:  #eef2ff;  --indigo-strong:  #4f46e5;
+  --green-soft:   #f0fdf4;  --green-strong:   #16a34a;
+  --orange-soft:  #fff7ed;  --orange-strong:  #d97706;
+  --red-soft:     #fef2f2;  --red-strong:     #dc2626;
+  --amber-soft:   #fffbeb;  --amber-strong:   #d97706;
+
+  /* Menu avatar gradient (single source for the old red->violet mix) */
+  --menu-avatar-grad: linear-gradient(135deg, var(--accent-light), var(--accent-dark));
+
+  /* ── Shadows (Light) ── */
+  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow:      0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md:   0 4px 6px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg:   0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.03);
+  --shadow-xl:   0 20px 25px rgba(0, 0, 0, 0.06), 0 10px 10px rgba(0, 0, 0, 0.03);
+  --shadow-accent:     0 4px 14px rgba(225, 29, 72, 0.22);
+  --shadow-accent-lg:  0 8px 25px rgba(225, 29, 72, 0.28);
+  --shadow-success:    0 8px 25px rgba(34, 197, 94, 0.25);
+  --shadow-error:      0 8px 25px rgba(225, 29, 72, 0.28);
+  --shadow-warning:    0 8px 25px rgba(245, 158, 11, 0.3);
+  --shadow-black:      0 25px 60px rgba(0, 0, 0, 0.2);
 
   /* ── Radius ── */
   --radius-sm:  4px;
@@ -132,6 +164,214 @@
   --z-overlay:   400;
   --z-modal:     500;
   --z-toast:     600;
+
+  /* ── Scrolling & Skeleton (light) ── */
+  --scrollbar-thumb:       var(--gray-300);
+  --scrollbar-thumb-hover: var(--gray-400);
+  --skeleton-from:         var(--gray-100);
+  --skeleton-to:           var(--gray-200);
+
+  /* ── Form select chevron (light) ── */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2352525b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+
+  /* ── Pulse ring color ── */
+  --ring-color: rgba(225, 29, 72, 0.4);
+
+  /* Info (indigo) */
+  --info-light: #eef2ff;
+  --info:       #818cf8;
+  --info-dark:  #3730a3;
+
+  /* Admin login page (branded dark navy card) */
+  --admin-login-grad:   linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --admin-login-card:   #1e293b;
+  --admin-login-input:  #0f172a;
+  --admin-login-border: #334155;
+  --admin-login-text:   #f1f5f9;
+}
+
+/* ── Dark Theme (manual override) ── */
+[data-theme="dark"] {
+  /* ── Semantic Colors (Dark) ── */
+  --bg:           #0b0b0f;
+  --bg-subtle:    #101014;
+  --bg-card:      #16161b;
+  --bg-muted:     #1d1d24;
+  --bg-hover:     #23232b;
+  --bg-active:    rgba(225, 29, 72, 0.16);
+
+  --text:         #f4f4f5;
+  --text-heading: #fafafa;
+  --text-body:    #a1a1aa;
+  --text-muted:   #8b8b94;
+  --text-dim:     #6b6b74;
+
+  --border:       #26262e;
+  --border-light: #1f1f26;
+  --border-strong:#32323b;
+
+  /* Accent (brighter for dark contrast) */
+  --accent:       var(--red-400);
+  --accent-light: var(--red-500);
+  --accent-dark:  var(--red-500);
+  --accent-ghost: rgba(244, 63, 94, 0.14);
+
+  /* Semantic Status Colors */
+  --success:       #4ade80;
+  --success-light: rgba(74, 222, 128, 0.13);
+  --success-dark:  #86efac;
+  --warning:       #fbbf24;
+  --warning-light: rgba(251, 191, 36, 0.13);
+  --warning-dark:  #fcd34d;
+  --error:         var(--accent);
+  --error-light:   var(--accent-ghost);
+  --error-dark:    var(--red-400);
+
+  /* ── Theme Surfaces (dark) ── */
+  --glass-bg:          rgba(17, 17, 22, 0.88);
+  --glass-header-bg:   rgba(23, 23, 28, 0.75);
+  --glass-border:      rgba(255, 255, 255, 0.07);
+  --overlay-soft:      rgba(0, 0, 0, 0.55);
+  --overlay-dim:       rgba(11, 11, 15, 0.85);
+  --overlay-strong:    rgba(0, 0, 0, 0.65);
+  --hover-surface:     rgba(255, 255, 255, 0.05);
+  --divider-grad:      rgba(255, 255, 255, 0.08);
+
+  --accent-soft:       rgba(244, 63, 94, 0.1);
+  --accent-soft-strong:rgba(244, 63, 94, 0.17);
+
+  --indigo-soft:  rgba(99, 102, 241, 0.16);  --indigo-strong:  #a5b4fc;
+  --green-soft:   rgba(74, 222, 128, 0.14);  --green-strong:   #4ade80;
+  --orange-soft:  rgba(251, 146, 60, 0.14);  --orange-strong:  #fb923c;
+  --red-soft:     rgba(248, 113, 113, 0.14); --red-strong:     #f87171;
+  --amber-soft:   rgba(251, 191, 36, 0.14);  --amber-strong:   #fbbf24;
+
+  --menu-avatar-grad: linear-gradient(135deg, var(--red-500), var(--red-700));
+
+  /* ── Shadows (Dark) ── */
+  --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow:      0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md:   0 4px 6px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.35);
+  --shadow-lg:   0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-xl:   0 20px 25px rgba(0, 0, 0, 0.55), 0 10px 10px rgba(0, 0, 0, 0.4);
+  --shadow-accent:     0 4px 14px rgba(244, 63, 94, 0.3);
+  --shadow-accent-lg:  0 8px 25px rgba(244, 63, 94, 0.38);
+  --shadow-success:    0 8px 25px rgba(74, 222, 128, 0.3);
+  --shadow-error:      0 8px 25px rgba(244, 63, 94, 0.38);
+  --shadow-warning:    0 8px 25px rgba(251, 191, 36, 0.3);
+  --shadow-black:      0 25px 60px rgba(0, 0, 0, 0.6);
+
+  /* ── Scrolling & Skeleton (dark) ── */
+  --scrollbar-thumb:       #32323b;
+  --scrollbar-thumb-hover: #43434e;
+  --skeleton-from:         #1d1d24;
+  --skeleton-to:           #292932;
+
+  /* ── Form select chevron (dark) ── */
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a1a1aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+
+  /* ── Pulse ring color (dark) ── */
+  --ring-color: rgba(244, 63, 94, 0.45);
+
+  /* Info (indigo) */
+  --info-light: rgba(99, 102, 241, 0.15);
+  --info:       #818cf8;
+  --info-dark:  #a5b4fc;
+
+  /* Admin login page */
+  --admin-login-grad:   linear-gradient(135deg, #0b0b0f 0%, #16161b 100%);
+  --admin-login-card:   #16161b;
+  --admin-login-input:  #101014;
+  --admin-login-border: #26262e;
+  --admin-login-text:   #f1f5f9;
+}
+
+/* ── Dark Theme (system preference, unless user pinned light) ── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:           #0b0b0f;
+    --bg-subtle:    #101014;
+    --bg-card:      #16161b;
+    --bg-muted:     #1d1d24;
+    --bg-hover:     #23232b;
+    --bg-active:    rgba(225, 29, 72, 0.16);
+
+    --text:         #f4f4f5;
+    --text-heading: #fafafa;
+    --text-body:    #a1a1aa;
+    --text-muted:   #8b8b94;
+    --text-dim:     #6b6b74;
+
+    --border:       #26262e;
+    --border-light: #1f1f26;
+    --border-strong:#32323b;
+
+    --accent:       var(--red-400);
+    --accent-light: var(--red-500);
+    --accent-dark:  var(--red-500);
+    --accent-ghost: rgba(244, 63, 94, 0.14);
+
+    --success:       #4ade80;
+    --success-light: rgba(74, 222, 128, 0.13);
+    --success-dark:  #86efac;
+    --warning:       #fbbf24;
+    --warning-light: rgba(251, 191, 36, 0.13);
+    --warning-dark:  #fcd34d;
+    --error:         var(--accent);
+    --error-light:   var(--accent-ghost);
+    --error-dark:    var(--red-400);
+
+    --glass-bg:          rgba(17, 17, 22, 0.88);
+    --glass-header-bg:   rgba(23, 23, 28, 0.75);
+    --glass-border:      rgba(255, 255, 255, 0.07);
+    --overlay-soft:      rgba(0, 0, 0, 0.55);
+    --overlay-dim:       rgba(11, 11, 15, 0.85);
+    --overlay-strong:    rgba(0, 0, 0, 0.65);
+    --hover-surface:     rgba(255, 255, 255, 0.05);
+    --divider-grad:      rgba(255, 255, 255, 0.08);
+
+    --accent-soft:       rgba(244, 63, 94, 0.1);
+    --accent-soft-strong:rgba(244, 63, 94, 0.17);
+
+    --indigo-soft:  rgba(99, 102, 241, 0.16);  --indigo-strong:  #a5b4fc;
+    --green-soft:   rgba(74, 222, 128, 0.14);  --green-strong:   #4ade80;
+    --orange-soft:  rgba(251, 146, 60, 0.14);  --orange-strong:  #fb923c;
+    --red-soft:     rgba(248, 113, 113, 0.14); --red-strong:     #f87171;
+    --amber-soft:   rgba(251, 191, 36, 0.14);  --amber-strong:   #fbbf24;
+
+    --menu-avatar-grad: linear-gradient(135deg, var(--red-500), var(--red-700));
+
+    --shadow-sm:   0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow:      0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow-md:   0 4px 6px rgba(0, 0, 0, 0.45), 0 2px 4px rgba(0, 0, 0, 0.35);
+    --shadow-lg:   0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.4);
+    --shadow-xl:   0 20px 25px rgba(0, 0, 0, 0.55), 0 10px 10px rgba(0, 0, 0, 0.4);
+    --shadow-accent:     0 4px 14px rgba(244, 63, 94, 0.3);
+    --shadow-accent-lg:  0 8px 25px rgba(244, 63, 94, 0.38);
+    --shadow-success:    0 8px 25px rgba(74, 222, 128, 0.3);
+    --shadow-error:      0 8px 25px rgba(244, 63, 94, 0.38);
+    --shadow-warning:    0 8px 25px rgba(251, 191, 36, 0.3);
+    --shadow-black:      0 25px 60px rgba(0, 0, 0, 0.6);
+
+    --scrollbar-thumb:       #32323b;
+    --scrollbar-thumb-hover: #43434e;
+    --skeleton-from:         #1d1d24;
+    --skeleton-to:           #292932;
+
+    --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a1a1aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+
+    --ring-color: rgba(244, 63, 94, 0.45);
+
+    --info-light: rgba(99, 102, 241, 0.15);
+    --info:       #818cf8;
+    --info-dark:  #a5b4fc;
+
+    --admin-login-grad:   linear-gradient(135deg, #0b0b0f 0%, #16161b 100%);
+    --admin-login-card:   #16161b;
+    --admin-login-input:  #101014;
+    --admin-login-border: #26262e;
+    --admin-login-text:   #f1f5f9;
+  }
 }
 
 /* ============================================================
@@ -159,6 +399,7 @@ body {
   color: var(--text);
   background: var(--bg);
   min-height: 100vh;
+  transition: background-color 0.3s var(--ease), color 0.3s var(--ease);
 }
 
 img, picture, video, canvas, svg {
@@ -186,6 +427,18 @@ a {
 a:not(.btn):hover {
   color: var(--accent-dark);
   text-decoration: underline;
+}
+
+/* Form controls pick up the accent automatically */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--accent);
+}
+
+/* ── Accessible focus ring ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ============================================================
@@ -270,12 +523,12 @@ a:not(.btn):hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--gray-300);
+  background: var(--scrollbar-thumb);
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gray-400);
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* ============================================================
@@ -283,5 +536,38 @@ a:not(.btn):hover {
    ============================================================ */
 ::selection {
   background: var(--accent-light);
-  color: var(--gray-900);
+  color: var(--white);
+}
+
+/* ============================================================
+   Theme Toggle Button (injected by nav.js)
+   ============================================================ */
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  color: var(--text-body);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-ghost);
+  transform: rotate(15deg) scale(1.05);
+}
+
+.theme-toggle:active {
+  transform: scale(0.92);
+}
+
+.theme-toggle svg {
+  transition: transform 0.4s var(--ease-bounce);
 }
