@@ -1,6 +1,6 @@
 /* global self, caches, fetch, URL */
 
-var CACHE_NAME = 'edtech-v5';
+var CACHE_NAME = 'edtech-v6';
 
 var CACHE_FIRST = [
   /\/css\//,
