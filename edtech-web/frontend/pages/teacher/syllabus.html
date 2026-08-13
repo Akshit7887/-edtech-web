@@ -276,6 +276,8 @@
       const blocks = [];
 
       [...grouped.values()].forEach(g => {
+        const fileList = g.files.slice(0, 3).map(f => `<li title="${escHtml(f.title)}">${escHtml(f.title)}</li>`).join('');
+        const more = g.files.length > 3 ? `<li class="more">+${g.files.length - 3} more file${g.files.length - 3 !== 1 ? 's' : ''}</li>` : '';
         blocks.push(`
           <div class="class-syllabus-block">
             <div class="class-syllabus-header">
@@ -286,11 +288,14 @@
               </div>
               <span class="class-syllabus-count">${g.files.length} file${g.files.length !== 1 ? 's' : ''}</span>
             </div>
+            <ul class="smart-card-files" style="margin:0 0 var(--space-3);">${fileList}${more}</ul>
             <div class="syllabus-grid">${g.files.map(f => fileCard(f, classOpts)).join('')}</div>
           </div>`);
       });
 
       if (unassigned.length) {
+        const fileList = unassigned.slice(0, 3).map(f => `<li title="${escHtml(f.title)}">${escHtml(f.title)}</li>`).join('');
+        const more = unassigned.length > 3 ? `<li class="more">+${unassigned.length - 3} more file${unassigned.length - 3 !== 1 ? 's' : ''}</li>` : '';
         blocks.push(`
           <div class="class-syllabus-block">
             <div class="class-syllabus-header">
@@ -301,6 +306,7 @@
               </div>
               <span class="class-syllabus-count">${unassigned.length} file${unassigned.length !== 1 ? 's' : ''}</span>
             </div>
+            <ul class="smart-card-files" style="margin:0 0 var(--space-3);">${fileList}${more}</ul>
             <div class="syllabus-grid">${unassigned.map(f => fileCard(f, classOpts)).join('')}</div>
           </div>`);
       }
