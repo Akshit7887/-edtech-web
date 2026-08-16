@@ -259,11 +259,13 @@
   100% { transform: perspective(1200px) rotateY(0deg); opacity: 1; }
 }
 
+html.page-flip-out,
 body.page-flip-out {
   animation: pageFlipOut 0.35s ease-in forwards;
   transform-origin: left center;
 }
 
+html.page-flip-in,
 body.page-flip-in {
   animation: pageFlipIn 0.4s ease-out forwards;
   transform-origin: left center;

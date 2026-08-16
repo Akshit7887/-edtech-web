@@ -48,18 +48,30 @@
   function initPageFlip() {
     var isInternal = document.referrer && document.referrer.indexOf(window.location.host) !== -1;
     if (isInternal) {
-      document.body.classList.add('page-flip-in');
+      if (!document.documentElement.classList.contains('page-flip-in')) {
+        document.documentElement.classList.add('page-flip-in');
+        document.body.classList.add('page-flip-in');
+      }
       setTimeout(function () {
+        document.documentElement.classList.remove('page-flip-in');
         document.body.classList.remove('page-flip-in');
       }, 500);
     }
 
     if (typeof window.goTo === 'function') {
       var orig = window.goTo;
+      var navigating = false;
       window.goTo = function (path) {
+        if (navigating) return;
+        navigating = true;
+        document.documentElement.classList.remove('page-flip-in');
         document.body.classList.remove('page-flip-in');
+        document.documentElement.classList.add('page-flip-out');
         document.body.classList.add('page-flip-out');
-        setTimeout(function () { orig(path); }, 300);
+        setTimeout(function () {
+          orig(path);
+          navigating = false;
+        }, 300);
       };
     }
   }
