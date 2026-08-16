@@ -94,6 +94,12 @@ public class ExamItem
     [JsonPropertyName("teacher_name")]
     public string? TeacherName { get; set; }
 
+    [JsonPropertyName("scheduled_at")]
+    public DateTime? ScheduledAt { get; set; }
+
+    [JsonPropertyName("scheduled_end_at")]
+    public DateTime? ScheduledEndAt { get; set; }
+
     [JsonPropertyName("created_at")]
     public DateTime CreatedAt { get; set; }
 }

@@ -50,6 +50,16 @@ public class ExamService : IExamService
     private static string ExamCacheKey(int examId) => $"exam:{examId}";
     private static string ExamListCacheKey(int userId, string role) => $"exams:{role}:{userId}";
 
+    private async Task NotifyAssignedStudentsAsync(int examId, string eventType, object data)
+    {
+        using var conn = _db.CreateReadOnlyConnection();
+        var studentIds = (await conn.QueryAsync<int>(
+            "SELECT DISTINCT \"student_id\" FROM \"StudentExamAssignments\" WHERE \"exam_id\" = @ExamId",
+            new { ExamId = examId })).ToList();
+        foreach (var sid in studentIds)
+            await _hub.NotifyStudentDashboard(sid, eventType, data);
+    }
+
     public async Task<ExamListResponse> GetAllExamsAsync(int userId, string role, int page = 1, int limit = 20)
     {
         using var conn = _db.CreateConnection();
@@ -95,9 +105,9 @@ public class ExamService : IExamService
                 return new ExamListResponse { Data = new(), Pagination = new PaginationInfo { Page = page, Limit = limit, Total = 0, TotalPages = 0 } };
 
             var examIds = assignments.Select(a => a.ExamId).ToList();
-            var sql = @"SELECT * FROM ""Exams"" WHERE ""id"" = ANY(@Ids) AND ""status"" IN ('active', 'closed')
+            var sql = @"SELECT * FROM ""Exams"" WHERE ""id"" = ANY(@Ids) AND (""status"" IN ('active', 'closed') OR ""scheduled_at"" IS NOT NULL)
                 ORDER BY ""created_at"" DESC LIMIT @Limit OFFSET @Offset";
-            var countSql = "SELECT COUNT(*) FROM \"Exams\" WHERE \"id\" = ANY(@Ids) AND \"status\" IN ('active', 'closed')";
+            var countSql = "SELECT COUNT(*) FROM \"Exams\" WHERE \"id\" = ANY(@Ids) AND (\"status\" IN ('active', 'closed') OR \"scheduled_at\" IS NOT NULL)";
 
             var exams = (await conn.QueryAsync<Exam>(sql, new { Ids = examIds, Limit = limit, Offset = offset })).ToList();
             var total = await conn.ExecuteScalarAsync<int>(countSql, new { Ids = examIds });
@@ -113,6 +123,8 @@ public class ExamService : IExamService
                     DurationMinutes = e.DurationMinutes,
                     TotalQuestions = e.TotalQuestions,
                     TeacherName = null,
+                    ScheduledAt = e.ScheduledAt,
+                    ScheduledEndAt = e.ScheduledEndAt,
                     CreatedAt = e.CreatedAt
                 }).ToList(),
                 Pagination = new PaginationInfo { Page = page, Limit = limit, Total = total, TotalPages = (int)Math.Ceiling((double)total / limit) }
@@ -298,6 +310,7 @@ public class ExamService : IExamService
             await _hub.NotifyTeacherDashboard(teacherId, "ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
             await _hub.NotifyExamGroup(examId, "ExamStatusChanged", new { exam.Id, exam.Status });
             await _hub.NotifyAdmins("ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
+            await NotifyAssignedStudentsAsync(examId, "ExamStatusChanged", new { exam.Id, exam.Status });
         }
         await _cache.RemoveAsync(ExamCacheKey(examId));
         await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
@@ -347,6 +360,7 @@ public class ExamService : IExamService
         await _hub.NotifyTeacherDashboard(teacherId, "ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
         await _hub.NotifyExamGroup(examId, "ExamActivated", new { exam.Id, exam.Title });
         await _hub.NotifyAdmins("ExamActivated", new { exam.Id, exam.Title, exam.Status });
+        await NotifyAssignedStudentsAsync(examId, "ExamActivated", new { exam.Id, exam.Title });
         await _cache.RemoveAsync(ExamCacheKey(examId));
         await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
         return exam;

@@ -133,6 +133,17 @@
   border-color: var(--accent);
 }
 
+.exam-card-disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+.exam-card-disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border-light);
+}
+
 .exam-card-title {
   font-size: var(--text-base);
   font-weight: 600;

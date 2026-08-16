@@ -512,6 +512,12 @@ public class TeacherService : ITeacherService
             "UPDATE \"Exams\" SET \"scheduled_at\" = @ScheduledAt, \"updated_at\" = @Now WHERE \"id\" = @Id RETURNING *",
             new { ScheduledAt = scheduleDate, Now = DateTime.UtcNow, Id = examId });
 
+        var studentIds = (await conn.QueryAsync<int>(
+            "SELECT DISTINCT \"student_id\" FROM \"StudentExamAssignments\" WHERE \"exam_id\" = @ExamId",
+            new { ExamId = examId })).ToList();
+        foreach (var sid in studentIds)
+            await _hub.NotifyStudentDashboard(sid, "ExamScheduled", new { exam.Id, exam.Title, exam.ScheduledAt });
+
         return exam;
     }
 

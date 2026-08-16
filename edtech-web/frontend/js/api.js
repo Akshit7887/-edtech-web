@@ -154,6 +154,8 @@ function statusBadge(status) {
     active: 'badge-green',
     draft: 'badge-yellow',
     closed: 'badge-gray',
+    scheduled: 'badge-yellow',
+    upcoming: 'badge-yellow',
     completed: 'badge-green',
     in_progress: 'badge-yellow',
     not_started: 'badge-gray',
