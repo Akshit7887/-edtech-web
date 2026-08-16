@@ -14,6 +14,11 @@ public class DashboardHub : Hub
         await Groups.AddToGroupAsync(Context.ConnectionId, $"student_{studentId}");
     }
 
+    public async Task JoinAdminGroup()
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, "admins");
+    }
+
     public async Task LeaveTeacherGroup(int teacherId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"teacher_{teacherId}");
@@ -22,5 +27,10 @@ public class DashboardHub : Hub
     public async Task LeaveStudentGroup(int studentId)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"student_{studentId}");
+    }
+
+    public async Task LeaveAdminGroup()
+    {
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, "admins");
     }
 }

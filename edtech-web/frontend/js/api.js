@@ -119,7 +119,8 @@ function showAlert(msg, type = 'error', container) {
   const el = document.createElement('div');
   el.className = `alert alert-${type}`;
   el.textContent = msg;
-  const parent = container || document.querySelector('.container') || document.body;
+  const parent = container || document.querySelector('#alert-container')
+    || document.querySelector('.container') || document.body;
   parent.prepend(el);
   if (type !== 'error') {
     setTimeout(() => { if (el.parentNode) el.remove(); }, 4000);
@@ -148,6 +149,7 @@ function formatDate(d) {
 }
 
 function statusBadge(status) {
+  if (!status) return '<span class="badge badge-gray">unknown</span>';
   const map = {
     active: 'badge-green',
     draft: 'badge-yellow',

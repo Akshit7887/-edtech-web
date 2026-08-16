@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Departments - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=8">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=8">
+  <link rel="stylesheet" href="../../css/main.css?v=9">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=9">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -43,10 +43,13 @@
     </main>
   </div>
 
-  <script src="../../js/api.js?v=8"></script>
-  <script src="../../js/auth.js?v=8"></script>
+  <script src="../../js/api.js?v=9"></script>
+  <script src="../../js/auth.js?v=9"></script>
   <script>
     let allUsers = [];
+    let currentDepts = [];
+
+    function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
@@ -65,6 +68,7 @@
       try {
         const res = await api.get('/api/departments');
         const depts = res.data || [];
+        currentDepts = depts;
         const container = document.getElementById('departments-grid');
         if (!depts.length) {
           container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🏛️</div><h3>No departments yet</h3><p>Create your first department to organize teachers and students.</p></div>';
@@ -79,7 +83,7 @@
               </div>
               <div style="display:flex;gap:var(--space-2)">
                 <button class="btn btn-sm btn-info" onclick="editDepartment(${d.id})" title="Edit">✏️</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteDepartment(${d.id}, '${d.name.replace(/'/g, "\\'")}')" title="Delete">🗑️</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteDepartment(${d.id})" title="Delete">🗑️</button>
               </div>
             </div>
             ${d.description ? `<p style="font-size:var(--text-sm);color:var(--text-muted);margin:var(--space-2) 0">${d.description}</p>` : ''}
@@ -89,8 +93,8 @@
               <span>👤 ${d.head_name || 'No Head'}</span>
             </div>
             <div class="exam-card-footer" style="justify-content:flex-start;gap:var(--space-2)">
-              <button class="btn btn-sm btn-info" onclick="showAssignModal(${d.id}, '${d.name.replace(/'/g, "\\'")}')">Assign Users</button>
-              <button class="btn btn-sm btn-secondary" onclick="viewDepartment(${d.id}, '${d.name.replace(/'/g, "\\'")}')">View Members</button>
+              <button class="btn btn-sm btn-info" onclick="showAssignModal(${d.id})">Assign Users</button>
+              <button class="btn btn-sm btn-secondary" onclick="viewDepartment(${d.id})">View Members</button>
             </div>
           </div>
         `).join('');
@@ -191,15 +195,18 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
 
-    function deleteDepartment(id, name) {
-      if (!confirm(`Delete department "${name}"? Users will be unassigned from this department.`)) return;
+    function deleteDepartment(id) {
+      const d = currentDepts.find(x => x.id === id) || {};
+      if (!confirm(`Delete department "${d.name || 'this department'}"? Users will be unassigned from this department.`)) return;
       api.del(`/api/departments/${id}`).then(() => {
         showAlert('Department deleted', 'success');
         loadDepartments();
       }).catch(e => showAlert(e.message, 'error'));
     }
 
-    function showAssignModal(deptId, deptName) {
+    function showAssignModal(deptId) {
+      const dept = currentDepts.find(x => x.id === deptId) || {};
+      const deptName = escHtml(dept.name || 'Department');
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'assign-modal';
       const unassigned = allUsers.filter(u => !u.department_id || u.department_id !== deptId);
       overlay.innerHTML = `
@@ -256,8 +263,9 @@
       }
     }
 
-    async function viewDepartment(id, name) {
+    async function viewDepartment(id) {
       try {
+        const dept = currentDepts.find(x => x.id === id) || {};
         const res = await api.get(`/api/departments/${id}/users`);
         const users = res.data || [];
         const membersHtml = users.length ? users.map(u => `
@@ -274,7 +282,7 @@
         const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'view-dept-modal';
         overlay.innerHTML = `
           <div class="modal" style="max-width:600px">
-            <div class="modal-header"><h3>👥 ${name} Members</h3><button class="modal-close" onclick="closeModal('view-dept-modal')">×</button></div>
+            <div class="modal-header"><h3>👥 ${escHtml(dept.name || 'Department')} Members</h3><button class="modal-close" onclick="closeModal('view-dept-modal')">×</button></div>
             <div class="modal-body">
               ${membersHtml}
             </div>
@@ -297,6 +305,6 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
-  <script src="../../js/nav.js?v=8"></script>
+  <script src="../../js/nav.js?v=9"></script>
 </body>
 </html>

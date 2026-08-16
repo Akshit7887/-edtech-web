@@ -31,7 +31,7 @@ public class AdminController : ControllerBase
         var totalUsers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\"");
         var totalStudents = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'student'");
         var totalTeachers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'teacher'");
-        var pendingTeachers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'teacher' AND \"approval_status\" != 'approved'");
+        var pendingTeachers = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'teacher' AND (\"approval_status\" = 'pending' OR \"approval_status\" IS NULL)");
         var totalExams = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Exams\"");
         var totalDepartments = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Departments\"");
         var totalClasses = await conn.QuerySingleAsync<int>("SELECT COUNT(*) FROM \"Classes\"");
@@ -53,7 +53,7 @@ public class AdminController : ControllerBase
         var teachers = await conn.QueryAsync(@"
             SELECT ""id"", ""name"", ""email"", ""phone"", ""approval_status"", ""rejection_reason"", ""created_at""
             FROM ""Users""
-            WHERE ""role"" = 'teacher' AND ""approval_status"" != 'approved'
+            WHERE ""role"" = 'teacher' AND (""approval_status"" = 'pending' OR ""approval_status"" IS NULL)
             ORDER BY ""created_at"" DESC");
         return Ok(new { success = true, data = teachers });
     }

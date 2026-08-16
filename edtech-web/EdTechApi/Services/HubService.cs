@@ -9,6 +9,7 @@ public interface IHubService
     Task NotifyStudentDashboard(int studentId, string eventType, object data);
     Task NotifyExamGroup(int examId, string eventType, object data);
     Task NotifyUser(int userId, string eventType, object data);
+    Task NotifyAdmins(string eventType, object data);
 }
 
 public class HubService : IHubService
@@ -45,5 +46,10 @@ public class HubService : IHubService
     public async Task NotifyUser(int userId, string eventType, object data)
     {
         await _notificationHub.Clients.Group("user_" + userId).SendAsync(eventType, data);
+    }
+
+    public async Task NotifyAdmins(string eventType, object data)
+    {
+        await _dashboardHub.Clients.Group("admins").SendAsync(eventType, data);
     }
 }

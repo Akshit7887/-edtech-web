@@ -13,6 +13,12 @@ public class StudentAnalyticsResponse
     [JsonPropertyName("average_score")]
     public double AverageScore { get; set; }
 
+    [JsonPropertyName("average_percentage")]
+    public int AveragePercentage { get; set; }
+
+    [JsonPropertyName("pending_exams")]
+    public int PendingExams { get; set; }
+
     [JsonPropertyName("highest_score")]
     public int HighestScore { get; set; }
 

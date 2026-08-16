@@ -18,6 +18,7 @@ public interface IQuestionService
     Task<object> CreateExamSessionAsync(int studentId, int examId, string ipAddress, string userAgent);
     Task<object> SubmitExamAnswersAsync(int sessionId, List<AnswerDto> answers);
     Task<object> GetExamSessionAsync(int studentId, int examId);
+    Task<Exam?> GetExamForTeacherAsync(int examId, int teacherId);
     Task<List<MyResultItem>> GetStudentResultsAsync(int studentId);
     Task<object> DisqualifySessionAsync(int sessionId, string reason);
 }
@@ -194,8 +195,12 @@ public class QuestionService : IQuestionService
 
         await TriggerParentNotification(session.StudentId, session.ExamId, "disqualified", 0);
 
-        await _hub.NotifyTeacherDashboard(session.StudentId, "StudentDisqualified", new { sessionId, examId = session.ExamId, studentId = session.StudentId, reason });
+        var exam = await conn.QueryFirstOrDefaultAsync<Exam>(
+            "SELECT * FROM \"Exams\" WHERE \"id\" = @Id", new { Id = session.ExamId });
+
+        await _hub.NotifyTeacherDashboard(exam?.TeacherId ?? 0, "StudentDisqualified", new { sessionId, examId = session.ExamId, studentId = session.StudentId, reason });
         await _hub.NotifyStudentDashboard(session.StudentId, "Disqualified", new { sessionId, reason });
+        await _hub.NotifyAdmins("StudentDisqualified", new { sessionId, examId = session.ExamId, studentId = session.StudentId, reason });
 
         return new { success = true };
     }
@@ -341,8 +346,12 @@ public class QuestionService : IQuestionService
 
         await TriggerParentNotification(session.StudentId, session.ExamId, "completed", (int)score);
 
-        await _hub.NotifyTeacherDashboard(session.StudentId, "ExamSubmitted", new { sessionId, examId = session.ExamId, studentId = session.StudentId, score, totalQuestions = session.TotalQuestions });
+        var exam = await conn.QueryFirstOrDefaultAsync<Exam>(
+            "SELECT * FROM \"Exams\" WHERE \"id\" = @Id", new { Id = session.ExamId });
+
+        await _hub.NotifyTeacherDashboard(exam?.TeacherId ?? 0, "ExamSubmitted", new { sessionId, examId = session.ExamId, studentId = session.StudentId, score, totalQuestions = session.TotalQuestions });
         await _hub.NotifyStudentDashboard(session.StudentId, "ExamSubmitted", new { sessionId, score, totalQuestions = session.TotalQuestions });
+        await _hub.NotifyAdmins("ExamSubmitted", new { sessionId, examId = session.ExamId, studentId = session.StudentId, score, totalQuestions = session.TotalQuestions });
 
         return new { score, totalQuestions = session.TotalQuestions, correctAnswers = (int)score, wrongAnswers = answeredCount - (int)score };
     }
@@ -354,12 +363,52 @@ public class QuestionService : IQuestionService
             "SELECT * FROM \"ExamSessions\" WHERE \"student_id\" = @StudentId AND \"exam_id\" = @ExamId ORDER BY \"created_at\" DESC LIMIT 1",
             new { StudentId = studentId, ExamId = examId });
         if (session == null) throw new AppException(404, "Session not found");
-        return session;
+
+        var exam = await conn.QueryFirstOrDefaultAsync<Exam>(
+            "SELECT * FROM \"Exams\" WHERE \"id\" = @Id", new { Id = examId });
+
+        var questions = (await conn.QueryAsync<QuestionPool>(
+            "SELECT * FROM \"QuestionPool\" WHERE \"exam_id\" = @ExamId AND \"status\" = 'published' ORDER BY \"id\"",
+            new { ExamId = examId })).ToList();
+
+        return new
+        {
+            id = session.Id,
+            student_id = session.StudentId,
+            exam_id = session.ExamId,
+            status = session.Status,
+            time_remaining_seconds = session.TimeRemainingSeconds,
+            exam = new
+            {
+                id = exam?.Id,
+                title = exam?.Title ?? "",
+                subject = exam?.Subject ?? "",
+                duration_minutes = exam?.DurationMinutes ?? 0,
+                total_questions = exam?.TotalQuestions ?? questions.Count
+            },
+            questions = questions.Select(q => new
+            {
+                id = q.Id,
+                question_text = q.QuestionText,
+                option_a = q.OptionA,
+                option_b = q.OptionB,
+                option_c = q.OptionC,
+                option_d = q.OptionD
+            }).ToList()
+        };
     }
 
     public async Task<object> DisqualifySessionAsync(int sessionId, string reason)
     {
         return await DisqualifyStudentAsync(sessionId, reason);
+    }
+
+    public async Task<Exam?> GetExamForTeacherAsync(int examId, int teacherId)
+    {
+        using var conn = _db.CreateConnection();
+        return await conn.QueryFirstOrDefaultAsync<Exam>(
+            "SELECT * FROM \"Exams\" WHERE \"id\" = @Id AND \"teacher_id\" = @TeacherId",
+            new { Id = examId, TeacherId = teacherId });
     }
 
     private object ShuffleOptions(QuestionPool question)
@@ -397,7 +446,9 @@ public class QuestionService : IQuestionService
             @"SELECT s.""id"" AS ""session_id"", e.""id"" AS ""exam_id"", e.""title"" AS ""exam_title"",
                      e.""subject"", COALESCE(s.""score"", 0) AS ""score"",
                      s.""total_questions"", s.""status"", s.""submitted_at"",
-                     s.""time_remaining_seconds"" AS ""time_used""
+                     CASE WHEN s.""started_at"" IS NOT NULL AND s.""submitted_at"" IS NOT NULL
+                          THEN EXTRACT(EPOCH FROM (s.""submitted_at"" - s.""started_at""))::int
+                          ELSE 0 END AS ""time_used""
               FROM ""ExamSessions"" s
               JOIN ""Exams"" e ON e.""id"" = s.""exam_id""
               WHERE s.""student_id"" = @StudentId

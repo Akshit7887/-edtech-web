@@ -88,7 +88,9 @@ public class StudentService : IStudentService
         {
             TotalExams = sessions.Count,
             CompletedExams = completed.Count,
+            PendingExams = inProgress.Count + disqualified.Count,
             AverageScore = completed.Count > 0 ? Math.Round(avgScore, 2) : 0,
+            AveragePercentage = totalPossible > 0 ? (int)Math.Round(totalEarned / totalPossible * 100) : 0,
             HighestScore = completed.Count > 0 ? (int)completed.Max(s => s.Score) : 0,
             BestRank = completed.Count > 0 ? 1 : 0,
             ExamPerformances = trend.Select(t => new ExamPerformanceItem
@@ -197,7 +199,7 @@ public class StudentService : IStudentService
 
         return new
         {
-            session = new { studentId, examId, totalQuestions = assignedQuestions.Count, mode = "practice" },
+            session = new { studentId, examId, examTitle = exam.Title, totalQuestions = assignedQuestions.Count, mode = "practice" },
             questions = safeQuestions
         };
     }

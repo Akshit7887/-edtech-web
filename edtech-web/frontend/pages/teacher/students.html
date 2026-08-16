@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Students - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=8">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=8">
+  <link rel="stylesheet" href="../../css/main.css?v=9">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=9">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -48,13 +48,14 @@
       <div class="pagination" id="students-pagination"></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=8"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=9"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=8"></script>
-  <script src="../../js/auth.js?v=8"></script>
-  <script src="../../js/teacher.js?v=8"></script>
+  <script src="../../js/api.js?v=9"></script>
+  <script src="../../js/auth.js?v=9"></script>
+  <script src="../../js/teacher.js?v=9"></script>
   <script>
     let currentPage = 1;
+    let currentStudents = [];
 
     document.addEventListener('DOMContentLoaded', () => { if (!requireRole('teacher')) return; setupNavbar(); loadStudentsPage(1); });
 
@@ -63,6 +64,7 @@
       try {
         const res = await loadStudents(page, 20);
         const students = res.data || [];
+        currentStudents = students;
         const pagination = res.pagination || { page: 1, total: 0, total_pages: 1 };
         const tbody = document.getElementById('students-tbody');
         if (!students.length) {
@@ -78,7 +80,7 @@
               <td>${formatDate(s.registered_at || s.created_at)}</td>
               <td>
                 <button class="btn btn-sm btn-info" onclick="goTo('student-detail.html?id=${s.id}')">View</button>
-                <button class="btn btn-sm btn-danger" onclick="confirmDeleteStudent(${s.id}, '${s.name.replace(/'/g, "\\'")}')">Delete</button>
+                <button class="btn btn-sm btn-danger" onclick="confirmDeleteStudent(${s.id})">Delete</button>
               </td>
             </tr>
           `).join('');
@@ -129,11 +131,13 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
 
-    function confirmDeleteStudent(id, name) {
+    function confirmDeleteStudent(id) {
+      const s = currentStudents.find(x => x.id === id) || {};
+      const safeName = escHtml(s.name || 'Student');
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'delete-student-modal';
       overlay.innerHTML = `
         <div class="modal"><div class="modal-header"><h3>Delete Student</h3><button class="modal-close" onclick="closeDeleteStudentModal()">×</button></div>
-        <div class="modal-body"><p>Are you sure you want to delete <strong>${name}</strong>? This action cannot be undone.</p></div>
+        <div class="modal-body"><p>Are you sure you want to delete <strong>${safeName}</strong>? This action cannot be undone.</p></div>
         <div class="modal-footer"><button class="btn btn-secondary" onclick="closeDeleteStudentModal()">Cancel</button><button class="btn btn-danger" onclick="handleDeleteStudent(${id})">Delete</button></div></div>
       `;
       document.body.appendChild(overlay);
@@ -299,6 +303,8 @@
       const msg = document.getElementById('ann-message').value.trim();
       if (!confirmTeacher || !confirmStudent) { showAlert('Please confirm both sections before sending', 'error'); return; }
       if (!title || !msg) { showAlert('Title and message are required', 'error'); return; }
+      if (title.length < 3) { showAlert('Title must be at least 3 characters', 'error'); return; }
+      if (msg.length < 10) { showAlert('Message must be at least 10 characters', 'error'); return; }
       const btn = document.getElementById('ann-send-btn');
       btn.classList.add('loading');
       btn.disabled = true;
@@ -321,6 +327,6 @@
       }
     }
   </script>
-  <script src="../../js/nav.js?v=8"></script>
+  <script src="../../js/nav.js?v=9"></script>
 </body>
 </html>

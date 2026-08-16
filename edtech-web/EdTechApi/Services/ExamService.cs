@@ -254,6 +254,7 @@ public class ExamService : IExamService
             });
 
         await _hub.NotifyTeacherDashboard(teacherId, "ExamCreated", new { exam.Id, exam.Title, exam.Subject, exam.Status });
+        await _hub.NotifyAdmins("ExamCreated", new { exam.Id, exam.Title, exam.Subject, exam.Status });
         await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
         return exam;
     }
@@ -296,6 +297,7 @@ public class ExamService : IExamService
         {
             await _hub.NotifyTeacherDashboard(teacherId, "ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
             await _hub.NotifyExamGroup(examId, "ExamStatusChanged", new { exam.Id, exam.Status });
+            await _hub.NotifyAdmins("ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
         }
         await _cache.RemoveAsync(ExamCacheKey(examId));
         await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
@@ -321,6 +323,7 @@ public class ExamService : IExamService
         await _cache.RemoveAsync(ExamCacheKey(examId));
         await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
         await _hub.NotifyTeacherDashboard(teacherId, "ExamDeleted", new { examId = exam.Id, title = exam.Title });
+        await _hub.NotifyAdmins("ExamDeleted", new { examId = exam.Id, title = exam.Title });
     }
 
     public async Task<Exam> ActivateExamAsync(int examId, int teacherId)
@@ -343,6 +346,7 @@ public class ExamService : IExamService
 
         await _hub.NotifyTeacherDashboard(teacherId, "ExamStatusChanged", new { exam.Id, exam.Title, exam.Status });
         await _hub.NotifyExamGroup(examId, "ExamActivated", new { exam.Id, exam.Title });
+        await _hub.NotifyAdmins("ExamActivated", new { exam.Id, exam.Title, exam.Status });
         await _cache.RemoveAsync(ExamCacheKey(examId));
         await _cache.RemoveAsync(ExamListCacheKey(teacherId, "teacher"));
         return exam;

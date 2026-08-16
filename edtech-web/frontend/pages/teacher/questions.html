@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Manage Questions - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=8">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=8">
+  <link rel="stylesheet" href="../../css/main.css?v=9">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=9">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -29,11 +29,11 @@
       <div id="questions-content" data-aos="fade-up"><div class="loading-overlay"><div class="spinner"></div><span>Loading questions...</span></div></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=8"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=9"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=8"></script>
-  <script src="../../js/auth.js?v=8"></script>
-  <script src="../../js/teacher.js?v=8"></script>
+  <script src="../../js/api.js?v=9"></script>
+  <script src="../../js/auth.js?v=9"></script>
+  <script src="../../js/teacher.js?v=9"></script>
   <script>
     let examId = 0;
     let contentContainer = 'questions-content';
@@ -84,8 +84,8 @@
                     ${questions.map((q, i) => `
                       <tr style="animation:fadeInUp 0.3s var(--ease) both;animation-delay:${i * 0.03}s">
                         <td>${i + 1}</td>
-                        <td>${q.question_text.substring(0, 60)}${q.question_text.length > 60 ? '...' : ''}</td>
-                        <td style="font-size:0.8rem">A:${q.option_a.substring(0,20)} / B:${q.option_b.substring(0,20)}${q.option_c ? ' / C:' + q.option_c.substring(0,20) : ''}${q.option_d ? ' / D:' + q.option_d.substring(0,20) : ''}</td>
+                        <td>${(q.question_text || '').substring(0, 60)}${(q.question_text || '').length > 60 ? '...' : ''}</td>
+                        <td style="font-size:0.8rem">A:${(q.option_a || '').substring(0,20)} / B:${(q.option_b || '').substring(0,20)}${q.option_c ? ' / C:' + q.option_c.substring(0,20) : ''}${q.option_d ? ' / D:' + q.option_d.substring(0,20) : ''}</td>
                         <td><span class="badge badge-success">${q.correct_answer}</span></td>
                         <td>${statusBadge(q.difficulty)}</td>
                         <td>${q.points || 1}</td>
@@ -108,15 +108,23 @@
     }
 
     function showAddModal() { showQuestionModal(); }
-    function showGenerateModal() {
+    async function showGenerateModal() {
+      let syllabusText = '';
+      try {
+        const exam = await getExamDetail(examId);
+        if (exam) syllabusText = exam.syllabus_text || '';
+      } catch (e) {}
       const html = `
         <div class="form-group"><label class="form-label">Question Count</label><input type="number" class="form-input" id="gen-count" value="5" min="1"></div>
         <div class="form-group"><label class="form-label">Difficulty</label><select class="form-select" id="gen-difficulty"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
+        <div class="form-group"><label class="form-label">Syllabus / Topic (used as context for generation)</label><textarea class="form-textarea" id="gen-syllabus" rows="4" placeholder="Paste your syllabus or topic text here for accurate questions...">${(syllabusText || '').replace(/</g, '&lt;')}</textarea></div>
+        <p style="font-size:0.8rem;color:var(--text-dim)">Generated questions are saved as <strong>drafts</strong>. Review them below, then click <strong>Publish</strong>.</p>
       `;
       showCustomModal('AI Generate Questions', html, async () => {
         const count = parseInt(document.getElementById('gen-count').value);
         const difficulty = document.getElementById('gen-difficulty').value;
-        try { await generateQuestions(examId, count, difficulty, ''); showAlert('Questions generated!', 'success'); closeModal(); await loadQuestions(); } catch (e) { showAlert(e.message, 'error'); }
+        const text = document.getElementById('gen-syllabus').value.trim();
+        try { await generateQuestions(examId, count, difficulty, text); showAlert('Questions generated and saved as drafts!', 'success'); closeModal(); await loadQuestions(); } catch (e) { showAlert(e.message, 'error'); }
       });
     }
 
@@ -187,7 +195,31 @@
     }
 
     async function handleAssign() {
-      try { await assignQuestions(examId); showAlert('Questions assigned to students', 'success'); } catch (e) { showAlert(e.message, 'error'); }
+      let students = [];
+      try {
+        const res = await loadStudents(1, 500);
+        students = res.data || [];
+      } catch (e) { showAlert(e.message, 'error'); return; }
+      if (!students.length) { showAlert('No students available to assign questions to', 'error'); return; }
+      const html = `
+        <p style="margin-bottom:8px;color:var(--text-dim);font-size:0.85rem">Select students to receive the published question set for this exam:</p>
+        <div style="max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px">
+          ${students.map(s => `
+            <label style="display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer">
+              <input type="checkbox" class="assign-check" value="${s.id}">
+              <span>${escHtml(s.name)}</span>
+              <span style="margin-left:auto;font-size:0.8rem;color:var(--text-dim)">${escHtml(s.email || '')}</span>
+            </label>`).join('')}
+        </div>`;
+      showCustomModal('Assign Questions to Students', html, async () => {
+        const ids = Array.from(document.querySelectorAll('.assign-check:checked')).map(c => parseInt(c.value));
+        if (!ids.length) { showAlert('Select at least one student', 'error'); return; }
+        try {
+          await assignQuestions(examId, ids);
+          showAlert(`Questions assigned to ${ids.length} student(s)`, 'success');
+          closeModal();
+        } catch (e) { showAlert(e.message, 'error'); }
+      });
     }
 
     function showCustomModal(title, bodyHtml, onConfirm) {
@@ -210,6 +242,6 @@
 
     function closeModal() { const m = document.getElementById('custom-modal'); if (m) m.remove(); }
   </script>
-  <script src="../../js/nav.js?v=8"></script>
+  <script src="../../js/nav.js?v=9"></script>
 </body>
 </html>

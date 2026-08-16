@@ -1,5 +1,8 @@
+using Dapper;
+using EdTechApi.Data;
 using EdTechApi.DTOs;
 using EdTechApi.Middleware;
+using EdTechApi.Models;
 using EdTechApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,19 +16,56 @@ public class QuestionController : ControllerBase
 {
     private readonly IQuestionService _questionService;
     private readonly IGeminiService _geminiService;
+    private readonly IDbConnectionFactory _db;
 
-    public QuestionController(IQuestionService questionService, IGeminiService geminiService)
+    public QuestionController(IQuestionService questionService, IGeminiService geminiService, IDbConnectionFactory db)
     {
         _questionService = questionService;
         _geminiService = geminiService;
+        _db = db;
     }
 
     [RequireRole("teacher")]
     [HttpPost("generate")]
     public async Task<IActionResult> GenerateQuestions([FromBody] GenerateQuestionsRequest request)
     {
-        var result = await _geminiService.GenerateQuestionsFromText(request.SyllabusText ?? "", request.QuestionCount, request.Difficulty ?? "medium");
-        return Ok(new { success = true, message = "Questions generated successfully", data = new { questions = result, count = result.Count } });
+        var exam = await _questionService.GetExamForTeacherAsync(request.ExamId, GetUserId());
+        if (exam == null)
+            return NotFound(new { success = false, error = "Exam not found or access denied" });
+
+        var result = await _geminiService.GenerateQuestionsFromText(request.SyllabusText ?? exam.SyllabusText ?? "", request.QuestionCount, request.Difficulty ?? "medium");
+        if (result.Count == 0)
+            return BadRequest(new { success = false, error = "Failed to generate questions, please try again" });
+
+        using var conn = _db.CreateConnection();
+        var now = DateTime.UtcNow;
+        var savedIds = new List<int>();
+        foreach (var q in result)
+        {
+            var saved = await conn.QuerySingleAsync<QuestionPool>(
+                @"INSERT INTO ""QuestionPool"" (""exam_id"", ""question_text"", ""option_a"", ""option_b"", ""option_c"", ""option_d"", ""correct_answer"", ""difficulty"", ""points"", ""status"", ""created_at"", ""updated_at"")
+                  VALUES (@ExamId, @QuestionText, @OptionA, @OptionB, @OptionC, @OptionD, @CorrectAnswer, @Difficulty, 1, 'pending', @Now, @Now) RETURNING *",
+                new
+                {
+                    ExamId = request.ExamId,
+                    QuestionText = q.question_text,
+                    OptionA = q.option_a,
+                    OptionB = q.option_b,
+                    OptionC = q.option_c,
+                    OptionD = q.option_d,
+                    CorrectAnswer = q.correct_answer,
+                    Difficulty = q.difficulty ?? request.Difficulty ?? "medium",
+                    Now = now
+                });
+            savedIds.Add(saved.Id);
+        }
+
+        return Ok(new
+        {
+            success = true,
+            message = $"Generated {savedIds.Count} questions and saved them as draft. Use Edit Questions to review and publish them.",
+            data = new { questions = result, count = savedIds.Count, status = "pending" }
+        });
     }
 
     [RequireRole("teacher")]

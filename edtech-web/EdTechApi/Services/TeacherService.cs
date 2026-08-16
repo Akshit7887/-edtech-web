@@ -28,7 +28,7 @@ public interface ITeacherService
     Task<List<ParentContactItem>> GetParentContactsAsync(int teacherId);
     Task<object> CreateOrUpdateParentContactAsync(int studentId, int teacherId, ParentContactRequest data);
     Task DeleteParentContactAsync(int studentId, int teacherId);
-    Task<List<ParentNotification>> GetParentReportHistoryAsync(int examId, int teacherId);
+    Task<List<ParentReportHistoryItem>> GetParentReportHistoryAsync(int examId, int teacherId);
 }
 
 public class TeacherService : ITeacherService
@@ -139,6 +139,7 @@ public class TeacherService : ITeacherService
             new { Sid = sid, Id = user.Id });
 
         await _hub.NotifyTeacherDashboard(teacherId, "StudentCreated", new { id = user.Id, name = user.Name, email = user.Email });
+        await _hub.NotifyAdmins("StudentCreated", new { id = user.Id, name = user.Name, email = user.Email });
 
         return new { id = user.Id, name = user.Name, email = user.Email, student_id = user.StudentId, role = user.Role, created_at = user.CreatedAt };
     }
@@ -607,7 +608,7 @@ public class TeacherService : ITeacherService
         await conn.ExecuteAsync("DELETE FROM \"Users\" WHERE \"id\" = @Id", new { Id = studentId });
     }
 
-    public async Task<List<ParentNotification>> GetParentReportHistoryAsync(int examId, int teacherId)
+    public async Task<List<ParentReportHistoryItem>> GetParentReportHistoryAsync(int examId, int teacherId)
     {
         using var conn = _db.CreateConnection();
 
@@ -616,11 +617,26 @@ public class TeacherService : ITeacherService
         if (exam == null || exam.TeacherId != teacherId)
             throw new AppException(404, "Exam not found or access denied");
 
-        var reports = (await conn.QueryAsync<ParentNotification>(
-            "SELECT * FROM \"ParentNotifications\" WHERE \"exam_id\" = @ExamId ORDER BY \"sent_at\" DESC",
-            new { ExamId = examId })).ToList();
+        var rows = await conn.QueryAsync(
+            @"SELECT p.""id"", p.""student_id"", u.""name"" AS ""student_name"", p.""message"", p.""sent_to"", p.""sent_at""
+              FROM ""ParentNotifications"" p
+              JOIN ""Users"" u ON u.""id"" = p.""student_id""
+              WHERE p.""exam_id"" = @ExamId
+              ORDER BY p.""sent_at"" DESC",
+            new { ExamId = examId });
 
-        return reports;
+        return rows.Select(r => new ParentReportHistoryItem
+        {
+            Id = (int)r.id,
+            StudentId = (int)r.student_id,
+            StudentName = (string)r.student_name,
+            Message = (string)r.message,
+            SentVia = r.sent_to is string st && !string.IsNullOrWhiteSpace(st)
+                ? (st.Contains('@') ? "Email" : "SMS")
+                : null,
+            SentAt = r.sent_at as DateTime?,
+            DeliveryStatus = "sent"
+        }).ToList();
     }
 
     private static readonly HashSet<string> Letters = new() { "A", "B", "C", "D" };

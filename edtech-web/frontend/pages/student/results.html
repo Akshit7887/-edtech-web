@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>My Results - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=8">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=8">
+  <link rel="stylesheet" href="../../css/main.css?v=9">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=9">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -36,14 +36,14 @@
       </div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=8"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=9"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
   <script>
     AOS.init({ once: true });
   </script>
-  <script src="../../js/api.js?v=8"></script>
-  <script src="../../js/auth.js?v=8"></script>
-  <script src="../../js/exam.js?v=8"></script>
+  <script src="../../js/api.js?v=9"></script>
+  <script src="../../js/auth.js?v=9"></script>
+  <script src="../../js/exam.js?v=9"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
@@ -82,6 +82,13 @@
       requestAnimationFrame(update);
     }
 
+    function formatTimeTaken(seconds) {
+      if (!seconds || seconds <= 0) return '-';
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return m > 0 ? `${m}m ${s}s` : `${s}s`;
+    }
+
     async function loadResults() {
       try {
         const results = await loadMyResults();
@@ -106,7 +113,7 @@
                   <td>${r.total_questions ? `<span class="badge ${(r.score / r.total_questions) >= 0.4 ? 'badge-success' : 'badge-danger'}">${((r.score / r.total_questions) * 100).toFixed(1)}%</span>` : '-'}</td>
                   <td>${statusBadge(r.status)}</td>
                   <td>${formatDate(r.submitted_at)}</td>
-                  <td>${r.time_used ? r.time_used + 's' : '-'}</td>
+                  <td>${formatTimeTaken(r.time_used)}</td>
                   <td>
                     ${r.status === 'completed' ? `<button class="btn btn-sm btn-primary" onclick="goTo('review.html?session=${r.session_id}')">Review</button>` : '-'}
                   </td>
@@ -121,6 +128,6 @@
        }
     }
   </script>
-  <script src="../../js/nav.js?v=8"></script>
+  <script src="../../js/nav.js?v=9"></script>
 </body>
 </html>

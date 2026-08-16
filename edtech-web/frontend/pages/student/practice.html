@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Practice - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=8">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=8">
-  <link rel="stylesheet" href="../../css/exam.css?v=8">
+  <link rel="stylesheet" href="../../css/main.css?v=9">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=9">
+  <link rel="stylesheet" href="../../css/exam.css?v=9">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -41,16 +41,17 @@
       </div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=8"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=9"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=8"></script>
-  <script src="../../js/auth.js?v=8"></script>
+  <script src="../../js/api.js?v=9"></script>
+  <script src="../../js/auth.js?v=9"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
       setupNavbar();
-      const examId = getQueryParam('examId');
-      if (examId) await startPractice(parseInt(examId));
+      const examIdParam = getQueryParam('examId');
+      const examId = parseInt(examIdParam);
+      if (examId && !isNaN(examId)) await startPractice(examId);
       else await loadExams();
     });
 
@@ -81,10 +82,11 @@
       try {
         const res = await api.post('/api/students/practice/start', { exam_id: examId });
         const data = res.data;
+        const session = data.session || {};
         const container = document.getElementById('practice-container');
         container.innerHTML = `
           <div class="exam-header">
-            <h2>Practice: ${data.exam_title || 'Exam'}</h2>
+            <h2>Practice: ${session.exam_title || data.exam_title || 'Exam'}</h2>
             <div style="color:var(--text-muted)">Answer all questions and submit for instant feedback</div>
           </div>
           <div id="practice-questions"></div>
@@ -142,7 +144,7 @@
           `<p style="font-size:2.5rem;font-weight:800;color:var(--accent);margin:20px 0">${data.score} / ${data.total_questions}</p>` +
           `<p style="color:var(--text-muted)">${data.total_questions ? ((data.score / data.total_questions) * 100).toFixed(1) : 0}%</p>` +
           '<div style="margin-top:24px;max-width:500px;margin-left:auto;margin-right:auto">' +
-          (data.results || []).map(r => `
+          (data.question_results || data.results || []).map(r => `
             <div style="padding:10px 14px;margin:6px 0;border-radius:var(--radius-sm);background:${r.is_correct ? 'rgba(34,197,94,0.1)' : 'rgba(220,38,38,0.1)'};border-left:3px solid ${r.is_correct ? 'var(--success)' : 'var(--error)'}">
               <strong>Q${r.question_id}:</strong> ${r.is_correct ? 'Correct' : 'Incorrect'} <span style="color:var(--text-dim)">(Your: ${r.student_answer}, Correct: ${r.correct_answer})</span>
             </div>
@@ -155,6 +157,6 @@
       }
     }
   </script>
-  <script src="../../js/nav.js?v=8"></script>
+  <script src="../../js/nav.js?v=9"></script>
 </body>
 </html>

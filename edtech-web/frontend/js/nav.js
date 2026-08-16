@@ -398,25 +398,28 @@
     var sidebar = document.querySelector('.sidebar-nav');
     if (!sidebar) return;
 
-    var hasBackEl = sidebar.querySelector('#back-link, #back-to-exam');
-
     var role = null;
     try { role = localStorage.getItem('user_role'); } catch (e) {}
 
     var menu = getMenu(role);
     if (!menu.length) return;
 
+    // Preserve exam-scoped sidebar links (page JS updates their href with the exam id)
+    var preserved = [];
+    ['back-link', 'back-to-exam', 'questions-link', 'stats-link', 'attendance-link', 'reports-link'].forEach(function (id) {
+      var el = sidebar.querySelector('#' + id);
+      if (el && el.closest('li')) preserved.push(el.closest('li'));
+    });
+
     sidebar.innerHTML = '';
 
-    // Preserve exam-scoped "Back to Exam" links (page JS updates their href)
-    if (hasBackEl) {
-      var li = document.createElement('li');
-      var a = document.createElement('a');
-      a.id = hasBackEl.id;
-      a.href = 'dashboard.html';
-      a.innerHTML = '<span class="nav-icon">←</span><span>Back to Exam</span>';
-      li.appendChild(a);
-      sidebar.appendChild(li);
+    if (preserved.length) {
+      var pWrap = document.createElement('li');
+      var pNav = document.createElement('nav');
+      pNav.className = 'sidebar-subnav';
+      preserved.forEach(function (li) { pNav.appendChild(li); });
+      pWrap.appendChild(pNav);
+      sidebar.appendChild(pWrap);
     }
 
     var currentPath = window.location.pathname;

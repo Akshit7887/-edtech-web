@@ -49,10 +49,9 @@ function saveSession(token, user) {
   localStorage.setItem('user_role', user.role);
   localStorage.setItem('user_id', user.id);
   localStorage.setItem('user_name', user.name);
-  console.log('Student ID saved:', user.student_id ? user.student_id : 'N/A');
   if (user.student_id) {
     localStorage.setItem('user_student_id', user.student_id);
-  
+
   }
 
 }
@@ -89,6 +88,10 @@ function requireAuth() {
 function requireRole(role) {
   if (!requireAuth()) return false;
   const r = getUserRole();
+  if (!r) {
+    goTo('/login.html');
+    return false;
+  }
   if (r !== role) {
     if (r === 'admin') goTo('/pages/admin/dashboard.html');
     else goTo(`/pages/${r}/dashboard.html`);

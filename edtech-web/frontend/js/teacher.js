@@ -1,4 +1,3 @@
-console.log('teacher.js loaded');
 async function loadStudents(page = 1, limit = 20) {
   try {
     const res = await api.get(`/api/teacher/students?page=${page}&limit=${limit}`);
@@ -12,8 +11,6 @@ async function loadStudents(page = 1, limit = 20) {
 async function loadStudentDetail(studentId) {
   try {
     const res = await api.get(`/api/teacher/students/${studentId}`);
-
-   console.log('Student detail response:', res.data); // Log the response for debugging
     return res.data;
   } catch (e) {
     showAlert(e.message || 'Failed to load student details');
@@ -96,8 +93,8 @@ async function generateQuestions(examId, count, difficulty, syllabusText) {
   return res;
 }
 
-async function assignQuestions(examId) {
-  const res = await api.post('/api/questions/assign', { exam_id: examId });
+async function assignQuestions(examId, studentIds = []) {
+  const res = await api.post('/api/questions/assign', { exam_id: examId, student_ids: studentIds });
   return res;
 }
 
@@ -226,7 +223,8 @@ async function sendParentReports(examId) {
 async function getPendingReports(examId) {
   try {
     const res = await api.get(`/api/reports/pending/${examId}`);
-    return res.data || [];
+    const data = res.data || {};
+    return Array.isArray(data) ? data : (data.students || []);
   } catch (e) {
     return [];
   }

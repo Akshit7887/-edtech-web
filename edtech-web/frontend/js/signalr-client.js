@@ -31,6 +31,7 @@ class RealtimeClient {
     conn.onreconnected(() => {
       console.log('[Realtime] Dashboard reconnected');
       if (role === 'teacher') conn.invoke('JoinTeacherGroup', userId);
+      else if (role === 'admin') conn.invoke('JoinAdminGroup');
       else conn.invoke('JoinStudentGroup', userId);
     });
 
@@ -38,6 +39,7 @@ class RealtimeClient {
     try {
       await conn.start();
       if (role === 'teacher') await conn.invoke('JoinTeacherGroup', userId);
+      else if (role === 'admin') await conn.invoke('JoinAdminGroup');
       else await conn.invoke('JoinStudentGroup', userId);
       this.isConnected[key] = true;
     } catch (e) {

@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Manage Exams - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=8">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=8">
+  <link rel="stylesheet" href="../../css/main.css?v=9">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=9">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -43,13 +43,14 @@
       <div class="pagination" id="exams-pagination" data-aos="fade-up" data-aos-delay="150"></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=8"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=9"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=8"></script>
-  <script src="../../js/auth.js?v=8"></script>
+  <script src="../../js/api.js?v=9"></script>
+  <script src="../../js/auth.js?v=9"></script>
   <script>
     let examPage = 1;
     let examPagination = null;
+    let currentExams = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
@@ -62,6 +63,7 @@
       try {
         const res = await api.get(`/api/admin/exams?page=${examPage}&limit=12`);
         const exams = res.data || [];
+        currentExams = exams;
         examPagination = res.pagination || { page: 1, total_pages: 1 };
         const container = document.getElementById('exam-list');
         if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No exams found</h3></div>'; renderExamPagination(); return; }
@@ -80,7 +82,7 @@
             </div>
             <div style="display:flex;gap:var(--space-2);margin-top:var(--space-3)">
               <button class="btn btn-sm btn-info" onclick="viewExam(${e.id})">👁 View</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteExam(${e.id}, '${escHtml(e.title).replace(/'/g, "\\'")}')">🗑 Delete</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteExam(${e.id})">🗑 Delete</button>
             </div>
           </div>
         `).join('') + '</div>';
@@ -147,7 +149,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-danger" onclick="deleteExam(${e.id}, '${escHtml(e.title).replace(/'/g, "\\'")}', true)">🗑 Delete Exam</button>
+              <button class="btn btn-danger" onclick="deleteExam(${e.id}, null, true)">🗑 Delete Exam</button>
               <button class="btn btn-secondary" onclick="closeExamModal()">Close</button>
             </div>
           </div>`;
@@ -158,7 +160,9 @@
     function closeExamModal() { const m = document.getElementById('exam-view-modal'); if (m) m.remove(); }
 
     async function deleteExam(id, title, fromModal) {
-      if (!confirm(`Delete exam "${title}"? This removes its questions, sessions and attendance permanently.`)) return;
+      const e = currentExams.find(x => x.id === id) || {};
+      const name = title || e.title || 'this exam';
+      if (!confirm(`Delete exam "${name}"? This removes its questions, sessions and attendance permanently.`)) return;
       try {
         await api.del(`/api/admin/exams/${id}`);
         showAlert('Exam deleted', 'success');
@@ -169,6 +173,6 @@
 
     function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
   </script>
-  <script src="../../js/nav.js?v=8"></script>
+  <script src="../../js/nav.js?v=9"></script>
 </body>
 </html>

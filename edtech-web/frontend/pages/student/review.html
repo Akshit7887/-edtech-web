@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Exam Review - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=8">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=8">
-  <link rel="stylesheet" href="../../css/exam.css?v=8">
+  <link rel="stylesheet" href="../../css/main.css?v=9">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=9">
+  <link rel="stylesheet" href="../../css/exam.css?v=9">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -37,11 +37,11 @@
       </div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=8"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=9"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=8"></script>
-  <script src="../../js/auth.js?v=8"></script>
-  <script src="../../js/exam.js?v=8"></script>
+  <script src="../../js/api.js?v=9"></script>
+  <script src="../../js/auth.js?v=9"></script>
+  <script src="../../js/exam.js?v=9"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
@@ -69,7 +69,7 @@
               <span class="exam-meta-item">📄 ${data.total_questions} questions</span>
               <span class="exam-meta-item" style="font-size:1.1rem;font-weight:600">✅ Score: <span style="color:${pct >= 40 ? 'var(--success)' : 'var(--danger)'}">${data.score}/${data.total_questions} (${pct}%)</span></span>
               <span class="exam-meta-item">${statusBadge(data.status)}</span>
-              ${data.time_used ? `<span class="exam-meta-item">⏱ Used: ${Math.floor(data.time_used / 60)}m ${data.time_used % 60}s</span>` : ''}
+              ${data.time_used ? `<span class="exam-meta-item">⏱ Used: ${data.time_used} min</span>` : ''}
             </div>
           </div>
           <h3 style="margin-bottom:16px">Question Review</h3>
@@ -105,6 +105,6 @@
       }
     }
   </script>
-  <script src="../../js/nav.js?v=8"></script>
+  <script src="../../js/nav.js?v=9"></script>
 </body>
 </html>

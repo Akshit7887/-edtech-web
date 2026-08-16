@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Manage Users - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=8">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=8">
+  <link rel="stylesheet" href="../../css/main.css?v=9">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=9">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -64,10 +64,11 @@
     </main>
   </div>
 
-  <script src="../../js/api.js?v=8"></script>
-  <script src="../../js/auth.js?v=8"></script>
+  <script src="../../js/api.js?v=9"></script>
+  <script src="../../js/auth.js?v=9"></script>
   <script>
     let currentPage = 1;
+    let currentUsers = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('admin')) return;
@@ -96,6 +97,7 @@
         if (status) url += '&status=' + status;
         const res = await api.get(url);
         const users = res.data || [];
+        currentUsers = users;
         const pagination = res.pagination || { page: 1, total: 0, total_pages: 1 };
         const tbody = document.getElementById('users-tbody');
         if (!users.length) {
@@ -107,9 +109,9 @@
             const actions = [];
             if (isTeacher && approval !== 'approved') actions.push(`<button class="btn btn-sm btn-primary" onclick="approveTeacher(${u.id})">Approve</button>`);
             if (isTeacher && approval === 'pending') actions.push(`<button class="btn btn-sm btn-danger" onclick="rejectTeacher(${u.id})">Reject</button>`);
-            if (approval === 'rejected' && u.rejection_reason) actions.push(`<button class="btn btn-sm btn-ghost" onclick="showRejectReason('${(u.rejection_reason || '').replace(/'/g, "\\'")}')">Why?</button>`);
+            if (approval === 'rejected' && u.rejection_reason) actions.push(`<button class="btn btn-sm btn-ghost" onclick="showRejectReason(${u.id})">Why?</button>`);
             actions.push(`<button class="btn btn-sm btn-secondary" onclick="showEditUserModal(${u.id})">✏️</button>`);
-            actions.push(`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id}, '${(u.name || '').replace(/'/g, "\\'")}')">Delete</button>`);
+            actions.push(`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Delete</button>`);
             return `
             <tr>
               <td><div class="student-row"><div class="student-avatar">${(u.name || '?').charAt(0).toUpperCase()}</div><strong>${u.name}</strong></div></td>
@@ -149,8 +151,9 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
 
-    function showRejectReason(reason) {
-      alert('Rejection reason: ' + reason);
+    function showRejectReason(id) {
+      const u = currentUsers.find(x => x.id === id) || {};
+      alert('Rejection reason: ' + (u.rejection_reason || 'Not provided'));
     }
 
     function renderPagination(p) {
@@ -164,8 +167,9 @@
       el.innerHTML = html;
     }
 
-    function deleteUser(id, name) {
-      if (!confirm(`Delete user "${name}"? This permanently removes the account and all related data.`)) return;
+    function deleteUser(id) {
+      const u = currentUsers.find(x => x.id === id) || {};
+      if (!confirm(`Delete user "${u.name || 'this user'}"? This permanently removes the account and all related data.`)) return;
       api.del(`/api/admin/users/${id}`).then(() => {
         showAlert('User deleted', 'success');
         loadUsers(currentPage);
@@ -311,6 +315,6 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
-  <script src="../../js/nav.js?v=8"></script>
+  <script src="../../js/nav.js?v=9"></script>
 </body>
 </html>
