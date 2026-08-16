@@ -234,11 +234,296 @@
 .password-strength-bar.medium { background: var(--warning); }
 .password-strength-bar.strong { background: var(--success); }
 
+/* ============================================================
+   Split-Screen Auth (auth-07 style)
+   ============================================================ */
+
+.auth-page.auth-split-page {
+  display: block;
+  padding: 0;
+  padding-top: 72px;
+}
+
+.auth-split {
+  display: flex;
+  min-height: calc(100vh - 72px);
+  align-items: stretch;
+}
+
+.auth-split-form {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+.auth-split-inner {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-split-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-10);
+  color: var(--accent);
+}
+
+.auth-split-brand .brand-logo {
+  display: flex;
+}
+
+.auth-split-heading {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.auth-split-heading h1 {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-heading);
+  margin-bottom: var(--space-2);
+}
+
+.auth-split-heading p {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* Staggered reveal (auth-07 entrance) */
+.auth-reveal {
+  opacity: 0;
+  animation: fadeInUp 0.6s var(--ease) forwards;
+}
+
+/* Pill inputs & buttons */
+.auth-split-inner .form-group {
+  margin-bottom: var(--space-5);
+}
+
+.auth-split-inner .form-input {
+  border-radius: var(--radius-full);
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-sm);
+}
+
+.auth-split-inner .form-label {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.auth-split-inner .password-input-wrap .form-input {
+  padding-right: 52px;
+}
+
+.auth-split-inner .btn-primary {
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  box-shadow: 0 8px 24px var(--accent-soft-strong);
+}
+
+.auth-split-inner .btn-google {
+  border-radius: var(--radius-full);
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-3);
+}
+
+.auth-split-inner .auth-role-selector {
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.auth-split-inner .role-option {
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+}
+
+.auth-split-inner .role-option .role-icon {
+  font-size: var(--text-base);
+  line-height: 1;
+}
+
+/* Right visual panel */
+.auth-split-visual {
+  display: none;
+  flex: 1;
+  padding: var(--space-6) var(--space-6) var(--space-6) 0;
+}
+
+.auth-visual-card {
+  position: relative;
+  height: 100%;
+  min-height: 540px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: linear-gradient(150deg, var(--accent) 0%, var(--accent-dark) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-10);
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-visual-card::before,
+.auth-visual-card::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.auth-visual-card::before {
+  width: 420px;
+  height: 420px;
+  top: -140px;
+  right: -140px;
+}
+
+.auth-visual-card::after {
+  width: 300px;
+  height: 300px;
+  bottom: -120px;
+  left: -100px;
+}
+
+.auth-visual-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 800;
+  font-size: var(--text-xl);
+  letter-spacing: -0.02em;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-visual-brand .brand-logo {
+  display: flex;
+}
+
+.auth-visual-content {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-visual-content h2 {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-bottom: var(--space-4);
+}
+
+.auth-visual-content p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  max-width: 34ch;
+  margin-bottom: var(--space-8);
+}
+
+.auth-visual-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-visual-features li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.auth-visual-features .check-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.auth-visual-chips {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.auth-visual-chip {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--accent-dark);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  box-shadow: var(--shadow-lg);
+  animation: auth-float 5s ease-in-out infinite;
+}
+
+.auth-visual-chip svg {
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
+}
+
+.auth-visual-chip.chip-1 { top: 22%; right: 10%; animation-delay: 0s; }
+.auth-visual-chip.chip-2 { top: 38%; right: 28%; animation-delay: 1.6s; }
+.auth-visual-chip.chip-3 { bottom: 30%; right: 8%; animation-delay: 3.2s; }
+
+@keyframes auth-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@media (min-width: 1024px) {
+  .auth-split-visual {
+    display: block;
+  }
+}
+
+@media (max-width: 1023px) {
+  .auth-split {
+    min-height: calc(100vh - 72px);
+  }
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .auth-page {
     padding: var(--space-4);
     padding-top: 72px;
+  }
+  .auth-page.auth-split-page {
+    padding: 0;
+    padding-top: 60px;
+  }
+  .auth-split {
+    min-height: calc(100vh - 60px);
+  }
+  .auth-split-form {
+    padding: var(--space-6) var(--space-4);
+  }
+  .auth-split-heading h1 {
+    font-size: var(--text-2xl);
   }
   .auth-card {
     padding: var(--space-8) var(--space-6);

@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Register - EdTech AI Test &amp; Learning App</title>
   <link rel="stylesheet" href="css/main.css?v=9">
-  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/auth.css?v=10">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body class="auth-page">
+<body class="auth-page auth-split-page">
 
   <nav class="navbar">
     <a href="index.html" class="navbar-brand">
@@ -25,62 +25,95 @@
     <button class="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false" type="button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon"><line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/><line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/><line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/></svg></button>
   </nav>
 
-  <div class="auth-container">
-    <div class="auth-card">
-      <div class="auth-logo">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:12px;color:var(--accent)"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>
-        <h1>EdTech AI Test &amp; Learning App</h1>
-        <p>Create your account</p>
-      </div>
-
-      <div id="alert-container"></div>
-
-      <div class="auth-role-selector">
-        <button class="role-option selected" data-role="student" onclick="selectRole('student')">
-          <span class="role-icon">&#x1F393;</span>
-          Student
-        </button>
-        <button class="role-option" data-role="teacher" onclick="selectRole('teacher')">
-          <span class="role-icon">&#x1F468;&#x200D;&#x1F3EB;</span>
-          Teacher
-        </button>
-      </div>
-      <div class="alert alert-info" id="teacher-approval-note" style="display:none;margin-bottom:var(--space-6)">
-        <strong>Teacher accounts require admin approval.</strong> After registering, the admin will review your details. You will be able to log in only after your account is approved.
-      </div>
-
-      <form id="register-form" onsubmit="handleRegister(event)">
-        <div class="form-group form-floating">
-          <input type="text" class="form-input" id="name" placeholder=" " required>
-          <label class="form-label">Full Name</label>
+  <div class="auth-split">
+    <div class="auth-split-form">
+      <div class="auth-split-inner">
+        <div class="auth-split-brand auth-reveal" style="animation-delay:.05s">
+          <span class="brand-logo"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></span>
+          EdTech
         </div>
-        <div class="form-group form-floating">
-          <input type="email" class="form-input" id="email" placeholder=" " required>
-          <label class="form-label">Email</label>
+
+        <div class="auth-split-heading auth-reveal" style="animation-delay:.15s">
+          <h1>Create your account</h1>
+          <p>Get started with AI-powered tests and analytics</p>
         </div>
-        <div class="form-group form-floating">
-          <div class="password-input-wrap">
-            <input type="password" class="form-input" id="password" placeholder=" " required minlength="6">
-            <label class="form-label">Password</label>
-            <button type="button" class="toggle-password" onclick="togglePassword('password')" aria-label="Toggle password">&#x1F441;&#xFE0F;</button>
+
+        <div id="alert-container" class="auth-reveal" style="animation-delay:.2s"></div>
+
+        <div class="auth-role-selector auth-reveal" style="animation-delay:.25s">
+          <button class="role-option selected" data-role="student" onclick="selectRole('student')">
+            <span class="role-icon">&#x1F393;</span>
+            Student
+          </button>
+          <button class="role-option" data-role="teacher" onclick="selectRole('teacher')">
+            <span class="role-icon">&#x1F468;&#x200D;&#x1F3EB;</span>
+            Teacher
+          </button>
+        </div>
+        <div class="alert alert-info" id="teacher-approval-note" style="display:none;margin-bottom:var(--space-6)">
+          <strong>Teacher accounts require admin approval.</strong> After registering, the admin will review your details. You will be able to log in only after your account is approved.
+        </div>
+
+        <form id="register-form" onsubmit="handleRegister(event)" class="auth-reveal" style="animation-delay:.3s">
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name</label>
+            <input type="text" class="form-input" id="name" placeholder="Enter your name" required>
           </div>
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input type="email" class="form-input" id="email" placeholder="Enter your email" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
+            <div class="password-input-wrap">
+              <input type="password" class="form-input" id="password" placeholder="Enter your password" required minlength="6">
+              <button type="button" class="toggle-password" onclick="togglePassword('password')" aria-label="Toggle password">&#x1F441;&#xFE0F;</button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn">
+            <span id="register-text">Register</span>
+            <span id="register-spinner" class="spinner spinner-sm" style="display:none"></span>
+          </button>
+        </form>
+
+        <div class="auth-divider auth-reveal" style="animation-delay:.35s">or register with</div>
+
+        <div class="auth-reveal" style="animation-delay:.4s">
+          <div id="google-signin-container" style="min-height:40px"></div>
+          <button class="btn-google" id="google-fallback-btn" onclick="signInWithGoogle(selectedRole)" style="display:none">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.94 23.94 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.98-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg>
+            Register with Google as <span id="google-role-label">Student</span>
+          </button>
         </div>
-        <button type="submit" class="btn btn-primary btn-block btn-lg" id="register-btn">
-          <span id="register-text">Register</span>
-          <span id="register-spinner" class="spinner spinner-sm" style="display:none"></span>
-        </button>
-      </form>
 
-      <div class="auth-divider">or register with</div>
+        <div class="auth-footer auth-reveal" style="animation-delay:.45s">
+          <p>Already have an account? <a href="login.html">Sign in</a></p>
+        </div>
+      </div>
+    </div>
 
-      <div id="google-signin-container" style="min-height:40px"></div>
-      <button class="btn-google" id="google-fallback-btn" onclick="signInWithGoogle(selectedRole)" style="display:none">
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.94 23.94 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.98-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg>
-        Register with Google as <span id="google-role-label">Student</span>
-      </button>
+    <div class="auth-split-visual">
+      <div class="auth-visual-card">
+        <div class="auth-visual-brand auth-reveal" style="animation-delay:.3s">
+          <span class="brand-logo"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></span>
+          EdTech AI Test &amp; Learning App
+        </div>
 
-      <div class="auth-footer">
-        <p>Already have an account? <a href="login.html">Sign in</a></p>
+        <div class="auth-visual-chips">
+          <div class="auth-visual-chip chip-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> 98% avg. score gain</div>
+          <div class="auth-visual-chip chip-2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg> 1,200+ AI questions</div>
+          <div class="auth-visual-chip chip-3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg> +27% this term</div>
+        </div>
+
+        <div class="auth-visual-content auth-reveal" style="animation-delay:.45s">
+          <h2>Test Smarter.<br>Learn Faster.</h2>
+          <p>AI-powered tests, instant results, and real-time analytics for students, teachers, and parents.</p>
+          <ul class="auth-visual-features">
+            <li><span class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>AI-generated question banks</li>
+            <li><span class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Instant results &amp; detailed analytics</li>
+            <li><span class="check-icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Live progress for teachers &amp; parents</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
