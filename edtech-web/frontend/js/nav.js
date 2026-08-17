@@ -139,11 +139,10 @@
     if (!role) {
       var pfx = window.location.pathname.indexOf('/pages/') === 0 ? '../../' : '';
       return [
-        { label: 'Home',       href: pfx + 'index.html',         icon: 'home' },
-        { label: 'Browse Exams', href: pfx + 'exam-list.html',   icon: 'exam' },
-        { type: 'divider' },
-        { label: 'Login',      href: pfx + 'login.html',         icon: 'login' },
-        { label: 'Register',   href: pfx + 'register.html',      icon: 'register' },
+        { label: 'Home',       href: pfx + 'index.html',         icon: 'home',       group: 'explore' },
+        { label: 'Browse Exams', href: pfx + 'exam-list.html',   icon: 'exam',       group: 'explore' },
+        { label: 'Login',      href: pfx + 'login.html',         icon: 'login',      group: 'account' },
+        { label: 'Register',   href: pfx + 'register.html',      icon: 'register',   group: 'account' },
       ];
     }
 
@@ -151,48 +150,42 @@
 
     if (role === 'student') {
       return [
-        { label: 'Dashboard',    href: pfx + 'dashboard.html',     icon: 'dashboard' },
-        { label: 'Profile & Settings', href: pfx + 'profile.html', icon: 'profile' },
-        { type: 'divider' },
-        { label: 'My Classes',   href: pfx + 'classes.html',       icon: 'classes' },
-        { label: 'My Results',   href: pfx + 'results.html',       icon: 'results' },
-        { label: 'Practice',     href: pfx + 'practice.html',       icon: 'practice' },
-        { label: 'Syllabus',     href: pfx + 'syllabus.html',       icon: 'syllabus' },
-        { label: 'Review',       href: pfx + 'review.html',         icon: 'review' },
-        { type: 'divider' },
-        { label: 'Notifications',href: pfx + 'notifications.html',  icon: 'notify' },
+        { label: 'Dashboard',    href: pfx + 'dashboard.html',     icon: 'dashboard', group: 'explore' },
+        { label: 'Profile & Settings', href: pfx + 'profile.html', icon: 'profile',  group: 'account' },
+        { label: 'My Classes',   href: pfx + 'classes.html',       icon: 'classes',  group: 'explore' },
+        { label: 'My Results',   href: pfx + 'results.html',       icon: 'results',  group: 'explore' },
+        { label: 'Practice',     href: pfx + 'practice.html',       icon: 'practice', group: 'explore' },
+        { label: 'Syllabus',     href: pfx + 'syllabus.html',       icon: 'syllabus', group: 'explore' },
+        { label: 'Review',       href: pfx + 'review.html',         icon: 'review',   group: 'explore' },
+        { label: 'Notifications',href: pfx + 'notifications.html',  icon: 'notify',   group: 'account' },
       ];
     }
 
     if (role === 'teacher') {
       return [
-        { label: 'Dashboard',    href: pfx + 'dashboard.html',     icon: 'dashboard' },
-        { label: 'Profile & Settings', href: pfx + 'profile.html', icon: 'profile' },
-        { type: 'divider' },
-        { label: 'Classes',      href: pfx + 'classes.html',       icon: 'classes' },
-        { label: 'Students',     href: pfx + 'students.html',      icon: 'users' },
-        { label: 'Attendance',   href: pfx + 'attendance.html',    icon: 'attendance' },
-        { label: 'Syllabus',     href: pfx + 'syllabus.html',      icon: 'syllabus' },
-        { type: 'divider' },
-        { label: 'Create Exam',  href: pfx + 'create-exam.html',   icon: 'create-exam' },
-        { label: 'Questions',    href: pfx + 'questions.html',      icon: 'questions' },
-        { label: 'Reports',      href: pfx + 'reports.html',        icon: 'reports' },
-        { label: 'Statistics',   href: pfx + 'statistics.html',     icon: 'stats' },
-        { type: 'divider' },
-        { label: 'Parent Contacts', href: pfx + 'parent-contacts.html', icon: 'parents' },
+        { label: 'Dashboard',    href: pfx + 'dashboard.html',     icon: 'dashboard', group: 'explore' },
+        { label: 'Profile & Settings', href: pfx + 'profile.html', icon: 'profile',  group: 'account' },
+        { label: 'Classes',      href: pfx + 'classes.html',       icon: 'classes',  group: 'explore' },
+        { label: 'Students',     href: pfx + 'students.html',      icon: 'users',    group: 'explore' },
+        { label: 'Attendance',   href: pfx + 'attendance.html',    icon: 'attendance', group: 'explore' },
+        { label: 'Syllabus',     href: pfx + 'syllabus.html',      icon: 'syllabus', group: 'explore' },
+        { label: 'Questions',    href: pfx + 'questions.html',      icon: 'questions', group: 'explore' },
+        { label: 'Create Exam',  href: pfx + 'create-exam.html',   icon: 'create-exam', group: 'account' },
+        { label: 'Reports',      href: pfx + 'reports.html',        icon: 'reports',   group: 'account' },
+        { label: 'Statistics',   href: pfx + 'statistics.html',     icon: 'stats',     group: 'account' },
+        { label: 'Parent Contacts', href: pfx + 'parent-contacts.html', icon: 'parents', group: 'account' },
       ];
     }
 
     if (role === 'admin') {
       return [
-        { label: 'Dashboard',    href: '/pages/admin/dashboard.html',  icon: 'dashboard' },
-        { label: 'Profile & Settings', href: '/pages/admin/profile.html', icon: 'profile' },
-        { type: 'divider' },
-        { label: 'Users',        href: '/pages/admin/users.html',       icon: 'users' },
-        { label: 'Classes',      href: '/pages/admin/classes.html',     icon: 'classes' },
-        { label: 'Exams',        href: '/pages/admin/exams.html',       icon: 'exam' },
-        { label: 'Departments',  href: '/pages/admin/departments.html', icon: 'departments' },
-        { label: 'DB Monitor',   href: '/pages/admin/db-monitor.html',  icon: 'db' },
+        { label: 'Dashboard',    href: '/pages/admin/dashboard.html',  icon: 'dashboard', group: 'explore' },
+        { label: 'Profile & Settings', href: '/pages/admin/profile.html', icon: 'profile', group: 'account' },
+        { label: 'Users',        href: '/pages/admin/users.html',       icon: 'users',  group: 'explore' },
+        { label: 'Classes',      href: '/pages/admin/classes.html',     icon: 'classes', group: 'explore' },
+        { label: 'Exams',        href: '/pages/admin/exams.html',       icon: 'exam',   group: 'explore' },
+        { label: 'Departments',  href: '/pages/admin/departments.html', icon: 'departments', group: 'explore' },
+        { label: 'DB Monitor',   href: '/pages/admin/db-monitor.html',  icon: 'db',     group: 'account' },
       ];
     }
 
@@ -258,6 +251,117 @@
     return a;
   }
 
+  // ── Mega menu builders (navigation-6 style) ──
+  var SPARKLE_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8 5.8 1.9-5.8 1.9L12 18.4l-1.9-5.8-5.8-1.9 5.8-1.9z"/><path d="M19 15l.8 2.6L22.5 18.4l-2.7.9L19 22l-.8-2.7-2.7-.9 2.7-.8z"/></svg>';
+  var CHECK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+  var LAYERS_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>';
+  var BOOK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>';
+  var ARROW_UP_RIGHT = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>';
+
+  function megaBaseHref(role) {
+    return role ? '/pages/' + role + '/' : (window.location.pathname.indexOf('/pages/') === 0 ? '../../' : '');
+  }
+
+  function buildFeatureColumn(role) {
+    var col = document.createElement('div');
+    col.className = 'nav-mega-col';
+
+    var iconBox = document.createElement('div');
+    iconBox.className = 'nav-mega-iconbox';
+    iconBox.innerHTML = SPARKLE_ICON;
+    col.appendChild(iconBox);
+
+    var h4 = document.createElement('h4');
+    h4.textContent = 'AI-Powered Exams';
+    col.appendChild(h4);
+
+    var p = document.createElement('p');
+    p.textContent = 'Generate questions, auto-grade answers, and get instant insights with EdTech AI.';
+    col.appendChild(p);
+
+    var base = megaBaseHref(role);
+    var chips = [
+      { label: 'Smart Exams',   icon: BOOK_ICON,    href: role ? base + 'dashboard.html' : base + 'exam-list.html' },
+      { label: 'Auto-Grading',  icon: CHECK_ICON,   href: role ? base + (role === 'student' ? 'practice.html' : role === 'teacher' ? 'create-exam.html' : 'exams.html') : base + 'register.html' },
+      { label: 'AI Question Bank', icon: LAYERS_ICON, href: role ? base + (role === 'student' ? 'syllabus.html' : role === 'teacher' ? 'questions.html' : 'departments.html') : base + 'register.html' },
+    ];
+
+    var chipsWrap = document.createElement('div');
+    chips.forEach(function (chip) {
+      var a = document.createElement('a');
+      a.className = 'nav-mega-chip';
+      a.href = chip.href;
+      a.innerHTML = chip.icon + '<span>' + chip.label + '</span>';
+      a.addEventListener('click', closeMenu);
+      chipsWrap.appendChild(a);
+    });
+    col.appendChild(chipsWrap);
+
+    return col;
+  }
+
+  function buildLinkColumn(title, menu, group) {
+    var col = document.createElement('div');
+    col.className = 'nav-mega-col';
+    col.setAttribute('data-col', group);
+
+    var label = document.createElement('h4');
+    label.className = 'nav-mega-label';
+    label.textContent = title;
+    col.appendChild(label);
+
+    var currentPath = window.location.pathname;
+
+    menu.forEach(function (item) {
+      if (item.group !== group) return;
+
+      var a = document.createElement('a');
+      a.className = 'nav-mega-link';
+      a.href = item.href;
+      if (a.pathname === currentPath) a.classList.add('active');
+      a.innerHTML = '<span class="nav-mega-link-icon">' + icon(item.icon) + '</span><span>' + item.label + '</span>';
+      a.addEventListener('click', closeMenu);
+      col.appendChild(a);
+    });
+
+    return col;
+  }
+
+  function buildFeaturedColumn(role) {
+    var col = document.createElement('div');
+    col.className = 'nav-mega-col';
+
+    var base = megaBaseHref(role);
+    var card = document.createElement('a');
+    card.className = 'nav-mega-featured';
+    card.href = role ? base + 'dashboard.html' : base + 'register.html';
+    card.addEventListener('click', closeMenu);
+
+    var top = document.createElement('div');
+    var badge = document.createElement('span');
+    badge.className = 'nav-mega-featured-badge';
+    badge.textContent = 'Upcoming Webinar';
+    top.appendChild(badge);
+
+    var h4 = document.createElement('h4');
+    h4.textContent = 'Master AI exam creation';
+    top.appendChild(h4);
+
+    var p = document.createElement('p');
+    p.textContent = 'Join our educators for a live teardown of the new AI proctoring & auto-grading engine.';
+    top.appendChild(p);
+
+    var cta = document.createElement('div');
+    cta.className = 'nav-mega-featured-cta';
+    cta.innerHTML = '<span>' + (role ? 'Open dashboard' : 'Register now') + '</span>' + ARROW_UP_RIGHT;
+
+    card.appendChild(top);
+    card.appendChild(cta);
+    col.appendChild(card);
+
+    return col;
+  }
+
   function initHamburger() {
     try {
       var navbar = document.querySelector('.navbar');
@@ -292,6 +396,9 @@
         role = localStorage.getItem('user_role');
         userName = localStorage.getItem('user_name');
       } catch (e) {}
+
+      var pfx = window.location.pathname.indexOf('/pages/') === 0 ? '../../' : '';
+      var menu = getMenu(role);
 
       var header = document.createElement('div');
       header.className = 'mobile-menu-header';
@@ -334,46 +441,57 @@
 
       panel.appendChild(header);
 
-      // ── Nav items ──
+      // ── Mega menu body (navigation-6 style) ──
       var nav = document.createElement('nav');
       nav.className = 'mobile-nav-body';
 
-      var menu = getMenu(role);
-      var currentPath = window.location.pathname;
+      var grid = document.createElement('div');
+      grid.className = 'nav-mega-grid';
 
-      for (var i = 0; i < menu.length; i++) {
-        var item = menu[i];
-        if (item.type === 'divider') {
-          var div = document.createElement('div');
-          div.className = 'mobile-nav-divider';
-          nav.appendChild(div);
-        } else {
-          nav.appendChild(createNavItem(item, currentPath));
-        }
-      }
+      // Column 1: Featured capability
+      grid.appendChild(buildFeatureColumn(role));
+      // Column 2: Explore links
+      grid.appendChild(buildLinkColumn('Explore', menu, 'explore'));
+      // Column 3: Account & resources
+      grid.appendChild(buildLinkColumn('Account & Resources', menu, 'account'));
+      // Column 4: Featured card
+      grid.appendChild(buildFeaturedColumn(role));
 
-      // ── Logout button (if logged in) ──
-      if (role) {
-        var div = document.createElement('div');
-        div.className = 'mobile-nav-divider';
-        nav.appendChild(div);
+      nav.appendChild(grid);
 
-        var logoutItem = document.createElement('a');
-        logoutItem.className = 'mobile-nav-item mobile-nav-logout';
-        logoutItem.href = '#';
-        logoutItem.innerHTML = '<span class="nav-icon">' + icon('logout') + '</span><span class="nav-label">Logout</span>';
-        logoutItem.addEventListener('click', function (e) {
-          e.preventDefault();
-          closeMenu();
-          setTimeout(function () {
-            if (typeof window.logout === 'function') window.logout();
-            else { window.location.href = '/login.html'; }
-          }, 200);
-        });
-        nav.appendChild(logoutItem);
-      }
+      // ── Mobile bottom CTA (navigation-6 button collection) ──
+      var ctaWrap = document.createElement('div');
+      ctaWrap.className = 'nav-mega-cta';
+
+      var ctaBtn = document.createElement('a');
+      ctaBtn.className = 'btn btn-primary btn-lg';
+      ctaBtn.href = role ? '/pages/' + role + '/dashboard.html' : pfx + 'register.html';
+      ctaBtn.textContent = role ? 'Go to Dashboard' : 'Get started';
+      ctaBtn.addEventListener('click', closeMenu);
+      ctaWrap.appendChild(ctaBtn);
+      nav.appendChild(ctaWrap);
 
       panel.appendChild(nav);
+
+      // ── Logout (appended to Account column) ──
+      if (role) {
+        var accountCol = panel.querySelector('[data-col="account"]');
+        if (accountCol) {
+          var logoutItem = document.createElement('a');
+          logoutItem.className = 'nav-mega-link';
+          logoutItem.href = '#';
+          logoutItem.innerHTML = '<span class="nav-mega-link-icon">' + icon('logout') + '</span><span>Logout</span>';
+          logoutItem.addEventListener('click', function (e) {
+            e.preventDefault();
+            closeMenu();
+            setTimeout(function () {
+              if (typeof window.logout === 'function') window.logout();
+              else { window.location.href = '/login.html'; }
+            }, 200);
+          });
+          accountCol.appendChild(logoutItem);
+        }
+      }
 
       document.body.appendChild(backdrop);
       document.body.appendChild(panel);
@@ -501,9 +619,7 @@
       setTheme(currentTheme() === 'dark' ? 'light' : 'dark', true);
     });
 
-    var brand = navbar.querySelector('.navbar-brand');
-    if (brand) navbar.insertBefore(btn, brand);
-    else navbar.appendChild(btn);
+    navbar.appendChild(btn);
     setTheme(currentTheme(), false);
 
     try {
@@ -513,11 +629,59 @@
     } catch (err) {}
   }
 
+  // ── Navigation-6 action buttons (search / user / CTA) ──
+  var COMMAND_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+  var USER_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+
+  function initNavbarActions() {
+    try {
+      var navbar = document.querySelector('.navbar');
+      if (!navbar || navbar.querySelector('.navbar-actions')) return;
+
+      var role = null;
+      try { role = localStorage.getItem('user_role'); } catch (e) {}
+
+      var pfx = window.location.pathname.indexOf('/pages/') === 0 ? '../../' : '';
+      var rolePfx = role ? '/pages/' + role + '/' : '';
+
+      var actions = document.createElement('div');
+      actions.className = 'navbar-actions';
+
+      // Search / Browse exams
+      var search = document.createElement('a');
+      search.className = 'nav-action-btn';
+      search.href = role ? rolePfx + 'dashboard.html' : pfx + 'exam-list.html';
+      search.title = role ? 'Dashboard' : 'Browse Exams';
+      search.setAttribute('aria-label', search.title);
+      search.innerHTML = COMMAND_ICON;
+      actions.appendChild(search);
+
+      // User / Profile
+      var user = document.createElement('a');
+      user.className = 'nav-action-btn';
+      user.href = role ? rolePfx + 'profile.html' : pfx + 'login.html';
+      user.title = role ? 'Profile & Settings' : 'Sign In';
+      user.setAttribute('aria-label', user.title);
+      user.innerHTML = USER_ICON;
+      actions.appendChild(user);
+
+      // CTA
+      var cta = document.createElement('a');
+      cta.className = 'nav-cta-btn';
+      cta.href = role ? rolePfx + 'dashboard.html' : pfx + 'register.html';
+      cta.textContent = role ? 'Dashboard' : 'Get started';
+      actions.appendChild(cta);
+
+      navbar.appendChild(actions);
+    } catch (e) { /* ignore navbar actions errors */ }
+  }
+
   initPWA();
   initPageFlip();
   initLogoAnim();
   initBackButton();
   initTheme();
+  initNavbarActions();
   if (!isExamPage) {
     initHamburger();
     initSidebar();

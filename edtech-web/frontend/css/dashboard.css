@@ -706,7 +706,7 @@ tbody tr:hover {
 .layout {
   display: flex;
   min-height: 100vh;
-  padding-top: 72px;
+  padding-top: 104px;
 }
 
 .sidebar {

@@ -241,12 +241,12 @@
 .auth-page.auth-split-page {
   display: block;
   padding: 0;
-  padding-top: 72px;
+  padding-top: 104px;
 }
 
 .auth-split {
   display: flex;
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - 104px);
   align-items: stretch;
 }
 
@@ -510,11 +510,11 @@
 @media (max-width: 768px) {
   .auth-page {
     padding: var(--space-4);
-    padding-top: 72px;
+    padding-top: 104px;
   }
   .auth-page.auth-split-page {
     padding: 0;
-    padding-top: 60px;
+    padding-top: 92px;
   }
   .auth-split {
     min-height: calc(100vh - 60px);
