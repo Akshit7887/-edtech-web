@@ -9,9 +9,27 @@
   <link rel="stylesheet" href="../../css/dashboard.css?v=10">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    .syllabus-upload { margin-bottom: var(--space-6); padding: var(--space-6); background: var(--bg-card); border: 2px dashed var(--border-strong); border-radius: var(--radius-lg); text-align: center; transition: border-color var(--duration-normal) var(--ease); }
-    .syllabus-upload.dragover { border-color: var(--accent); background: var(--accent-ghost); }
-    .syllabus-upload input[type="file"] { display: none; }
+    /* file-upload-5 style uploader */
+    .fu5-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: var(--space-6); box-shadow: var(--shadow-sm); }
+    .fu5-header { padding: 12px 20px; background: var(--bg-muted); border-bottom: 1px solid var(--border); font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.01em; color: var(--text-heading); }
+    .fu5-body { padding: 8px; }
+    .fu5-dropzone { display: flex; min-height: 160px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px; border: 2px dashed var(--border-strong); border-radius: var(--radius); background: var(--bg-muted); text-align: center; cursor: pointer; transition: border-color var(--duration-fast) var(--ease), background var(--duration-fast) var(--ease); }
+    .fu5-dropzone:hover { border-color: var(--accent-light); }
+    .fu5-dropzone.dragover { border-color: var(--accent); background: var(--accent-ghost); }
+    .fu5-dropzone p { margin: 0; font-size: var(--text-sm); color: var(--text); }
+    .fu5-dropzone .fu5-helper { color: var(--text-muted); font-size: var(--text-xs); }
+    .fu5-pick-btn { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 10px 18px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-heading); font-size: var(--text-sm); font-weight: 600; border-radius: var(--radius); cursor: pointer; transition: border-color var(--duration-fast) var(--ease), color var(--duration-fast) var(--ease), background var(--duration-fast) var(--ease); }
+    .fu5-pick-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-ghost); }
+    .fu5-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; padding: 16px 8px 4px; }
+    .fu5-tile { position: relative; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-muted); text-align: center; overflow: hidden; }
+    .fu5-tile-icon { display: flex; flex-shrink: 0; }
+    .fu5-tile-name { max-width: 100%; font-size: 0.68rem; font-weight: 600; color: var(--text-body); line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; }
+    .fu5-tile-ext { font-size: 0.6rem; font-weight: 500; color: var(--text-muted); }
+    .fu5-tile-remove { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; border: none; border-radius: var(--radius-full); background: var(--bg-card); color: var(--text-muted); cursor: pointer; box-shadow: var(--shadow-sm); transition: all 0.15s var(--ease); }
+    .fu5-tile-remove:hover { background: var(--error); color: #fff; }
+    .fu5-meta { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: flex-end; padding: 12px 8px; }
+    .fu5-meta .form-group { flex: 1 1 200px; min-width: 0; margin: 0; }
+    .fu5-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
     .syllabus-search { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
     .syllabus-search input { flex: 1; min-width: 0; }
     .syllabus-search select { flex: 1 1 160px; min-width: 0; }
@@ -60,35 +78,39 @@
       </div>
       <div id="alert-container"></div>
 
-      <div class="syllabus-upload" id="drop-zone">
-        <p style="font-size:2rem;margin-bottom:var(--space-2);">&#x1F4C1;</p>
-        <p style="font-weight:600;margin-bottom:var(--space-1);">Drop syllabus files here</p>
-        <p class="text-muted text-sm">or click the button above to browse</p>
-        <p class="text-muted text-xs" style="margin-top:var(--space-2);">PDF, DOC, DOCX, PPT, PPTX, TXT &mdash; Max 20MB</p>
-      </div>
+      <div class="fu5-card" id="upload-card">
+        <div class="fu5-header">Upload Syllabus Files</div>
+        <div class="fu5-body">
+          <div class="fu5-dropzone" id="drop-zone" role="button" tabindex="0" aria-label="Choose files or drag and drop them here">
+            <input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" multiple hidden>
+            <button type="button" class="fu5-pick-btn" id="fu5-pick-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload
+            </button>
+            <p>Choose files or drag &amp; drop it here.</p>
+            <p class="fu5-helper">PDF, DOC, DOCX, PPT, PPTX, TXT &mdash; Max 20 MB per file</p>
+          </div>
 
-      <form id="upload-form" style="display:none">
-        <input type="file" id="file-input" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" required>
-        <div id="file-preview" style="display:none;margin-bottom:var(--space-3);padding:var(--space-4);background:var(--accent-ghost);border-radius:var(--radius-lg);"></div>
-        <div class="form-group" style="margin-top:var(--space-3);display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:end;">
-          <div style="flex:1;min-width:180px;">
-            <label class="form-label">Title</label>
-            <input type="text" class="form-input" id="file-title" placeholder="e.g. Mathematics Syllabus" required>
-          </div>
-          <div style="flex:1;min-width:180px;">
-            <label class="form-label">Class</label>
-            <select class="form-input" id="file-class" required>
-              <option value="">Select a class...</option>
-            </select>
-          </div>
-          <div style="flex:1;min-width:180px;">
-            <label class="form-label">Description (optional)</label>
-            <input type="text" class="form-input" id="file-desc" placeholder="e.g. Unit 1 topics">
-          </div>
-          <button type="submit" class="btn btn-primary" id="upload-submit-btn">Upload</button>
-          <button type="button" class="btn btn-secondary" onclick="cancelUpload()">Cancel</button>
+          <div class="fu5-gallery" id="fu5-gallery" style="display:none"></div>
+
+          <form id="upload-form" class="fu5-meta" style="display:none">
+            <div class="form-group">
+              <label class="form-label">Class</label>
+              <select class="form-input" id="file-class" required>
+                <option value="">Select a class...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Description (optional, applies to all)</label>
+              <input type="text" class="form-input" id="file-desc" placeholder="e.g. Unit 1 topics">
+            </div>
+            <div class="fu5-actions">
+              <button type="submit" class="btn btn-primary" id="upload-submit-btn">Upload</button>
+              <button type="button" class="btn btn-secondary" id="fu5-cancel-btn">Cancel</button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
 
       <div class="syllabus-search">
         <select class="form-input" id="class-filter" style="max-width:240px;" onchange="applyFilter()">
@@ -120,7 +142,6 @@
   <script src="../../js/api.js?v=10"></script>
   <script src="../../js/auth.js?v=10"></script>
   <script>
-    let currentFile = null;
     let teacherClasses = [];
     let allFiles = [];
 
@@ -131,56 +152,35 @@
       startPolling(loadFiles, 60000);
       window.addEventListener('beforeunload', stopPolling);
 
+      // ── file-upload-5 dropzone ──
       const dropZone = document.getElementById('drop-zone');
+      dropZone.addEventListener('click', () => document.getElementById('file-input').click());
+      dropZone.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.getElementById('file-input').click(); }
+      });
       dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
       dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
       dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         dropZone.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) handleFileSelect(files[0]);
+        if (e.dataTransfer.files.length > 0) addPendingFiles(e.dataTransfer.files);
+      });
+
+      document.getElementById('fu5-pick-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('file-input').click();
       });
 
       document.getElementById('file-input').addEventListener('change', (e) => {
-        if (e.target.files.length > 0) handleFileSelect(e.target.files[0]);
+        if (e.target.files.length > 0) addPendingFiles(e.target.files);
+        e.target.value = '';
       });
 
+      document.getElementById('fu5-cancel-btn').addEventListener('click', clearPending);
       document.getElementById('viewer-back').addEventListener('click', closeFileViewer);
       document.getElementById('viewer-download').addEventListener('click', downloadViewer);
 
-      document.getElementById('upload-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const title = document.getElementById('file-title').value.trim();
-        const desc = document.getElementById('file-desc').value.trim();
-        const classId = document.getElementById('file-class').value;
-        if (!title || !currentFile) return;
-        if (!classId) {
-          showAlert('Please select a class for this syllabus file', 'error');
-          return;
-        }
-
-        const sizeStr = currentFile.size > 1024 * 1024 ? (currentFile.size / 1024 / 1024).toFixed(1) + ' MB' : (currentFile.size / 1024).toFixed(0) + ' KB';
-        const clsName = teacherClasses.find(c => c.id === parseInt(classId));
-        if (!confirm('Upload this file?\n\nFile: ' + currentFile.name + '\nSize: ' + sizeStr + '\nType: ' + (currentFile.type || 'Unknown') + '\nTitle: ' + title + '\nClass: ' + (clsName ? clsName.name : 'Unknown') + '\n\nClick OK to confirm upload.')) return;
-
-        const btn = document.getElementById('upload-submit-btn');
-        btn.disabled = true; btn.textContent = 'Uploading...';
-
-        try {
-          const fd = new FormData();
-          fd.append('title', title);
-          fd.append('classId', classId);
-          if (desc) fd.append('description', desc);
-          fd.append('file', currentFile);
-          await api.uploadFile('/api/syllabus/upload', fd);
-          cancelUpload();
-          showAlert('File uploaded successfully', 'success');
-          loadFiles();
-        } catch (e) {
-          showAlert(e.message || 'Upload failed', 'error');
-          btn.disabled = false; btn.textContent = 'Upload';
-        }
-      });
+      document.getElementById('upload-form').addEventListener('submit', handleUpload);
     });
 
     async function loadTeacherClasses() {
@@ -195,40 +195,128 @@
       }
     }
 
-    function handleFileSelect(file) {
-      if (file.size > 20 * 1024 * 1024) {
-        showAlert('File too large. Maximum size is 20MB.', 'error');
-        return;
-      }
-      var ext = file.name.split('.').pop().toLowerCase();
-      var allowed = ['pdf','doc','docx','ppt','pptx','txt'];
-      if (allowed.indexOf(ext) === -1) {
-        showAlert('Invalid file type. Allowed: PDF, DOC, DOCX, PPT, PPTX, TXT', 'error');
-        return;
-      }
-      currentFile = file;
-      document.getElementById('file-title').value = file.name.replace(/\.[^.]+$/, '');
-      document.getElementById('file-desc').value = '';
-      document.getElementById('upload-form').style.display = 'flex';
-      document.getElementById('upload-form').style.flexDirection = 'column';
-      document.getElementById('upload-btn').disabled = true;
+    // ── file-upload-5 gallery logic ──
+    let pendingFiles = [];
+    const UPLOAD_EXTS = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt'];
+    const FILE_TEXT_SVG = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+    const SLIDES_SVG = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h20"/><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"/><path d="M8 21l4-4 4 4"/></svg>';
+    const FILE_SVG = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+    const CLOSE_SVG = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const KIND_META = {
+      pdf:    { color: '#ef4444', svg: FILE_TEXT_SVG },
+      word:   { color: '#3b82f6', svg: FILE_TEXT_SVG },
+      slides: { color: '#f97316', svg: SLIDES_SVG },
+      text:   { color: '#6b7280', svg: FILE_TEXT_SVG },
+      file:   { color: '#6b7280', svg: FILE_SVG },
+    };
 
-      var sizeStr = file.size > 1024 * 1024 ? (file.size / 1024 / 1024).toFixed(1) + ' MB' : (file.size / 1024).toFixed(0) + ' KB';
-      var icon = ext === 'pdf' ? '&#x1F4C4;' : ext === 'doc' || ext === 'docx' ? '&#x1F4DD;' : ext === 'ppt' || ext === 'pptx' ? '&#x1F4CA;' : '&#x1F4C1;';
-      document.getElementById('file-preview').innerHTML = '<div style="display:flex;align-items:center;gap:var(--space-3);"><span style="font-size:2rem;">' + icon + '</span><div><strong>' + escHtml(file.name) + '</strong><br><span class="text-muted text-sm">' + sizeStr + ' &middot; ' + ext.toUpperCase() + '</span></div></div>';
-      document.getElementById('file-preview').style.display = 'block';
+    function fileKind(ext) {
+      if (ext === 'pdf') return 'pdf';
+      if (ext === 'doc' || ext === 'docx') return 'word';
+      if (ext === 'ppt' || ext === 'pptx') return 'slides';
+      if (ext === 'txt') return 'text';
+      return 'file';
     }
 
-    function cancelUpload() {
-      currentFile = null;
+    function addPendingFiles(fileList) {
+      let added = 0;
+      Array.from(fileList).forEach(file => {
+        const ext = (file.name.split('.').pop() || '').toLowerCase();
+        if (UPLOAD_EXTS.indexOf(ext) === -1) {
+          showAlert('Skipped "' + file.name + '": type not allowed', 'error');
+          return;
+        }
+        if (file.size > 20 * 1024 * 1024) {
+          showAlert('Skipped "' + file.name + '": exceeds 20 MB', 'error');
+          return;
+        }
+        if (pendingFiles.some(p => p.name === file.name && p.size === file.size)) return;
+        pendingFiles.push(file);
+        added++;
+      });
+      if (added) renderGallery();
+    }
+
+    function renderGallery() {
+      const gallery = document.getElementById('fu5-gallery');
+      const meta = document.getElementById('upload-form');
+      const btn = document.getElementById('upload-btn');
+      if (!pendingFiles.length) {
+        gallery.style.display = 'none';
+        meta.style.display = 'none';
+        btn.disabled = false;
+        return;
+      }
+      gallery.style.display = 'grid';
+      meta.style.display = 'flex';
+      btn.disabled = true;
+      gallery.innerHTML = pendingFiles.map((f, i) => {
+        const ext = (f.name.split('.').pop() || '').toLowerCase();
+        const kind = KIND_META[fileKind(ext)];
+        const size = f.size > 1024 * 1024 ? (f.size / 1024 / 1024).toFixed(1) + ' MB' : (f.size / 1024).toFixed(0) + ' KB';
+        return `<div class="fu5-tile">
+          <div class="fu5-tile-icon" style="color:${kind.color}">${kind.svg}</div>
+          <div class="fu5-tile-name" title="${escHtml(f.name)}">${escHtml(f.name)}</div>
+          <div class="fu5-tile-ext">${ext.toUpperCase()} &middot; ${size}</div>
+          <button type="button" class="fu5-tile-remove" onclick="removePendingFile(${i})" aria-label="Remove ${escHtml(f.name)}">${CLOSE_SVG}</button>
+        </div>`;
+      }).join('');
+    }
+
+    function removePendingFile(index) {
+      pendingFiles.splice(index, 1);
+      renderGallery();
+    }
+
+    function clearPending() {
+      pendingFiles = [];
+      document.getElementById('fu5-gallery').style.display = 'none';
       document.getElementById('upload-form').style.display = 'none';
       document.getElementById('file-input').value = '';
-      document.getElementById('file-preview').style.display = 'none';
-      document.getElementById('file-preview').innerHTML = '';
-      document.getElementById('upload-btn').disabled = false;
-      document.getElementById('file-title').value = '';
       document.getElementById('file-desc').value = '';
       document.getElementById('file-class').value = '';
+      document.getElementById('upload-btn').disabled = false;
+      document.getElementById('upload-submit-btn').disabled = false;
+      document.getElementById('upload-submit-btn').textContent = 'Upload';
+    }
+
+    async function handleUpload(e) {
+      e.preventDefault();
+      const classId = document.getElementById('file-class').value;
+      const desc = document.getElementById('file-desc').value.trim();
+      if (!pendingFiles.length) return;
+      if (!classId) {
+        showAlert('Please select a class for these files', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('upload-submit-btn');
+      btn.disabled = true;
+      const total = pendingFiles.length;
+      let done = 0, failed = 0;
+
+      for (const file of [...pendingFiles]) {
+        btn.textContent = `Uploading (${done + 1}/${total})...`;
+        const fd = new FormData();
+        fd.append('title', file.name.replace(/\.[^.]+$/, ''));
+        fd.append('classId', classId);
+        if (desc) fd.append('description', desc);
+        fd.append('file', file);
+        try {
+          await api.uploadFile('/api/syllabus/upload', fd);
+          done++;
+        } catch (err) {
+          failed++;
+          showAlert('Failed: ' + file.name + ' — ' + (err.message || 'upload error'), 'error');
+        }
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Upload';
+      clearPending();
+      if (failed) showAlert(done + ' uploaded, ' + failed + ' failed', 'error');
+      else showAlert(total + ' file' + (total !== 1 ? 's' : '') + ' uploaded successfully', 'success');
+      loadFiles();
     }
 
     async function loadFiles() {
