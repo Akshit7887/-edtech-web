@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Syllabus - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=11">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=11">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* file-upload-5 style uploader */
@@ -139,8 +139,8 @@
     </main>
   </div>
 
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
+  <script src="../../js/api.js?v=11"></script>
+  <script src="../../js/auth.js?v=11"></script>
   <script>
     let teacherClasses = [];
     let allFiles = [];
@@ -152,7 +152,7 @@
       startPolling(loadFiles, 60000);
       window.addEventListener('beforeunload', stopPolling);
 
-      // ── file-upload-5 dropzone ──
+      // â”€â”€ file-upload-5 dropzone â”€â”€
       const dropZone = document.getElementById('drop-zone');
       dropZone.addEventListener('click', () => document.getElementById('file-input').click());
       dropZone.addEventListener('keydown', (e) => {
@@ -195,7 +195,7 @@
       }
     }
 
-    // ── file-upload-5 gallery logic ──
+    // â”€â”€ file-upload-5 gallery logic â”€â”€
     let pendingFiles = [];
     const UPLOAD_EXTS = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'txt'];
     const FILE_TEXT_SVG = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
@@ -307,7 +307,7 @@
           done++;
         } catch (err) {
           failed++;
-          showAlert('Failed: ' + file.name + ' — ' + (err.message || 'upload error'), 'error');
+          showAlert('Failed: ' + file.name + ' â€” ' + (err.message || 'upload error'), 'error');
         }
       }
 
@@ -538,7 +538,7 @@
       return d.innerHTML;
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
-  <script src="../../js/animations.js?v=10"></script>
+  <script src="../../js/nav.js?v=11"></script>
+  <script src="../../js/animations.js?v=11"></script>
 </body>
 </html>

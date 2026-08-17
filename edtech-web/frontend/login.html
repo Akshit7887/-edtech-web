@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Login - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="css/main.css?v=10">
-  <link rel="stylesheet" href="css/auth.css?v=10">
+  <link rel="stylesheet" href="css/main.css?v=11">
+  <link rel="stylesheet" href="css/auth.css?v=11">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -63,7 +63,7 @@
               <button type="button" class="toggle-password" onclick="togglePassword('password')" aria-label="Toggle password">&#x1F441;&#xFE0F;</button>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary btn-block btn-lg" id="login-btn">
+          <button type="submit" class="btn btn-primary btn-block btn-lg btn-ripple" id="login-btn">
             <span id="login-text">Send OTP</span>
             <span id="login-spinner" class="spinner spinner-sm" style="display:none"></span>
           </button>
@@ -82,7 +82,7 @@
         <div class="auth-footer auth-reveal" style="animation-delay:.45s">
           <p>Don't have an account? <a href="register.html">Register here</a></p>
           <p><a href="forgot-password.html">Forgot Password?</a></p>
-          <p style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:0.8rem"><a href="/admin">🔐 Admin Login</a></p>
+          <p style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:0.8rem"><a href="/admin">ðŸ” Admin Login</a></p>
         </div>
       </div>
     </div>
@@ -113,9 +113,9 @@
     </div>
   </div>
 
-  <script src="js/api.js?v=10"></script>
-  <script src="js/auth.js?v=10"></script>
-  <script src="js/google-auth.js?v=10"></script>
+  <script src="js/api.js?v=11"></script>
+  <script src="js/auth.js?v=11"></script>
+  <script src="js/google-auth.js?v=11"></script>
   <script>
     (function() {
       const role = getUserRole();
@@ -168,7 +168,7 @@
       initGoogleAuth('google-signin-container');
     });
   </script>
-  <script src="js/nav.js?v=10"></script>
-  <script src="js/animations.js?v=10"></script>
+  <script src="js/nav.js?v=11"></script>
+  <script src="js/animations.js?v=11"></script>
 </body>
 </html>

@@ -2372,3 +2372,40 @@
   .site-footer { padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom)); }
   .exam-timer { padding-top: calc(var(--space-3) + env(safe-area-inset-top)); }
 }
+/* ============================================================
+   Landing stats band
+   ============================================================ */
+.stats-band-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+.stats-band-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.stats-band-item .counter {
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+}
+
+.stats-band-label {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+@media (max-width: 767px) {
+  .stats-band-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-4);
+  }
+}

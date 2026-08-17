@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Student Dashboard - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=11">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=11">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -58,11 +58,11 @@
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js?v=10"></script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/animations.js?v=10"></script>
-  <script src="../../js/signalr-client.js?v=10"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js?v=11"></script>
+  <script src="../../js/api.js?v=11"></script>
+  <script src="../../js/auth.js?v=11"></script>
+  <script src="../../js/animations.js?v=11"></script>
+  <script src="../../js/signalr-client.js?v=11"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
@@ -93,12 +93,13 @@
         const exams = examRes.data || [];
         const analytics = analyticsRes?.data;
         if (analytics) {
-          document.getElementById('stat-total').textContent = analytics.total_exams || exams.length;
-          document.getElementById('stat-completed').textContent = analytics.completed_exams || 0;
-          document.getElementById('stat-avg').textContent = (analytics.average_percentage != null ? analytics.average_percentage : analytics.average_score || 0) + '%';
-          document.getElementById('stat-pending').textContent = analytics.pending_exams || 0;
+          animateCount(document.getElementById('stat-total'), analytics.total_exams || exams.length);
+          animateCount(document.getElementById('stat-completed'), analytics.completed_exams || 0);
+          const avg = analytics.average_percentage != null ? analytics.average_percentage : analytics.average_score || 0;
+          animateCount(document.getElementById('stat-avg'), avg, { suffix: '%' });
+          animateCount(document.getElementById('stat-pending'), analytics.pending_exams || 0);
         } else {
-          document.getElementById('stat-total').textContent = exams.length;
+          animateCount(document.getElementById('stat-total'), exams.length);
         }
         const container = document.getElementById('exam-list');
         if (!exams.length) {
@@ -134,6 +135,6 @@
       }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=11"></script>
 </body>
 </html>

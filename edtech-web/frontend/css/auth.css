@@ -494,6 +494,19 @@
   50% { transform: translateY(-12px); }
 }
 
+.auth-visual-card::before {
+  animation: auth-orb-drift 14s ease-in-out infinite alternate;
+}
+
+.auth-visual-card::after {
+  animation: auth-orb-drift 18s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes auth-orb-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(-28px, 24px) scale(1.15); }
+}
+
 @media (min-width: 1024px) {
   .auth-split-visual {
     display: block;
