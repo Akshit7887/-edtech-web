@@ -354,10 +354,12 @@ body.page-flip-in {
 .btn-ripple {
   position: relative;
   overflow: hidden;
+  isolation: isolate;
 }
 
 .btn-ripple .ripple {
   position: absolute;
+  z-index: -1;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   transform: scale(0);
