@@ -1,6 +1,6 @@
 /* global self, caches, fetch, URL */
 
-var CACHE_NAME = 'edtech-v10';
+var CACHE_NAME = 'edtech-v11';
 
 var CACHE_FIRST = [
   /\/css\//,
@@ -65,6 +65,13 @@ function isHTML(url) {
 
 self.addEventListener('fetch', function (event) {
   var url = event.request.url;
+
+  // Ignore non-HTTP(S) requests (chrome-extension://, chrome://, devtools, etc.)
+  // otherwise cache.put() throws "Request scheme 'chrome-extension' is unsupported"
+  if (url.indexOf('http:') !== 0 && url.indexOf('https:') !== 0) {
+    return;
+  }
+
   var path = new URL(url).pathname;
 
   // Network-only for API, SignalR, exam page

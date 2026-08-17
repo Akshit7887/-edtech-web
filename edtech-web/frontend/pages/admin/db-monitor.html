@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Live DB Monitor - EdTech AI Test & Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     .db-monitor { font-family: 'Courier New', monospace; font-size: 0.8rem; }
@@ -42,14 +42,14 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
-        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
-        <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
-        <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
-        <li><a href="db-monitor.html" class="active"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
-        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="users.html"><span class="nav-icon">ðŸ‘¥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">ðŸ«</span><span>Classes</span></a></li>
+        <li><a href="departments.html"><span class="nav-icon">ðŸ›ï¸</span><span>Departments</span></a></li>
+        <li><a href="exams.html"><span class="nav-icon">ðŸ“</span><span>Exams</span></a></li>
+        <li><a href="db-monitor.html" class="active"><span class="nav-icon">ðŸ—„ï¸</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">ðŸ‘¤</span><span>Profile</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -58,7 +58,7 @@
           <h1><span class="badge-live"></span>Live Database Monitor</h1>
           <p class="text-muted">Real-time changes pushed via WebSocket &middot; <span id="last-update">waiting...</span></p>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="refreshAll()">⟳ Refresh Now</button>
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()">âŸ³ Refresh Now</button>
       </div>
       <div id="alert-container"></div>
 
@@ -66,29 +66,29 @@
 
       <div class="db-monitor">
         <div class="db-section">
-          <h3>👥 Users <span class="count" id="users-count"></span></h3>
+          <h3>ðŸ‘¥ Users <span class="count" id="users-count"></span></h3>
           <div class="scroll-table"><table class="db-table" id="users-table"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Created</th></tr></thead><tbody></tbody></table></div>
         </div>
         <div class="db-section">
-          <h3>📝 Exams <span class="count" id="exams-count"></span></h3>
+          <h3>ðŸ“ Exams <span class="count" id="exams-count"></span></h3>
           <div class="scroll-table"><table class="db-table" id="exams-table"><thead><tr><th>ID</th><th>Title</th><th>Subject</th><th>Status</th><th>Created</th></tr></thead><tbody></tbody></table></div>
         </div>
         <div class="db-section">
-          <h3>📋 Exam Sessions <span class="count" id="sessions-count"></span></h3>
+          <h3>ðŸ“‹ Exam Sessions <span class="count" id="sessions-count"></span></h3>
           <div class="scroll-table"><table class="db-table" id="sessions-table"><thead><tr><th>ID</th><th>Student ID</th><th>Exam ID</th><th>Score</th><th>Total</th><th>Status</th><th>Submitted</th><th>Created</th></tr></thead><tbody></tbody></table></div>
         </div>
         <div class="db-section">
-          <h3>🔔 Notifications <span class="count" id="notifications-count"></span></h3>
+          <h3>ðŸ”” Notifications <span class="count" id="notifications-count"></span></h3>
           <div class="scroll-table"><table class="db-table" id="notifications-table"><thead><tr><th>ID</th><th>User ID</th><th>Title</th><th>Type</th><th>Read</th><th>Created</th></tr></thead><tbody></tbody></table></div>
         </div>
       </div>
     </main>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js?v=10"></script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/signalr-client.js?v=10"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@microsoft/signalr@8.0.0/dist/browser/signalr.min.js?v=12"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/signalr-client.js?v=12"></script>
   <script>
     let lastSnapshot = { users: [], exams: [], sessions: [], notifications: [] };
 
@@ -176,7 +176,7 @@
         columns.forEach(col => {
           let val = r[col];
           if (col === 'created_at' || col === 'submitted_at') val = val ? formatDate(val) : '-';
-          if (col === 'is_read') val = val ? '✓' : '○';
+          if (col === 'is_read') val = val ? 'âœ“' : 'â—‹';
           if (col === 'status') val = statusBadge(val);
           html += '<td>' + val + '</td>';
         });
@@ -191,6 +191,6 @@
       return new Date(d).toLocaleTimeString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

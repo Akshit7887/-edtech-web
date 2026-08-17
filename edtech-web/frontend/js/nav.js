@@ -86,23 +86,22 @@
     }, 6000);
   }
 
-  // ── Back button ──
-  function initBackButton() {
+  // ── Floating back button (separate from navbar) ──
+  function initFloatingBack() {
     try {
-      var navbar = document.querySelector('.navbar');
-      if (!navbar) return;
-      if (document.querySelector('.back-btn')) return;
+      if (document.querySelector('.floating-back-btn')) return;
+      if (!document.referrer && window.history.length <= 1) return;
       var btn = document.createElement('button');
-      btn.className = 'back-btn';
+      btn.className = 'floating-back-btn';
       btn.setAttribute('aria-label', 'Go back to previous page');
+      btn.setAttribute('title', 'Go back');
       btn.setAttribute('type', 'button');
       btn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
       btn.addEventListener('click', function () {
         if (document.referrer || window.history.length > 1) window.history.back();
       });
-      if (!document.referrer && window.history.length <= 1) btn.style.display = 'none';
-      navbar.insertBefore(btn, navbar.firstChild);
-    } catch (e) { /* ignore back-btn errors */ }
+      document.body.appendChild(btn);
+    } catch (e) { /* ignore floating back errors */ }
   }
 
   // ── SVG Icons ──
@@ -413,6 +412,7 @@
       if (!btn.querySelector('svg')) {
         btn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon"><line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/><line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/><line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/></svg>';
       }
+      navbar.insertBefore(btn, navbar.firstChild);
 
       panel = document.createElement('div');
       panel.className = 'mobile-menu';
@@ -666,8 +666,7 @@
     } catch (err) {}
   }
 
-  // ── Navigation-6 action buttons (search / user / CTA) ──
-  var COMMAND_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+  // ── Navigation-6 action buttons (user / CTA) ──
   var USER_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
 
   function initNavbarActions() {
@@ -684,15 +683,6 @@
       var actions = document.createElement('div');
       actions.className = 'navbar-actions';
 
-      // Search / Browse exams
-      var search = document.createElement('a');
-      search.className = 'nav-action-btn';
-      search.href = role ? rolePfx + 'dashboard.html' : pfx + 'exam-list.html';
-      search.title = role ? 'Dashboard' : 'Browse Exams';
-      search.setAttribute('aria-label', search.title);
-      search.innerHTML = COMMAND_ICON;
-      actions.appendChild(search);
-
       // User / Profile
       var user = document.createElement('a');
       user.className = 'nav-action-btn';
@@ -702,12 +692,14 @@
       user.innerHTML = USER_ICON;
       actions.appendChild(user);
 
-      // CTA
-      var cta = document.createElement('a');
-      cta.className = 'nav-cta-btn';
-      cta.href = role ? rolePfx + 'dashboard.html' : pfx + 'register.html';
-      cta.textContent = role ? 'Dashboard' : 'Get started';
-      actions.appendChild(cta);
+      // CTA (signed-in users only)
+      if (role) {
+        var cta = document.createElement('a');
+        cta.className = 'nav-cta-btn';
+        cta.href = rolePfx + 'dashboard.html';
+        cta.textContent = 'Dashboard';
+        actions.appendChild(cta);
+      }
 
       navbar.appendChild(actions);
     } catch (e) { /* ignore navbar actions errors */ }
@@ -716,10 +708,10 @@
   initPWA();
   initPageFlip();
   initLogoAnim();
-  initBackButton();
   initTheme();
   initNavbarActions();
   if (!isExamPage) {
+    initFloatingBack();
     initHamburger();
     initSidebar();
   }

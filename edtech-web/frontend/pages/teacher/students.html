@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Students - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,11 +18,11 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="students.html" class="active"><span class="nav-icon">👥</span><span>Students</span></a></li>
-        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
-        <li><a href="parent-contacts.html"><span class="nav-icon">👪</span><span>Parent Contacts</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="students.html" class="active"><span class="nav-icon">ðŸ‘¥</span><span>Students</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">ðŸ«</span><span>Classes</span></a></li>
+        <li><a href="parent-contacts.html"><span class="nav-icon">ðŸ‘ª</span><span>Parent Contacts</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -32,8 +32,8 @@
           <p>Manage your students</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="showAddStudentModal()">➕ Add Student</button>
-          <button class="btn btn-secondary" onclick="showAnnounceModal()">📢 Send Announcement</button>
+          <button class="btn btn-primary" onclick="showAddStudentModal()">âž• Add Student</button>
+          <button class="btn btn-secondary" onclick="showAnnounceModal()">ðŸ“¢ Send Announcement</button>
         </div>
       </div>
       <div id="alert-container"></div>
@@ -48,11 +48,11 @@
       <div class="pagination" id="students-pagination"></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/teacher.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/teacher.js?v=12"></script>
   <script>
     let currentPage = 1;
     let currentStudents = [];
@@ -68,7 +68,7 @@
         const pagination = res.pagination || { page: 1, total: 0, total_pages: 1 };
         const tbody = document.getElementById('students-tbody');
         if (!students.length) {
-          tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">👥</div><h3>No students found</h3></div></td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">ðŸ‘¥</div><h3>No students found</h3></div></td></tr>';
         } else {
           tbody.innerHTML = students.map(s => `
             <tr>
@@ -94,11 +94,11 @@
     function renderPagination(p) {
       const el = document.getElementById('students-pagination');
       if (p.total_pages <= 1) { el.innerHTML = ''; return; }
-      let html = `<button onclick="loadStudentsPage(1)" ${p.page <= 1 ? 'disabled' : ''}>«</button>`;
-      html += `<button onclick="loadStudentsPage(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>‹</button>`;
+      let html = `<button onclick="loadStudentsPage(1)" ${p.page <= 1 ? 'disabled' : ''}>Â«</button>`;
+      html += `<button onclick="loadStudentsPage(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>â€¹</button>`;
       html += `<span class="pagination-info">Page ${p.page} of ${p.total_pages} (${p.total} total)</span>`;
-      html += `<button onclick="loadStudentsPage(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>›</button>`;
-      html += `<button onclick="loadStudentsPage(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>»</button>`;
+      html += `<button onclick="loadStudentsPage(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>â€º</button>`;
+      html += `<button onclick="loadStudentsPage(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>Â»</button>`;
       el.innerHTML = html;
     }
 
@@ -109,7 +109,7 @@
       `;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'add-student-modal';
       overlay.innerHTML = `
-        <div class="modal"><div class="modal-header"><h3>Add Student</h3><button class="modal-close" onclick="closeAddStudentModal()">×</button></div>
+        <div class="modal"><div class="modal-header"><h3>Add Student</h3><button class="modal-close" onclick="closeAddStudentModal()">Ã—</button></div>
         <div class="modal-body">${html}</div>
         <div class="modal-footer"><button class="btn btn-secondary" onclick="closeAddStudentModal()">Cancel</button><button class="btn btn-primary" onclick="handleAddStudent()">Create</button></div></div>
       `;
@@ -136,7 +136,7 @@
       const safeName = escHtml(s.name || 'Student');
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'delete-student-modal';
       overlay.innerHTML = `
-        <div class="modal"><div class="modal-header"><h3>Delete Student</h3><button class="modal-close" onclick="closeDeleteStudentModal()">×</button></div>
+        <div class="modal"><div class="modal-header"><h3>Delete Student</h3><button class="modal-close" onclick="closeDeleteStudentModal()">Ã—</button></div>
         <div class="modal-body"><p>Are you sure you want to delete <strong>${safeName}</strong>? This action cannot be undone.</p></div>
         <div class="modal-footer"><button class="btn btn-secondary" onclick="closeDeleteStudentModal()">Cancel</button><button class="btn btn-danger" onclick="handleDeleteStudent(${id})">Delete</button></div></div>
       `;
@@ -158,7 +158,7 @@
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'ann-modal';
       overlay.innerHTML = `
         <div class="modal ann-modal">
-          <div class="modal-header"><h3>📢 Send Announcement</h3><button class="modal-close" onclick="closeAnnModal()">×</button></div>
+          <div class="modal-header"><h3>ðŸ“¢ Send Announcement</h3><button class="modal-close" onclick="closeAnnModal()">Ã—</button></div>
           <div class="modal-body">
             <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
               <input class="form-input" id="ann-title" placeholder=" " oninput="updatePreview()">
@@ -170,7 +170,7 @@
             </div>
             <div class="ann-confirm-section" id="ann-teacher-confirm" onclick="toggleConfirm('teacher')">
               <div class="ann-confirm-header">
-                <div class="confirm-icon teacher-icon">👨‍🏫</div>
+                <div class="confirm-icon teacher-icon">ðŸ‘¨â€ðŸ«</div>
                 <div class="ann-confirm-info">
                   <strong>Teacher's Confirmation</strong>
                   <span>I confirm the content is accurate and appropriate for students</span>
@@ -180,7 +180,7 @@
             </div>
             <div class="ann-confirm-section" id="ann-student-confirm" onclick="toggleConfirm('student')">
               <div class="ann-confirm-header">
-                <div class="confirm-icon student-icon">👩‍🎓</div>
+                <div class="confirm-icon student-icon">ðŸ‘©â€ðŸŽ“</div>
                 <div class="ann-confirm-info">
                   <strong>Student Notification</strong>
                   <span>Notify all students in my classes about this announcement</span>
@@ -188,7 +188,7 @@
                 <span class="ann-confirm-badge" id="student-badge">Pending</span>
               </div>
               <div class="ann-student-preview" id="student-preview">
-                <div class="ann-preview-header">📋 Student's View Preview</div>
+                <div class="ann-preview-header">ðŸ“‹ Student's View Preview</div>
                 <div class="ann-preview-card">
                   <h4 id="preview-title">Announcement Title</h4>
                   <p id="preview-message">Your announcement message will appear here...</p>
@@ -199,23 +199,23 @@
               <label style="font-size:0.9rem;font-weight:600;color:var(--text-muted)">Send to:</label>
               <div class="ann-target-options" style="display:flex;flex-wrap:wrap;gap:var(--space-2);margin-top:var(--space-2)">
                 <label class="ann-target-option selected" id="target-classes" onclick="selectTarget('classes')" style="flex:1 1 45%;min-width:120px;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
-                  <input type="radio" name="target" value="classes" checked hidden> 📚 My Classes
+                  <input type="radio" name="target" value="classes" checked hidden> ðŸ“š My Classes
                 </label>
                 <label class="ann-target-option" id="target-students" onclick="selectTarget('students')" style="flex:1 1 45%;min-width:120px;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
-                  <input type="radio" name="target" value="students" hidden> 👩‍🎓 All Students
+                  <input type="radio" name="target" value="students" hidden> ðŸ‘©â€ðŸŽ“ All Students
                 </label>
                 <label class="ann-target-option" id="target-teachers" onclick="selectTarget('teachers')" style="flex:1 1 45%;min-width:120px;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
-                  <input type="radio" name="target" value="teachers" hidden> 👨‍🏫 All Teachers
+                  <input type="radio" name="target" value="teachers" hidden> ðŸ‘¨â€ðŸ« All Teachers
                 </label>
                 <label class="ann-target-option" id="target-all" onclick="selectTarget('all')" style="flex:1 1 45%;min-width:120px;padding:8px 12px;border:2px solid var(--border);border-radius:var(--radius-md);cursor:pointer;text-align:center;font-size:0.85rem">
-                  <input type="radio" name="target" value="all" hidden> 🌐 Everyone
+                  <input type="radio" name="target" value="all" hidden> ðŸŒ Everyone
                 </label>
               </div>
             </div>
           </div>
           <div class="modal-footer" style="flex-direction:column;gap:var(--space-3)">
             <button class="ann-send-btn" id="ann-send-btn" onclick="handleAnnounce()" disabled>
-              <span class="btn-content">📨 Send Announcement</span>
+              <span class="btn-content">ðŸ“¨ Send Announcement</span>
               <span class="btn-spinner"></span>
             </button>
             <div style="display:flex;gap:var(--space-3);width:100%">
@@ -245,14 +245,14 @@
         const section = document.getElementById('ann-teacher-confirm');
         const badge = document.getElementById('teacher-badge');
         section.classList.toggle('confirmed', confirmTeacher);
-        badge.textContent = confirmTeacher ? 'Confirmed ✓' : 'Pending';
+        badge.textContent = confirmTeacher ? 'Confirmed âœ“' : 'Pending';
       } else {
         confirmStudent = !confirmStudent;
         const section = document.getElementById('ann-student-confirm');
         const badge = document.getElementById('student-badge');
         const preview = document.getElementById('student-preview');
         section.classList.toggle('confirmed', confirmStudent);
-        badge.textContent = confirmStudent ? 'Confirmed ✓' : 'Pending';
+        badge.textContent = confirmStudent ? 'Confirmed âœ“' : 'Pending';
         preview.classList.toggle('visible', confirmStudent);
       }
       updateConfirmState();
@@ -286,7 +286,7 @@
           <div class="success-pop-icon">
             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <h3>🎉 Announcement Sent!</h3>
+          <h3>ðŸŽ‰ Announcement Sent!</h3>
           <p>Your announcement has been delivered to <strong>${count}</strong> recipient${count !== 1 ? 's' : ''} successfully.</p>
           <button class="btn btn-primary" onclick="closeSuccessPop()">Done</button>
         </div>
@@ -327,6 +327,6 @@
       }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

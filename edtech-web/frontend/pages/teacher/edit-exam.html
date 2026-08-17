@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Edit Exam - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,12 +18,12 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="questions.html?examId" id="questions-link"><span class="nav-icon">📋</span><span>Questions</span></a></li>
-        <li><a href="statistics.html" id="stats-link"><span class="nav-icon">📈</span><span>Statistics</span></a></li>
-        <li><a href="attendance.html" id="attendance-link"><span class="nav-icon">✅</span><span>Attendance</span></a></li>
-        <li><a href="reports.html" id="reports-link"><span class="nav-icon">📄</span><span>Reports</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="questions.html?examId" id="questions-link"><span class="nav-icon">ðŸ“‹</span><span>Questions</span></a></li>
+        <li><a href="statistics.html" id="stats-link"><span class="nav-icon">ðŸ“ˆ</span><span>Statistics</span></a></li>
+        <li><a href="attendance.html" id="attendance-link"><span class="nav-icon">âœ…</span><span>Attendance</span></a></li>
+        <li><a href="reports.html" id="reports-link"><span class="nav-icon">ðŸ“„</span><span>Reports</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -31,11 +31,11 @@
       <div id="exam-content" data-aos="fade-up"><div class="loading-overlay"><div class="spinner"></div><span>Loading exam...</span></div></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/teacher.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/teacher.js?v=12"></script>
   <script>
     let examId = 0;
     let contentContainer = 'exam-content';
@@ -80,7 +80,7 @@
           <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
             <div>
               <h1>${exam.title}</h1>
-              <p>${exam.subject} · ${statusBadge(exam.status)} · ${exam.duration_minutes} min · ${exam.total_questions_count || exam.total_questions} questions</p>
+              <p>${exam.subject} Â· ${statusBadge(exam.status)} Â· ${exam.duration_minutes} min Â· ${exam.total_questions_count || exam.total_questions} questions</p>
             </div>
             <div style="display:flex;gap:8px">
               ${exam.status === 'draft' ? `<button class="btn btn-success" onclick="handleActivate()">Activate</button>` : ''}
@@ -142,7 +142,7 @@
                   </div>
                 </div>
                 <div class="col-2" style="display:flex;flex-wrap:wrap;align-items:end;gap:var(--space-3)">
-                  <button class="btn btn-primary" onclick="handleSchedule()">💡 Save Schedule</button>
+                  <button class="btn btn-primary" onclick="handleSchedule()">ðŸ’¡ Save Schedule</button>
                   <button class="btn btn-ghost" onclick="handleSchedule(true)">Clear</button>
                 </div>
               </div>
@@ -160,11 +160,11 @@
           </div>
 
           <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <a href="questions.html?examId=${examId}" class="btn btn-info">📋 Manage Questions</a>
-            <a href="statistics.html?id=${examId}" class="btn btn-primary">📈 View Statistics</a>
-            <a href="attendance.html?id=${examId}" class="btn btn-secondary">✅ Attendance</a>
-            <a href="reports.html?id=${examId}" class="btn btn-warning">📄 Reports</a>
-            <button class="btn btn-ghost" onclick="exportPdf(examId)">📥 Export PDF</button>
+            <a href="questions.html?examId=${examId}" class="btn btn-info">ðŸ“‹ Manage Questions</a>
+            <a href="statistics.html?id=${examId}" class="btn btn-primary">ðŸ“ˆ View Statistics</a>
+            <a href="attendance.html?id=${examId}" class="btn btn-secondary">âœ… Attendance</a>
+            <a href="reports.html?id=${examId}" class="btn btn-warning">ðŸ“„ Reports</a>
+            <button class="btn btn-ghost" onclick="exportPdf(examId)">ðŸ“¥ Export PDF</button>
           </div>
         `;
         await refreshDeepLink();
@@ -226,6 +226,6 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Reports - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,10 +18,10 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="edit-exam.html?id=" id="back-link"><span class="nav-icon">←</span><span>Back to Exam</span></a></li>
-        <li><a href="reports.html" class="active"><span class="nav-icon">📄</span><span>Reports</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="edit-exam.html?id=" id="back-link"><span class="nav-icon">â†</span><span>Back to Exam</span></a></li>
+        <li><a href="reports.html" class="active"><span class="nav-icon">ðŸ“„</span><span>Reports</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -29,11 +29,11 @@
       <div id="reports-content" data-aos="fade-up"><div class="loading-overlay"><div class="spinner"></div><span>Loading reports...</span></div></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/teacher.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/teacher.js?v=12"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
@@ -62,7 +62,7 @@
         container.innerHTML = `
           <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center">
             <div><h1>Parent Reports</h1><p>Send exam results to parents</p></div>
-            <button class="btn btn-primary" onclick="handleSendReports(${examId})">📧 Send Parent Reports</button>
+            <button class="btn btn-primary" onclick="handleSendReports(${examId})">ðŸ“§ Send Parent Reports</button>
           </div>
           <div class="card" style="margin-bottom:20px">
             <div class="card-header"><h3 class="card-title">Pending Reports</h3></div>
@@ -107,6 +107,6 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

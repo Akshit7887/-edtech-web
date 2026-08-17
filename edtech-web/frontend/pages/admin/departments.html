@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Departments - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -17,14 +17,14 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
-        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
-        <li><a href="departments.html" class="active"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
-        <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
-        <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
-        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="users.html"><span class="nav-icon">ðŸ‘¥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">ðŸ«</span><span>Classes</span></a></li>
+        <li><a href="departments.html" class="active"><span class="nav-icon">ðŸ›ï¸</span><span>Departments</span></a></li>
+        <li><a href="exams.html"><span class="nav-icon">ðŸ“</span><span>Exams</span></a></li>
+        <li><a href="db-monitor.html"><span class="nav-icon">ðŸ—„ï¸</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">ðŸ‘¤</span><span>Profile</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -43,8 +43,8 @@
     </main>
   </div>
 
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
   <script>
     let allUsers = [];
     let currentDepts = [];
@@ -71,26 +71,26 @@
         currentDepts = depts;
         const container = document.getElementById('departments-grid');
         if (!depts.length) {
-          container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🏛️</div><h3>No departments yet</h3><p>Create your first department to organize teachers and students.</p></div>';
+          container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">ðŸ›ï¸</div><h3>No departments yet</h3><p>Create your first department to organize teachers and students.</p></div>';
           return;
         }
         container.innerHTML = depts.map((d, i) => `
           <div class="exam-card anim-fade-up stagger-${(i % 4) + 1}" style="cursor:default">
             <div style="display:flex;justify-content:space-between;align-items:start">
               <div class="exam-card-title" style="display:flex;align-items:center;gap:var(--space-2)">
-                <span style="font-size:var(--text-lg)">🏛️</span>
+                <span style="font-size:var(--text-lg)">ðŸ›ï¸</span>
                 ${d.name}
               </div>
               <div style="display:flex;gap:var(--space-2)">
-                <button class="btn btn-sm btn-info" onclick="editDepartment(${d.id})" title="Edit">✏️</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteDepartment(${d.id})" title="Delete">🗑️</button>
+                <button class="btn btn-sm btn-info" onclick="editDepartment(${d.id})" title="Edit">âœï¸</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteDepartment(${d.id})" title="Delete">ðŸ—‘ï¸</button>
               </div>
             </div>
             ${d.description ? `<p style="font-size:var(--text-sm);color:var(--text-muted);margin:var(--space-2) 0">${d.description}</p>` : ''}
             <div class="exam-card-meta" style="margin-top:var(--space-3)">
-              <span>👨‍🏫 ${d.teacher_count || 0} Teachers</span>
-              <span>🎓 ${d.student_count || 0} Students</span>
-              <span>👤 ${d.head_name || 'No Head'}</span>
+              <span>ðŸ‘¨â€ðŸ« ${d.teacher_count || 0} Teachers</span>
+              <span>ðŸŽ“ ${d.student_count || 0} Students</span>
+              <span>ðŸ‘¤ ${d.head_name || 'No Head'}</span>
             </div>
             <div class="exam-card-footer" style="justify-content:flex-start;gap:var(--space-2)">
               <button class="btn btn-sm btn-info" onclick="showAssignModal(${d.id})">Assign Users</button>
@@ -107,7 +107,7 @@
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'dept-modal';
       overlay.innerHTML = `
         <div class="modal">
-          <div class="modal-header"><h3>🏛️ Create Department</h3><button class="modal-close" onclick="closeModal('dept-modal')">×</button></div>
+          <div class="modal-header"><h3>ðŸ›ï¸ Create Department</h3><button class="modal-close" onclick="closeModal('dept-modal')">Ã—</button></div>
           <div class="modal-body">
             <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
               <input class="form-input" id="dept-name" placeholder=" ">
@@ -156,7 +156,7 @@
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'edit-dept-modal';
       overlay.innerHTML = `
         <div class="modal">
-          <div class="modal-header"><h3>✏️ Edit Department</h3><button class="modal-close" onclick="closeModal('edit-dept-modal')">×</button></div>
+          <div class="modal-header"><h3>âœï¸ Edit Department</h3><button class="modal-close" onclick="closeModal('edit-dept-modal')">Ã—</button></div>
           <div class="modal-body">
             <div class="form-group form-floating" style="margin-bottom:var(--space-5)">
               <input class="form-input" id="edit-dept-name" placeholder=" " value="${dept.name}">
@@ -211,7 +211,7 @@
       const unassigned = allUsers.filter(u => !u.department_id || u.department_id !== deptId);
       overlay.innerHTML = `
         <div class="modal" style="max-width:600px">
-          <div class="modal-header"><h3>Assign Users to ${deptName}</h3><button class="modal-close" onclick="closeModal('assign-modal')">×</button></div>
+          <div class="modal-header"><h3>Assign Users to ${deptName}</h3><button class="modal-close" onclick="closeModal('assign-modal')">Ã—</button></div>
           <div class="modal-body">
             <div style="margin-bottom:var(--space-4)">
               <select class="form-input" id="assign-role-filter" style="width:auto" onchange="filterAssignUsers(${deptId})">
@@ -254,7 +254,7 @@
       btn.disabled = true; btn.textContent = '...';
       try {
         await api.post('/api/departments/assign', { user_id: userId, department_id: deptId });
-        btn.textContent = '✓ Assigned';
+        btn.textContent = 'âœ“ Assigned';
         btn.className = 'btn btn-sm btn-success';
         setTimeout(() => { btn.closest('.mini-student-item')?.remove(); }, 800);
       } catch (e) {
@@ -282,7 +282,7 @@
         const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'view-dept-modal';
         overlay.innerHTML = `
           <div class="modal" style="max-width:600px">
-            <div class="modal-header"><h3>👥 ${escHtml(dept.name || 'Department')} Members</h3><button class="modal-close" onclick="closeModal('view-dept-modal')">×</button></div>
+            <div class="modal-header"><h3>ðŸ‘¥ ${escHtml(dept.name || 'Department')} Members</h3><button class="modal-close" onclick="closeModal('view-dept-modal')">Ã—</button></div>
             <div class="modal-body">
               ${membersHtml}
             </div>
@@ -305,6 +305,6 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

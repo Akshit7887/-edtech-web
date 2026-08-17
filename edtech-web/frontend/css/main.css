@@ -329,13 +329,15 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-  transform: translateX(-100%);
-  transition: transform 0.5s var(--ease);
+  border-radius: inherit;
+  box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.18);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  pointer-events: none;
 }
 
 .btn:hover::after {
-  transform: translateX(100%);
+  opacity: 1;
 }
 
 .btn-primary {
@@ -496,13 +498,15 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
+  border-radius: inherit;
+  box-shadow: inset 0 0 24px rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .btn-warning:hover::after {
-  transform: translateX(100%);
+  opacity: 1;
 }
 
 /* ============================================================
@@ -1781,6 +1785,47 @@
 .back-btn:hover {
   background: var(--bg-muted);
   color: var(--accent);
+}
+
+/* Floating back button (separate from navbar) */
+.floating-back-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 90;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: var(--text);
+  box-shadow: var(--shadow-xl);
+  cursor: pointer;
+  padding: 0;
+  animation: fadeInUp 0.4s var(--ease) both;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.floating-back-btn:hover {
+  transform: translateY(-3px);
+  color: var(--accent);
+  background: var(--accent-ghost);
+  border-color: var(--accent);
+}
+
+.floating-back-btn:active {
+  transform: translateY(-1px) scale(0.94);
+}
+
+@media (max-width: 767px) {
+  .floating-back-btn { bottom: 20px; right: 20px; }
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .floating-back-btn { bottom: calc(20px + env(safe-area-inset-bottom)); }
 }
 
 /* ── Backdrop ── */

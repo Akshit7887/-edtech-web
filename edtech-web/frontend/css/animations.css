@@ -359,7 +359,7 @@ body.page-flip-in {
 .btn-ripple .ripple {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.2);
   transform: scale(0);
   animation: ripple-in 0.6s var(--ease) forwards;
   pointer-events: none;

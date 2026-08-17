@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Manage Exams - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,14 +18,14 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="users.html"><span class="nav-icon">👥</span><span>Users</span></a></li>
-        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
-        <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
-        <li><a href="exams.html" class="active"><span class="nav-icon">📝</span><span>Exams</span></a></li>
-        <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
-        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="users.html"><span class="nav-icon">ðŸ‘¥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">ðŸ«</span><span>Classes</span></a></li>
+        <li><a href="departments.html"><span class="nav-icon">ðŸ›ï¸</span><span>Departments</span></a></li>
+        <li><a href="exams.html" class="active"><span class="nav-icon">ðŸ“</span><span>Exams</span></a></li>
+        <li><a href="db-monitor.html"><span class="nav-icon">ðŸ—„ï¸</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">ðŸ‘¤</span><span>Profile</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -43,10 +43,10 @@
       <div class="pagination" id="exams-pagination" data-aos="fade-up" data-aos-delay="150"></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
   <script>
     let examPage = 1;
     let examPagination = null;
@@ -66,14 +66,14 @@
         currentExams = exams;
         examPagination = res.pagination || { page: 1, total_pages: 1 };
         const container = document.getElementById('exam-list');
-        if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No exams found</h3></div>'; renderExamPagination(); return; }
+        if (!exams.length) { container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">ðŸ“</div><h3>No exams found</h3></div>'; renderExamPagination(); return; }
         container.innerHTML = '<div class="exam-grid">' + exams.map((e, i) => `
           <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s">
             <div class="exam-card-title">${escHtml(e.title)}</div>
             <div class="exam-card-meta">
-              <span>📖 ${escHtml(e.subject)}</span>
-              <span>⏱ ${e.duration_minutes} min</span>
-              <span>📄 ${e.total_questions} Q</span>
+              <span>ðŸ“– ${escHtml(e.subject)}</span>
+              <span>â± ${e.duration_minutes} min</span>
+              <span>ðŸ“„ ${e.total_questions} Q</span>
               ${statusBadge(e.status)}
             </div>
             <div class="exam-card-footer">
@@ -81,8 +81,8 @@
               <span style="font-size:0.8rem;color:var(--text-muted)">Teacher: ${escHtml(e.teacher_name || 'N/A')}</span>
             </div>
             <div style="display:flex;gap:var(--space-2);margin-top:var(--space-3)">
-              <button class="btn btn-sm btn-info" onclick="viewExam(${e.id})">👁 View</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteExam(${e.id})">🗑 Delete</button>
+              <button class="btn btn-sm btn-info" onclick="viewExam(${e.id})">ðŸ‘ View</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteExam(${e.id})">ðŸ—‘ Delete</button>
             </div>
           </div>
         `).join('') + '</div>';
@@ -96,11 +96,11 @@
       const p = examPagination;
       const el = document.getElementById('exams-pagination');
       if (!p || p.total_pages <= 1) { el.innerHTML = ''; return; }
-      el.innerHTML = `<button onclick="loadExams(1)" ${p.page <= 1 ? 'disabled' : ''}>«</button>
-        <button onclick="loadExams(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>‹</button>
+      el.innerHTML = `<button onclick="loadExams(1)" ${p.page <= 1 ? 'disabled' : ''}>Â«</button>
+        <button onclick="loadExams(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>â€¹</button>
         <span class="pagination-info">Page ${p.page} of ${p.total_pages} (${p.total} total)</span>
-        <button onclick="loadExams(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>›</button>
-        <button onclick="loadExams(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>»</button>`;
+        <button onclick="loadExams(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>â€º</button>
+        <button onclick="loadExams(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>Â»</button>`;
     }
 
     async function viewExam(id) {
@@ -112,15 +112,15 @@
         const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'exam-view-modal';
         overlay.innerHTML = `
           <div class="modal" style="max-width:720px">
-            <div class="modal-header"><h3>${escHtml(e.title)}</h3><button class="modal-close" onclick="closeExamModal()">×</button></div>
+            <div class="modal-header"><h3>${escHtml(e.title)}</h3><button class="modal-close" onclick="closeExamModal()">Ã—</button></div>
             <div class="modal-body">
               <div class="exam-card-meta" style="margin-bottom:var(--space-4)">
-                <span>📖 ${escHtml(e.subject)}</span>
-                <span>👨‍🏫 ${escHtml(e.teacher_name || 'N/A')}</span>
-                <span>⏱ ${e.duration_minutes} min</span>
-                <span>📄 ${e.total_questions} Q</span>
+                <span>ðŸ“– ${escHtml(e.subject)}</span>
+                <span>ðŸ‘¨â€ðŸ« ${escHtml(e.teacher_name || 'N/A')}</span>
+                <span>â± ${e.duration_minutes} min</span>
+                <span>ðŸ“„ ${e.total_questions} Q</span>
                 ${statusBadge(e.status)}
-                ${e.scheduled_at ? `<span>📅 ${formatDate(e.scheduled_at)}</span>` : ''}
+                ${e.scheduled_at ? `<span>ðŸ“… ${formatDate(e.scheduled_at)}</span>` : ''}
               </div>
               <div class="stats-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));margin-bottom:var(--space-5)">
                 <div class="stat-card"><div class="stat-value">${stats.total_sessions || 0}</div><div class="stat-label">Sessions</div></div>
@@ -149,7 +149,7 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button class="btn btn-danger" onclick="deleteExam(${e.id}, null, true)">🗑 Delete Exam</button>
+              <button class="btn btn-danger" onclick="deleteExam(${e.id}, null, true)">ðŸ—‘ Delete Exam</button>
               <button class="btn btn-secondary" onclick="closeExamModal()">Close</button>
             </div>
           </div>`;
@@ -173,6 +173,6 @@
 
     function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Manage Questions - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,10 +18,10 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="edit-exam.html?id=" id="back-to-exam"><span class="nav-icon">←</span><span>Back to Exam</span></a></li>
-        <li><a href="questions.html" class="active"><span class="nav-icon">📋</span><span>Questions</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="edit-exam.html?id=" id="back-to-exam"><span class="nav-icon">â†</span><span>Back to Exam</span></a></li>
+        <li><a href="questions.html" class="active"><span class="nav-icon">ðŸ“‹</span><span>Questions</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -29,11 +29,11 @@
       <div id="questions-content" data-aos="fade-up"><div class="loading-overlay"><div class="spinner"></div><span>Loading questions...</span></div></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/teacher.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/teacher.js?v=12"></script>
   <script>
     let examId = 0;
     let contentContainer = 'questions-content';
@@ -70,13 +70,13 @@
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-secondary" onclick="showAddModal()">+ Add Question</button>
-              <button class="btn btn-info" onclick="showGenerateModal()">🤖 AI Generate</button>
+              <button class="btn btn-info" onclick="showGenerateModal()">ðŸ¤– AI Generate</button>
               <button class="btn btn-success" onclick="handlePublish()">Publish</button>
               <button class="btn btn-primary" onclick="handleAssign()">Assign to Students</button>
             </div>
           </div>
           <div id="questions-table">
-            ${questions.length === 0 ? '<div class="empty-state"><div class="empty-state-icon">📋</div><h3>No questions yet</h3><p>Add questions manually or generate with AI.</p></div>' : `
+            ${questions.length === 0 ? '<div class="empty-state"><div class="empty-state-icon">ðŸ“‹</div><h3>No questions yet</h3><p>Add questions manually or generate with AI.</p></div>' : `
               <div class="table-container">
                 <table>
                   <thead><tr><th>#</th><th>Question</th><th>Options</th><th>Answer</th><th>Difficulty</th><th>Points</th><th>Status</th><th>Actions</th></tr></thead>
@@ -91,8 +91,8 @@
                         <td>${q.points || 1}</td>
                         <td>${statusBadge(q.status)}</td>
                         <td>
-                          <button class="btn btn-sm btn-ghost" onclick="editQuestion(${q.id}, ${i})">✏️</button>
-                          <button class="btn btn-sm btn-danger" onclick="handleDeleteQ(${q.id})">🗑️</button>
+                          <button class="btn btn-sm btn-ghost" onclick="editQuestion(${q.id}, ${i})">âœï¸</button>
+                          <button class="btn btn-sm btn-danger" onclick="handleDeleteQ(${q.id})">ðŸ—‘ï¸</button>
                         </td>
                       </tr>
                     `).join('')}
@@ -228,7 +228,7 @@
       overlay.id = 'custom-modal';
       overlay.innerHTML = `
         <div class="modal">
-          <div class="modal-header"><h3>${title}</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+          <div class="modal-header"><h3>${title}</h3><button class="modal-close" onclick="closeModal()">Ã—</button></div>
           <div class="modal-body">${bodyHtml}</div>
           <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
@@ -242,6 +242,6 @@
 
     function closeModal() { const m = document.getElementById('custom-modal'); if (m) m.remove(); }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Exam Statistics - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,10 +18,10 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="edit-exam.html?id=" id="back-link"><span class="nav-icon">←</span><span>Back to Exam</span></a></li>
-        <li><a href="statistics.html" class="active"><span class="nav-icon">📈</span><span>Statistics</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="edit-exam.html?id=" id="back-link"><span class="nav-icon">â†</span><span>Back to Exam</span></a></li>
+        <li><a href="statistics.html" class="active"><span class="nav-icon">ðŸ“ˆ</span><span>Statistics</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -29,11 +29,11 @@
       <div id="stats-content" data-aos="fade-up"><div class="loading-overlay"><div class="spinner"></div><span>Loading statistics...</span></div></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/teacher.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/teacher.js?v=12"></script>
   <script>
     let statsContainerId = 'stats-content';
     let currentExamId = 0;
@@ -66,17 +66,17 @@
         container.innerHTML = `
           <div class="dashboard-header">
             <h1>${stats.exam_title}</h1>
-            <p>${stats.subject} · Exam Statistics</p>
+            <p>${stats.subject} Â· Exam Statistics</p>
           </div>
           <div class="stats-grid">
-            <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">${stats.total_students}</div><div class="stat-label">Total Students</div></div>
-            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${stats.completed_count}</div><div class="stat-label">Completed</div></div>
-            <div class="stat-card"><div class="stat-icon">📊</div><div class="stat-value">${stats.average_score?.toFixed(1) || '0'}</div><div class="stat-label">Average Score</div></div>
-            <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-value">${stats.highest_score}</div><div class="stat-label">Highest</div></div>
-            <div class="stat-card"><div class="stat-icon">⬇️</div><div class="stat-value">${stats.lowest_score}</div><div class="stat-label">Lowest</div></div>
-            <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-value">${stats.pass_rate || 0}%</div><div class="stat-label">Pass Rate</div></div>
-            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value">${stats.pass_count}</div><div class="stat-label">Passed</div></div>
-            <div class="stat-card"><div class="stat-icon">❌</div><div class="stat-value">${stats.fail_count}</div><div class="stat-label">Failed</div></div>
+            <div class="stat-card"><div class="stat-icon">ðŸ‘¥</div><div class="stat-value">${stats.total_students}</div><div class="stat-label">Total Students</div></div>
+            <div class="stat-card"><div class="stat-icon">âœ…</div><div class="stat-value">${stats.completed_count}</div><div class="stat-label">Completed</div></div>
+            <div class="stat-card"><div class="stat-icon">ðŸ“Š</div><div class="stat-value">${stats.average_score?.toFixed(1) || '0'}</div><div class="stat-label">Average Score</div></div>
+            <div class="stat-card"><div class="stat-icon">ðŸ†</div><div class="stat-value">${stats.highest_score}</div><div class="stat-label">Highest</div></div>
+            <div class="stat-card"><div class="stat-icon">â¬‡ï¸</div><div class="stat-value">${stats.lowest_score}</div><div class="stat-label">Lowest</div></div>
+            <div class="stat-card"><div class="stat-icon">ðŸ“ˆ</div><div class="stat-value">${stats.pass_rate || 0}%</div><div class="stat-label">Pass Rate</div></div>
+            <div class="stat-card"><div class="stat-icon">âœ…</div><div class="stat-value">${stats.pass_count}</div><div class="stat-label">Passed</div></div>
+            <div class="stat-card"><div class="stat-icon">âŒ</div><div class="stat-value">${stats.fail_count}</div><div class="stat-label">Failed</div></div>
           </div>
           <h3 style="margin-bottom:12px">Score Distribution</h3>
           ${stats.score_distribution ? Object.entries(stats.score_distribution).map(([range, count]) => `
@@ -128,6 +128,6 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

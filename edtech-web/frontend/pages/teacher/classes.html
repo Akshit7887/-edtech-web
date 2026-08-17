@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Classes - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,11 +18,11 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="students.html"><span class="nav-icon">👥</span><span>Students</span></a></li>
-        <li><a href="classes.html" class="active"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
-        <li><a href="parent-contacts.html"><span class="nav-icon">👪</span><span>Parent Contacts</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="students.html"><span class="nav-icon">ðŸ‘¥</span><span>Students</span></a></li>
+        <li><a href="classes.html" class="active"><span class="nav-icon">ðŸ«</span><span>Classes</span></a></li>
+        <li><a href="parent-contacts.html"><span class="nav-icon">ðŸ‘ª</span><span>Parent Contacts</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -34,11 +34,11 @@
       <div id="classes-container" data-aos="fade-up" data-aos-delay="100"><div class="loading-overlay"><div class="spinner"></div><span>Loading classes...</span></div></div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/teacher.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/teacher.js?v=12"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('teacher')) return;
@@ -51,15 +51,15 @@
         const classes = await loadClasses();
         const container = document.getElementById('classes-container');
         if (!classes.length) {
-          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🏫</div><h3>No classes yet</h3><p>Create your first class to organize students.</p></div>';
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">ðŸ«</div><h3>No classes yet</h3><p>Create your first class to organize students.</p></div>';
           return;
         }
         container.innerHTML = '<div class="exam-grid">' + classes.map((c, i) => `
           <div class="exam-card animate-fade-up" style="animation-delay:${i * 0.05}s">
             <div class="exam-card-title">${escHtml(c.name)}</div>
             <div class="exam-card-meta">
-              <span>📖 ${escHtml(c.subject || 'General')}</span>
-              <span>👥 ${c.student_count || 0} students</span>
+              <span>ðŸ“– ${escHtml(c.subject || 'General')}</span>
+              <span>ðŸ‘¥ ${c.student_count || 0} students</span>
             </div>
             <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">${escHtml(c.description) || ''}</p>
             <div class="exam-card-footer">
@@ -85,7 +85,7 @@
       `;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'cls-modal';
       overlay.innerHTML = `
-        <div class="modal"><div class="modal-header"><h3>Create Class</h3><button class="modal-close" onclick="closeClsModal()">×</button></div>
+        <div class="modal"><div class="modal-header"><h3>Create Class</h3><button class="modal-close" onclick="closeClsModal()">Ã—</button></div>
         <div class="modal-body">${html}</div>
         <div class="modal-footer"><button class="btn btn-secondary" onclick="closeClsModal()">Cancel</button><button class="btn btn-primary" onclick="handleCreateClass()">Create</button></div></div>
       `;
@@ -110,7 +110,7 @@
       window._stClassId = classId;
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'st-modal';
       overlay.innerHTML = `
-        <div class="modal modal-lg"><div class="modal-header"><h3>Add Students to Class</h3><button class="modal-close" onclick="closeStModal()">×</button></div>
+        <div class="modal modal-lg"><div class="modal-header"><h3>Add Students to Class</h3><button class="modal-close" onclick="closeStModal()">Ã—</button></div>
         <div class="modal-body">
           <p class="text-muted" style="margin-bottom:var(--space-3)">Select students to add to this class</p>
           <div style="margin-bottom:var(--space-3)">
@@ -185,7 +185,7 @@
             <input type="checkbox" ${checked} ${disabled} onchange="toggleStudentSelect(${s.id},this.checked)">
             <div class="student-checklist-info">
               <div class="student-checklist-name">${escHtml(s.name)}</div>
-              <div class="student-checklist-meta">${escHtml(s.student_id||'')} ${s.email?'· '+escHtml(s.email):''}</div>
+              <div class="student-checklist-meta">${escHtml(s.student_id||'')} ${s.email?'Â· '+escHtml(s.email):''}</div>
             </div>
             ${isEnrolled ? '<span class="student-checklist-badge">Already in class</span>' : ''}
           </label>
@@ -236,9 +236,9 @@
         const cls = res.data;
         const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'detail-modal';
         overlay.innerHTML = `
-          <div class="modal modal-lg"><div class="modal-header"><h3>${escHtml(cls.name)}</h3><button class="modal-close" onclick="document.getElementById('detail-modal').remove()">×</button></div>
+          <div class="modal modal-lg"><div class="modal-header"><h3>${escHtml(cls.name)}</h3><button class="modal-close" onclick="document.getElementById('detail-modal').remove()">Ã—</button></div>
           <div class="modal-body">
-            <p class="class-detail-meta">${escHtml(cls.subject||'General')} · ${cls.student_count} student(s)</p>
+            <p class="class-detail-meta">${escHtml(cls.subject||'General')} Â· ${cls.student_count} student(s)</p>
             <p style="margin-bottom:var(--space-4)">${escHtml(cls.description)||'<span class="text-muted">No description</span>'}</p>
             <h4 style="margin-bottom:var(--space-2);font-size:var(--text-sm);font-weight:600">Students</h4>
             ${cls.students && cls.students.length ? `
@@ -282,6 +282,6 @@
 
     function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

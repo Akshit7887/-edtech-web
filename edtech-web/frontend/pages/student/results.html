@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>My Results - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,11 +18,11 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile &amp; Settings</span></a></li>
-        <li><a href="results.html" class="active"><span class="nav-icon">📝</span><span>My Results</span></a></li>
-        <li><a href="notifications.html"><span class="nav-icon">🔔</span><span>Notifications</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">ðŸ‘¤</span><span>Profile &amp; Settings</span></a></li>
+        <li><a href="results.html" class="active"><span class="nav-icon">ðŸ“</span><span>My Results</span></a></li>
+        <li><a href="notifications.html"><span class="nav-icon">ðŸ””</span><span>Notifications</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -36,14 +36,14 @@
       </div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
   <script>
     AOS.init({ once: true });
   </script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/exam.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/exam.js?v=12"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
@@ -94,7 +94,7 @@
         const results = await loadMyResults();
         const container = document.getElementById('results-container');
         if (!results || !results.length) {
-          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>No results yet</h3><p>Complete an exam to see your results here.</p></div>';
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">ðŸ“</div><h3>No results yet</h3><p>Complete an exam to see your results here.</p></div>';
           return;
         }
         const passCount = results.filter(r => r.status === 'completed' && r.score >= r.total_questions * 0.4).length;
@@ -121,13 +121,13 @@
               `).join('')}
             </tbody>
           </table>
-          ${passCount > 0 ? '<div style="margin-top:16px;text-align:center"><button class="btn btn-primary" onclick="triggerConfetti()">🎉 Celebrate!</button></div>' : ''}
+          ${passCount > 0 ? '<div style="margin-top:16px;text-align:center"><button class="btn btn-primary" onclick="triggerConfetti()">ðŸŽ‰ Celebrate!</button></div>' : ''}
         `;
        } catch (e) {
         document.getElementById('results-container').innerHTML = `<div class="alert alert-red">${e.message}</div>`;
        }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

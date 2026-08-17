@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Parent Contacts - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -18,11 +18,11 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="students.html"><span class="nav-icon">👥</span><span>Students</span></a></li>
-        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
-        <li><a href="parent-contacts.html" class="active"><span class="nav-icon">👪</span><span>Parent Contacts</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="students.html"><span class="nav-icon">ðŸ‘¥</span><span>Students</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">ðŸ«</span><span>Classes</span></a></li>
+        <li><a href="parent-contacts.html" class="active"><span class="nav-icon">ðŸ‘ª</span><span>Parent Contacts</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -31,7 +31,7 @@
           <h1>Parent Contacts</h1>
           <p>Manage parent contact information for students</p>
         </div>
-        <button class="btn btn-primary" onclick="showAddContactModal()">➕ Add Contact</button>
+        <button class="btn btn-primary" onclick="showAddContactModal()">âž• Add Contact</button>
       </div>
       <div id="alert-container"></div>
       <div class="table-container" data-aos="fade-up" data-aos-delay="100">
@@ -42,11 +42,11 @@
       </div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
   <script>AOS.init({ once: true });</script>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/teacher.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/teacher.js?v=12"></script>
   <script>
     function escHtml(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
     function escAttr(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
@@ -62,7 +62,7 @@
         const contacts = await loadParentContacts();
         const tbody = document.getElementById('contacts-tbody');
         if (!contacts.length) {
-          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">👪</div><h3>No parent contacts</h3><p>Add parent contacts for your students.</p></div></td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">ðŸ‘ª</div><h3>No parent contacts</h3><p>Add parent contacts for your students.</p></div></td></tr>';
           return;
         }
         tbody.innerHTML = contacts.map(c => `
@@ -73,8 +73,8 @@
             <td>${escHtml(c.parent_phone || '-')}</td>
             <td>${escHtml(c.relationship || '-')}</td>
             <td data-sid="${c.student_id}" data-pname="${escAttr(c.parent_name)}" data-pemail="${escAttr(c.parent_email || '')}" data-pphone="${escAttr(c.parent_phone || '')}" data-prel="${escAttr(c.relationship || '')}">
-              <button class="btn btn-sm btn-ghost edit-contact-btn">✏️</button>
-              <button class="btn btn-sm btn-danger delete-contact-btn">🗑️</button>
+              <button class="btn btn-sm btn-ghost edit-contact-btn">âœï¸</button>
+              <button class="btn btn-sm btn-danger delete-contact-btn">ðŸ—‘ï¸</button>
             </td>
           </tr>
         `).join('');
@@ -93,7 +93,7 @@
     function editContact(studentId, parentName, parentEmail, parentPhone, relationship) {
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'pc-modal';
       overlay.innerHTML = `
-        <div class="modal"><div class="modal-header"><h3>Edit Parent Contact</h3><button class="modal-close" onclick="closePcModal()">×</button></div>
+        <div class="modal"><div class="modal-header"><h3>Edit Parent Contact</h3><button class="modal-close" onclick="closePcModal()">Ã—</button></div>
         <div class="modal-body">
           <div class="form-group form-floating"><input class="form-input" id="pc-name" value="${escAttr(parentName)}" placeholder=" "><label class="form-label">Parent Name</label></div>
           <div class="form-group form-floating"><input class="form-input" id="pc-email" value="${escAttr(parentEmail)}" placeholder=" "><label class="form-label">Parent Email</label></div>
@@ -118,7 +118,7 @@
       }
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'pc-add-modal';
       overlay.innerHTML = `
-        <div class="modal"><div class="modal-header"><h3>Add Parent Contact</h3><button class="modal-close" onclick="closeAddPcModal()">×</button></div>
+        <div class="modal"><div class="modal-header"><h3>Add Parent Contact</h3><button class="modal-close" onclick="closeAddPcModal()">Ã—</button></div>
         <div class="modal-body">
           <div class="form-group">
             <label class="form-label">Student</label>
@@ -171,6 +171,6 @@
       try { await deleteParentContact(studentId); showAlert('Contact deleted', 'success'); await loadContacts(); } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>

@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Exam - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
   <link rel="stylesheet" href="../../css/exam.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -17,8 +17,8 @@
     <div id="exam-header" class="exam-header">
       <h2 id="exam-title">Loading Exam...</h2>
       <div class="exam-meta">
-        <span class="exam-meta-item">📖 <span id="exam-subject"></span></span>
-        <span class="exam-meta-item">📄 <span id="exam-total-q">0</span> questions</span>
+        <span class="exam-meta-item">ðŸ“– <span id="exam-subject"></span></span>
+        <span class="exam-meta-item">ðŸ“„ <span id="exam-total-q">0</span> questions</span>
       </div>
       <div class="exam-progress">
         <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
@@ -27,15 +27,15 @@
     </div>
     <div id="question-container"><div class="loading-overlay"><div class="spinner"></div><span>Loading questions...</span></div></div>
     <div class="exam-nav-btns" id="exam-bottom-nav" style="margin-top:24px">
-      <button class="btn btn-secondary" onclick="examEngine.prevQuestion()" id="prev-btn">← Previous</button>
+      <button class="btn btn-secondary" onclick="examEngine.prevQuestion()" id="prev-btn">â† Previous</button>
       <button class="btn btn-primary" onclick="handleSubmit()" id="submit-btn">Submit Exam</button>
-      <button class="btn btn-secondary" onclick="examEngine.nextQuestion()" id="next-btn">Next →</button>
+      <button class="btn btn-secondary" onclick="examEngine.nextQuestion()" id="next-btn">Next â†’</button>
     </div>
   </div>
   <div class="question-navigator" id="question-navigator"></div>
   <div id="submit-modal" class="modal-overlay">
     <div class="modal">
-      <div class="modal-header"><h3>Submit Exam</h3><button class="modal-close" onclick="closeSubmitModal()">×</button></div>
+      <div class="modal-header"><h3>Submit Exam</h3><button class="modal-close" onclick="closeSubmitModal()">Ã—</button></div>
       <div class="modal-body">
         <p>Are you sure you want to submit your exam?</p>
         <p style="color:var(--text-muted);font-size:0.85rem;margin-top:8px">
@@ -48,12 +48,12 @@
       </div>
     </div>
   </div>
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
-  <script src="../../js/timer.js?v=10"></script>
-  <script src="../../js/proctor.js?v=10"></script>
-  <script src="../../js/nav.js?v=10"></script>
-  <script src="../../js/exam.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
+  <script src="../../js/timer.js?v=12"></script>
+  <script src="../../js/proctor.js?v=12"></script>
+  <script src="../../js/nav.js?v=12"></script>
+  <script src="../../js/exam.js?v=12"></script>
   <script>
     let examEngine = null;
 

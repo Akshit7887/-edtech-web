@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <script>try{if(localStorage.getItem('edtech-theme')==='dark')document.documentElement.setAttribute('data-theme','dark');else if(localStorage.getItem('edtech-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}try{if(document.referrer&&document.referrer.indexOf(location.host)!==-1)document.documentElement.classList.add('page-flip-in')}catch(e){}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Manage Users - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=10">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=10">
+  <link rel="stylesheet" href="../../css/main.css?v=12">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -17,14 +17,14 @@
   <div class="layout">
     <aside class="sidebar">
       <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">📊</span><span>Dashboard</span></a></li>
-        <li><a href="users.html" class="active"><span class="nav-icon">👥</span><span>Users</span></a></li>
-        <li><a href="classes.html"><span class="nav-icon">🏫</span><span>Classes</span></a></li>
-        <li><a href="departments.html"><span class="nav-icon">🏛️</span><span>Departments</span></a></li>
-        <li><a href="exams.html"><span class="nav-icon">📝</span><span>Exams</span></a></li>
-        <li><a href="db-monitor.html"><span class="nav-icon">🗄️</span><span>DB Monitor</span></a></li>
-        <li><a href="profile.html"><span class="nav-icon">👤</span><span>Profile</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">🚪</span><span>Logout</span></a></li>
+        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
+        <li><a href="users.html" class="active"><span class="nav-icon">ðŸ‘¥</span><span>Users</span></a></li>
+        <li><a href="classes.html"><span class="nav-icon">ðŸ«</span><span>Classes</span></a></li>
+        <li><a href="departments.html"><span class="nav-icon">ðŸ›ï¸</span><span>Departments</span></a></li>
+        <li><a href="exams.html"><span class="nav-icon">ðŸ“</span><span>Exams</span></a></li>
+        <li><a href="db-monitor.html"><span class="nav-icon">ðŸ—„ï¸</span><span>DB Monitor</span></a></li>
+        <li><a href="profile.html"><span class="nav-icon">ðŸ‘¤</span><span>Profile</span></a></li>
+        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
       </ul>
     </aside>
     <main class="main-content">
@@ -46,7 +46,7 @@
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
-          <button class="btn btn-primary" onclick="showAddUserModal()">➕ Add User</button>
+          <button class="btn btn-primary" onclick="showAddUserModal()">âž• Add User</button>
         </div>
       </div>
       <div id="alert-container"></div>
@@ -64,8 +64,8 @@
     </main>
   </div>
 
-  <script src="../../js/api.js?v=10"></script>
-  <script src="../../js/auth.js?v=10"></script>
+  <script src="../../js/api.js?v=12"></script>
+  <script src="../../js/auth.js?v=12"></script>
   <script>
     let currentPage = 1;
     let currentUsers = [];
@@ -101,7 +101,7 @@
         const pagination = res.pagination || { page: 1, total: 0, total_pages: 1 };
         const tbody = document.getElementById('users-tbody');
         if (!users.length) {
-          tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">👥</div><h3>No users found</h3></div></td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state" style="padding:var(--space-8)"><div class="empty-state-icon" style="font-size:2rem">ðŸ‘¥</div><h3>No users found</h3></div></td></tr>';
         } else {
           tbody.innerHTML = users.map(u => {
             const approval = u.approval_status || 'approved';
@@ -110,7 +110,7 @@
             if (isTeacher && approval !== 'approved') actions.push(`<button class="btn btn-sm btn-primary" onclick="approveTeacher(${u.id})">Approve</button>`);
             if (isTeacher && approval === 'pending') actions.push(`<button class="btn btn-sm btn-danger" onclick="rejectTeacher(${u.id})">Reject</button>`);
             if (approval === 'rejected' && u.rejection_reason) actions.push(`<button class="btn btn-sm btn-ghost" onclick="showRejectReason(${u.id})">Why?</button>`);
-            actions.push(`<button class="btn btn-sm btn-secondary" onclick="showEditUserModal(${u.id})">✏️</button>`);
+            actions.push(`<button class="btn btn-sm btn-secondary" onclick="showEditUserModal(${u.id})">âœï¸</button>`);
             actions.push(`<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})">Delete</button>`);
             return `
             <tr>
@@ -159,11 +159,11 @@
     function renderPagination(p) {
       const el = document.getElementById('users-pagination');
       if (p.total_pages <= 1) { el.innerHTML = ''; return; }
-      let html = `<button onclick="loadUsers(1)" ${p.page <= 1 ? 'disabled' : ''}>«</button>`;
-      html += `<button onclick="loadUsers(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>‹</button>`;
+      let html = `<button onclick="loadUsers(1)" ${p.page <= 1 ? 'disabled' : ''}>Â«</button>`;
+      html += `<button onclick="loadUsers(${p.page - 1})" ${p.page <= 1 ? 'disabled' : ''}>â€¹</button>`;
       html += `<span class="pagination-info">Page ${p.page} of ${p.total_pages}</span>`;
-      html += `<button onclick="loadUsers(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>›</button>`;
-      html += `<button onclick="loadUsers(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>»</button>`;
+      html += `<button onclick="loadUsers(${p.page + 1})" ${p.page >= p.total_pages ? 'disabled' : ''}>â€º</button>`;
+      html += `<button onclick="loadUsers(${p.total_pages})" ${p.page >= p.total_pages ? 'disabled' : ''}>Â»</button>`;
       el.innerHTML = html;
     }
 
@@ -198,7 +198,7 @@
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'user-modal';
       overlay.innerHTML = `
         <div class="modal" style="max-width:520px">
-          <div class="modal-header"><h3>➕ Add User</h3><button class="modal-close" onclick="closeUserModal()">×</button></div>
+          <div class="modal-header"><h3>âž• Add User</h3><button class="modal-close" onclick="closeUserModal()">Ã—</button></div>
           <div class="modal-body">
             <div class="form-group form-floating"><input class="form-input" id="u-name" placeholder=" "><label class="form-label">Full Name *</label></div>
             <div class="form-group form-floating"><input class="form-input" id="u-email" type="email" placeholder=" "><label class="form-label">Email *</label></div>
@@ -260,7 +260,7 @@
       const overlay = document.createElement('div'); overlay.className = 'modal-overlay active'; overlay.id = 'user-modal';
       overlay.innerHTML = `
         <div class="modal" style="max-width:520px">
-          <div class="modal-header"><h3>✏️ Edit User</h3><button class="modal-close" onclick="closeUserModal()">×</button></div>
+          <div class="modal-header"><h3>âœï¸ Edit User</h3><button class="modal-close" onclick="closeUserModal()">Ã—</button></div>
           <div class="modal-body">
             <div class="form-group form-floating"><input class="form-input" id="u-name" placeholder=" " value="${escHtml(user.name)}"><label class="form-label">Full Name</label></div>
             <div class="form-group form-floating"><input class="form-input" id="u-email" type="email" placeholder=" " value="${escHtml(user.email || '')}"><label class="form-label">Email</label></div>
@@ -315,6 +315,6 @@
       } catch (e) { showAlert(e.message, 'error'); }
     }
   </script>
-  <script src="../../js/nav.js?v=10"></script>
+  <script src="../../js/nav.js?v=12"></script>
 </body>
 </html>
