@@ -26,15 +26,10 @@
       </ul>
     </aside>
     <main class="main-content">
-      <div class="dashboard-header" style="display:flex;justify-content:space-between;align-items:center" data-aos="fade-up">
-        <div>
-          <h1>Notifications</h1>
-          <p>Stay updated with exam announcements</p>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="markAllRead()">Mark All Read</button>
-      </div>
       <div id="alert-container"></div>
-      <div id="notifications-container" data-aos="fade-up" data-aos-delay="100"><div class="loading-overlay"><div class="spinner"></div><span>Loading notifications...</span></div></div>
+      <section class="notif-center" data-aos="fade-up" data-aos-delay="100">
+        <div class="loading-overlay"><div class="spinner"></div><span>Loading notifications...</span></div>
+      </section>
     </main>
   </div>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=10"></script>
@@ -44,6 +39,116 @@
   <script src="../../js/auth.js?v=10"></script>
   <script src="../../js/signalr-client.js?v=10"></script>
   <script>
+    const TYPE_META = {
+      exam:         { label: 'Exam',         category: 'Exam Center',         cls: 'notif-badge-primary', avatar: 'notif-avatar-primary' },
+      result:       { label: 'Result',       category: 'Results Hub',         cls: 'notif-badge-success', avatar: 'notif-avatar-success' },
+      announcement: { label: 'Announcement', category: 'School Announcements', cls: 'notif-badge-warning', avatar: 'notif-avatar-warning' },
+      sms:          { label: 'SMS',          category: 'Communication',       cls: 'notif-badge-muted',   avatar: 'notif-avatar-indigo' },
+      email:        { label: 'Email',        category: 'Communication',       cls: 'notif-badge-muted',   avatar: 'notif-avatar-indigo' },
+      system:       { label: 'System',       category: 'System',              cls: 'notif-badge-muted',   avatar: 'notif-avatar-muted' },
+    };
+    const DEFAULT_META = { label: 'Update', category: 'System', cls: 'notif-badge-muted', avatar: 'notif-avatar-muted' };
+
+    const BELL_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+    const CHECK_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17l-5-5"/><path d="M22 10l-7.5 7.5L13 16"/></svg>';
+
+    let notifItems = [];
+    let activeTab = 'all';
+
+    function typeMeta(type) {
+      return TYPE_META[type] || DEFAULT_META;
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function initials(title) {
+      const words = String(title || 'Notification').trim().split(/\s+/).slice(0, 2);
+      return words.map(w => w.charAt(0)).join('').toUpperCase() || 'NT';
+    }
+
+    function filteredItems() {
+      if (activeTab === 'unread') return notifItems.filter(n => !n.is_read);
+      if (activeTab === 'announcement') return notifItems.filter(n => n.type === 'announcement');
+      return notifItems;
+    }
+
+    function countFor(tab) {
+      if (tab === 'unread') return notifItems.filter(n => !n.is_read).length;
+      if (tab === 'announcement') return notifItems.filter(n => n.type === 'announcement').length;
+      return notifItems.length;
+    }
+
+    function render() {
+      const center = document.getElementById('notifications-container');
+      const unreadCount = countFor('unread');
+      const items = filteredItems();
+
+      let tabsHtml = ['all', 'unread', 'announcement'].map(tab => `
+        <button class="notif-tab ${tab === activeTab ? 'active' : ''}" data-tab="${tab}" onclick="switchTab('${tab}')" role="tab" aria-selected="${tab === activeTab}">
+          ${tab === 'all' ? 'All' : tab === 'unread' ? 'Unread' : 'Announcements'}
+          <span class="notif-tab-count">${countFor(tab)}</span>
+        </button>
+      `).join('');
+
+      let listHtml;
+      if (!items.length) {
+        listHtml = `
+          <div class="notif-empty">
+            <div class="notif-empty-icon">${BELL_ICON}</div>
+            <p>Nothing here yet</p>
+          </div>`;
+      } else {
+        listHtml = items.map(n => {
+          const meta = typeMeta(n.type);
+          const unread = !n.is_read;
+          return `
+          <div class="notif-row ${unread ? 'unread' : ''}" data-id="${n.id}" onclick="markRead(${n.id}, this)" role="button" tabindex="0"
+               onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+            <div class="notif-avatar ${meta.avatar}">${esc(initials(n.title))}</div>
+            <div class="notif-row-main">
+              <div class="notif-row-top">
+                <div class="notif-row-head">
+                  <span class="notif-title">${esc(n.title)}</span>
+                  <span class="notif-badge ${meta.cls}">${meta.label}</span>
+                </div>
+                <div class="notif-row-meta">
+                  <span class="notif-time">${formatDate(n.created_at)}</span>
+                  ${unread ? '<span class="notif-dot" aria-label="Unread"></span>' : ''}
+                </div>
+              </div>
+              <span class="notif-category">${meta.category}</span>
+              <p class="notif-message">${esc(n.message)}</p>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      center.innerHTML = `
+        <div class="notif-header">
+          <div class="notif-header-left">
+            <div class="notif-header-icon">${BELL_ICON}</div>
+            <div>
+              <h2>Notifications</h2>
+              <p class="notif-header-sub">${unreadCount} unread &middot; ${notifItems.length} total</p>
+            </div>
+          </div>
+          <button class="notif-mark-all" onclick="markAllRead()" ${unreadCount ? '' : 'disabled'}>
+            ${CHECK_ICON} Mark all read
+          </button>
+        </div>
+        <div class="notif-tabs" role="tablist">${tabsHtml}</div>
+        <div class="notif-list">${listHtml}</div>`;
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      render();
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
       setupNavbar();
@@ -59,42 +164,36 @@
     async function loadNotifications() {
       try {
         const res = await api.get('/api/students/notifications?page=1&limit=50');
-        const items = (res.data && res.data.notifications) || [];
-        const container = document.getElementById('notifications-container');
-        if (!items.length) {
-          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔔</div><h3>No notifications</h3><p>You\'re all caught up!</p></div>';
-          return;
+        notifItems = (res.data && res.data.notifications) || [];
+        let center = document.getElementById('notifications-container');
+        if (!center) {
+          const sec = document.createElement('section');
+          sec.className = 'notif-center';
+          sec.id = 'notifications-container';
+          document.querySelector('.main-content').appendChild(sec);
+          center = sec;
         }
-        container.innerHTML = items.map((n, i) => `
-          <div class="card notification-card animate-fade-up" style="animation-delay:${i * 0.03}s;${n.is_read ? '' : 'border-left:3px solid var(--primary)'}" onclick="markRead(${n.id}, this)">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-3)">
-              <div style="min-width:0;flex:1;word-break:break-word;overflow-wrap:anywhere">
-                <h4 style="font-size:0.95rem;margin-bottom:4px">${n.title}</h4>
-                <p style="color:var(--text-muted);font-size:0.85rem">${n.message}</p>
-              </div>
-              <div style="text-align:right;flex-shrink:0">
-                <span class="badge ${n.type === 'exam' ? 'badge-primary' : n.type === 'result' ? 'badge-success' : 'badge-info'}">${n.type}</span>
-                <div style="color:var(--text-dim);font-size:0.75rem;margin-top:4px">${formatDate(n.created_at)}</div>
-              </div>
-            </div>
-          </div>
-        `).join('');
+        render();
       } catch (e) {
-        document.getElementById('notifications-container').innerHTML = `<div class="alert alert-error">${e.message}</div>`;
+        document.getElementById('notifications-container').innerHTML = `<div class="alert alert-error">${esc(e.message)}</div>`;
       }
     }
 
     async function markRead(id, el) {
+      const item = notifItems.find(n => n.id === id);
+      if (!item || item.is_read) return;
       try {
         await api.put(`/api/students/notifications/${id}/read`);
-        el.style.borderLeft = 'none';
+        item.is_read = true;
+        render();
       } catch (e) {}
     }
 
     async function markAllRead() {
       try {
         await api.put('/api/students/notifications/read-all');
-        document.querySelectorAll('.card.notification-card').forEach(el => el.style.borderLeft = 'none');
+        notifItems.forEach(n => n.is_read = true);
+        render();
         showAlert('All notifications marked as read', 'success');
       } catch (e) {
         showAlert(e.message, 'error');
