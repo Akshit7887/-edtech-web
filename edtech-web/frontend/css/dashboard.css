@@ -758,26 +758,7 @@ tbody tr:hover {
   min-width: 0;
 }
 
-/* Desktop: show the sidebar alongside the hamburger menu */
-@media (min-width: 1024px) {
-  .sidebar {
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-    width: 264px;
-    position: sticky;
-    top: 72px;
-    height: calc(100vh - 72px);
-    overflow-y: auto;
-    padding: var(--space-6) var(--space-4);
-    border-right: 1px solid var(--border-light);
-    background: var(--bg-subtle);
-  }
-
-  .sidebar-nav {
-    flex: 1;
-  }
-}
+/* Sidebar removed from all breakpoints; navigation via the hamburger mega menu */
 
 /* ── Pagination ── */
 .pagination {

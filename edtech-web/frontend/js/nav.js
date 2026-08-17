@@ -362,6 +362,40 @@
     return col;
   }
 
+  // ── Exam-scoped links (formerly in the desktop sidebar) ──
+  function buildExamTools(nav) {
+    try {
+      var ids = ['back-link', 'back-to-exam', 'questions-link', 'stats-link', 'attendance-link', 'reports-link'];
+      var links = [];
+      ids.forEach(function (id) {
+        var el = document.querySelector('.sidebar #' + id);
+        if (el) links.push(el);
+      });
+      if (!links.length) return;
+
+      var wrap = document.createElement('div');
+      wrap.className = 'nav-mega-examtools';
+
+      var label = document.createElement('h4');
+      label.className = 'nav-mega-label';
+      label.textContent = 'Exam Tools';
+      wrap.appendChild(label);
+
+      links.forEach(function (a) {
+        var iconSpan = a.querySelector('.nav-icon');
+        var iconHtml = iconSpan ? iconSpan.innerHTML : '';
+        var textSpan = a.querySelector('span:last-child');
+        var text = textSpan ? textSpan.textContent.trim() : (a.textContent || '').trim();
+        a.className = 'nav-mega-link';
+        a.innerHTML = '<span class="nav-mega-link-icon">' + iconHtml + '</span><span>' + text + '</span>';
+        a.addEventListener('click', closeMenu);
+        wrap.appendChild(a);
+      });
+
+      nav.insertBefore(wrap, nav.firstChild);
+    } catch (e) { /* ignore exam tools errors */ }
+  }
+
   function initHamburger() {
     try {
       var navbar = document.querySelector('.navbar');
@@ -444,6 +478,9 @@
       // ── Mega menu body (navigation-6 style) ──
       var nav = document.createElement('nav');
       nav.className = 'mobile-nav-body';
+
+      // Exam-scoped links from the (now hidden) sidebar
+      buildExamTools(nav);
 
       var grid = document.createElement('div');
       grid.className = 'nav-mega-grid';

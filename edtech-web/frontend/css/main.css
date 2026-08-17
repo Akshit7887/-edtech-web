@@ -2276,6 +2276,19 @@
   padding: 0 var(--space-6) var(--space-6);
 }
 
+/* ── Exam tools strip (moved from the old sidebar) ── */
+.nav-mega-examtools {
+  padding: var(--space-3) var(--space-6) 0;
+}
+
+.nav-mega-examtools .nav-mega-label {
+  margin-bottom: var(--space-2);
+}
+
+.nav-mega-examtools .nav-mega-link {
+  padding: var(--space-2) var(--space-1);
+}
+
 @media (min-width: 1024px) {
   .nav-mega-cta { display: none; }
 }
