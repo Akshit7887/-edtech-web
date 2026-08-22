@@ -51,6 +51,7 @@ public class StudentService : IStudentService
         var avgScore = completed.Count > 0 ? completed.Average(s => (double)s.Score) : 0;
         var totalPossible = completed.Sum(s => (double)(exams.ContainsKey(s.ExamId) ? exams[s.ExamId].TotalQuestions : s.TotalQuestions));
         var totalEarned = completed.Sum(s => (double)s.Score);
+        var studentAvgPercentage = totalPossible > 0 ? (int)Math.Round(totalEarned / totalPossible * 100) : 0;
 
         var subjectWise = new Dictionary<string, (double total, double earned, int count)>();
         foreach (var s in completed)
@@ -84,15 +85,41 @@ public class StudentService : IStudentService
             submittedAt = s.SubmittedAt
         }).ToList();
 
+        // Calculate BestRank: percentile among all students who have completed exams
+        int bestRank = 0;
+        if (completed.Count > 0)
+        {
+            var allStudentPercentages = await conn.QueryAsync<int>(@"
+                SELECT (int)ROUND(
+                    COALESCE(SUM(es.""score"") FILTER (WHERE es.""status"" = 'completed'), 0) * 100.0 / 
+                    NULLIF(SUM(e.""total_questions"") FILTER (WHERE es.""status"" = 'completed'), 0), 0)
+                FROM ""ExamSessions"" es
+                JOIN ""Exams"" e ON e.""id"" = es.""exam_id""
+                WHERE es.""mode"" = 'exam' AND es.""status"" = 'completed'
+                GROUP BY es.""student_id""
+                HAVING SUM(e.""total_questions"") FILTER (WHERE es.""status"" = 'completed') > 0");
+
+            var percentages = allStudentPercentages.ToList();
+            if (percentages.Count > 0)
+            {
+                var betterCount = percentages.Count(p => p > studentAvgPercentage);
+                bestRank = betterCount + 1; // Rank 1 = best
+            }
+            else
+            {
+                bestRank = 1;
+            }
+        }
+
         return new StudentAnalyticsResponse
         {
             TotalExams = sessions.Count,
             CompletedExams = completed.Count,
             PendingExams = inProgress.Count + disqualified.Count,
             AverageScore = completed.Count > 0 ? Math.Round(avgScore, 2) : 0,
-            AveragePercentage = totalPossible > 0 ? (int)Math.Round(totalEarned / totalPossible * 100) : 0,
+            AveragePercentage = studentAvgPercentage,
             HighestScore = completed.Count > 0 ? (int)completed.Max(s => s.Score) : 0,
-            BestRank = completed.Count > 0 ? 1 : 0,
+            BestRank = bestRank,
             ExamPerformances = trend.Select(t => new ExamPerformanceItem
             {
                 ExamTitle = t.examTitle,

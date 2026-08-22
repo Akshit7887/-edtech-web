@@ -38,9 +38,27 @@ public class JwtMiddleware
 
                     if (user != null)
                     {
-                        context.Items["User"] = user;
-                        context.Items["UserRole"] = user.Role;
-                        context.Items["UserId"] = user.Id;
+                        // Additional security: ensure user is not deleted and has valid status
+                        if (user.TokenVersion >= 0) // User exists and not deleted
+                        {
+                            context.Items["User"] = user;
+                            context.Items["UserRole"] = user.Role;
+                            context.Items["UserId"] = user.Id;
+                        }
+                        else
+                        {
+                            // User deleted but token still valid - reject
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            await context.Response.WriteAsJsonAsync(new { success = false, error = "User account no longer exists" });
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        // User not found in DB - reject immediately
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        await context.Response.WriteAsJsonAsync(new { success = false, error = "Invalid or expired token" });
+                        return;
                     }
                 }
             }

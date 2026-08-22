@@ -3,6 +3,7 @@ using Dapper;
 using EdTechApi.Data;
 using EdTechApi.DTOs;
 using EdTechApi.Models;
+using EdTechApi.Utilities;
 
 namespace EdTechApi.Services;
 
@@ -29,7 +30,6 @@ public class QuestionService : IQuestionService
     private readonly IGeminiService _gemini;
     private readonly ILogger<QuestionService> _logger;
     private readonly IHubService _hub;
-    private static readonly ThreadLocal<Random> _random = new(() => new Random());
     private static readonly string[] Letters = { "A", "B", "C", "D" };
 
     public QuestionService(IDbConnectionFactory db, IGeminiService gemini, ILogger<QuestionService> logger, IHubService hub)
@@ -84,7 +84,7 @@ public class QuestionService : IQuestionService
             if (!string.IsNullOrEmpty(q.OptionD)) options.Add(("D", q.OptionD));
 
             var correctKey = q.CorrectAnswer;
-            var shuffled = FisherYatesShuffle(options);
+            var shuffled = ShuffleUtility.FisherYatesShuffle(options);
 
             var newKeyMap = new Dictionary<string, string>();
             for (int i = 0; i < shuffled.Count; i++)
@@ -167,7 +167,7 @@ public class QuestionService : IQuestionService
             if (!string.IsNullOrEmpty(q.OptionD)) options.Add(("D", q.OptionD));
 
             var correctKey = q.CorrectAnswer;
-            var shuffled = FisherYatesShuffle(options);
+            var shuffled = ShuffleUtility.FisherYatesShuffle(options);
 
             var newKeyMap = new Dictionary<string, string>();
             for (int i = 0; i < shuffled.Count; i++)
@@ -368,7 +368,7 @@ public class QuestionService : IQuestionService
         var assignments = new List<object>();
         foreach (var studentId in studentIds)
         {
-            var shuffled = FisherYatesShuffle(allPool);
+            var shuffled = ShuffleUtility.FisherYatesShuffle(allPool);
             var qIds = shuffled.Take(exam?.TotalQuestions ?? shuffled.Count).Select(q => q.Id).ToList();
 
             var now = DateTime.UtcNow;
@@ -506,7 +506,7 @@ public class QuestionService : IQuestionService
         if (!string.IsNullOrEmpty(question.OptionD)) options.Add(("D", question.OptionD));
 
         var correctKey = question.CorrectAnswer;
-        var shuffled = FisherYatesShuffle(options);
+        var shuffled = ShuffleUtility.FisherYatesShuffle(options);
 
         var newKeyMap = new Dictionary<string, string>();
         for (int i = 0; i < shuffled.Count; i++)
@@ -574,14 +574,4 @@ public class QuestionService : IQuestionService
         }
     }
 
-    private static List<T> FisherYatesShuffle<T>(List<T> list)
-    {
-        var shuffled = new List<T>(list);
-        for (int i = shuffled.Count - 1; i > 0; i--)
-        {
-            var j = _random.Value!.Next(i + 1);
-            (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
-        }
-        return shuffled;
     }
-}

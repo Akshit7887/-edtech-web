@@ -1,6 +1,8 @@
 let googleClientId = '';
 
 let _gisFallbackTimer = null;
+let _gisInitRetries = 0;
+const MAX_GIS_INIT_RETRIES = 10;
 
 function showFallbackButton() {
   const fallback = document.getElementById('google-fallback-btn');
@@ -20,10 +22,17 @@ async function initGoogleAuth(buttonContainerId = 'google-signin-container') {
       return;
     }
     if (typeof google === 'undefined' || !google.accounts) {
+      _gisInitRetries++;
+      if (_gisInitRetries >= MAX_GIS_INIT_RETRIES) {
+        console.error('[Google Auth] Max retries reached, showing fallback');
+        showFallbackButton();
+        return;
+      }
       console.warn('[Google Auth] GIS library not loaded yet, retrying...');
       setTimeout(() => initGoogleAuth(buttonContainerId), 500);
       return;
     }
+    _gisInitRetries = 0; // Reset on success
     google.accounts.id.initialize({
       client_id: googleClientId,
       callback: handleCredentialResponse,

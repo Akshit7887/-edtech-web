@@ -8,6 +8,10 @@ using Dapper;
 using EdTechApi.Data;
 using EdTechApi.DTOs;
 using EdTechApi.Models;
+using EdTechApi.Utilities;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 
 namespace EdTechApi.Services;
 
@@ -419,7 +423,7 @@ public class ExamService : IExamService
             BadDataFound = null,
             ReadingExceptionOccurred = ex =>
             {
-                _logger.LogWarning("CSV parsing error at line {Line}: {Message}", ex.Context?.Parser?.Row, ex.Message);
+                _logger.LogWarning("CSV parsing error: {Message}", ex.Exception?.Message ?? "Unknown error");
                 return false; // Skip bad rows
             }
         };
@@ -503,7 +507,7 @@ public class ExamService : IExamService
                         });
                 }
 
-                var shuffled = FisherYatesShuffle(allPool);
+                var shuffled = ShuffleUtility.FisherYatesShuffle(allPool);
                 var qIds = shuffled.Take(exam.TotalQuestions).Select(q => q.Id).ToList();
                 var qIdsJson = System.Text.Json.JsonSerializer.Serialize(qIds);
                 var now2 = DateTime.UtcNow;
@@ -552,28 +556,80 @@ public class ExamService : IExamService
         var passThreshold = exam.TotalQuestions * 0.4;
         var passCount = completed.Count(s => s.Score >= (decimal)passThreshold);
 
-        var html = new System.Text.StringBuilder();
-        html.Append("<html><head><meta charset='utf-8'><title>Exam Results</title>");
-        html.Append("<style>body{font-family:Arial,sans-serif;margin:40px}h1{color:#333}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:10px;text-align:left;border-bottom:1px solid #ddd}th{background:#f5f5f5}.pass{color:green}.fail{color:red}</style></head><body>");
-        html.AppendFormat("<h1>{0}</h1><p>Subject: {1} | Total Students: {2} | Passed: {3} | Failed: {4}</p>",
-            System.Net.WebUtility.HtmlEncode(exam.Title ?? "Exam"),
-            System.Net.WebUtility.HtmlEncode(exam.Subject ?? ""),
-            completed.Count, passCount, completed.Count - passCount);
-        html.Append("<table><thead><tr><th>Student</th><th>Score</th><th>Total</th><th>Status</th><th>Submitted</th></tr></thead><tbody>");
-        foreach (var s in sessions)
+        // Generate actual PDF using QuestPDF
+        var document = Document.Create(container =>
         {
-            var name = students.ContainsKey(s.StudentId) ? students[s.StudentId] : "Unknown";
-            var cls = s.Status == "completed" ? (s.Score >= (decimal)passThreshold ? "pass" : "fail") : "";
-            html.AppendFormat("<tr class='{0}'><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td></tr>",
-                cls,
-                System.Net.WebUtility.HtmlEncode(name),
-                s.Score, s.TotalQuestions,
-                System.Net.WebUtility.HtmlEncode(s.Status ?? ""),
-                s.SubmittedAt?.ToString("g") ?? "-");
-        }
-        html.Append("</tbody></table></body></html>");
+            container.Page(page =>
+            {
+                page.Margin(40);
+                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Helvetica"));
+                
+                page.Header().Column(col =>
+                {
+                    col.Item().Text(exam.Title ?? "Exam Results").FontSize(20).Bold().FontColor(Colors.Blue.Darken2);
+                    col.Item().Text($"Subject: {exam.Subject ?? ""}").FontSize(12).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text($"Generated: {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC").FontSize(10).FontColor(Colors.Grey.Darken1);
+                    col.Item().PaddingTop(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                });
 
-        return Encoding.UTF8.GetBytes(html.ToString());
+                page.Content().PaddingVertical(10).Column(col =>
+                {
+                    // Summary
+                    col.Item().Text(text =>
+                    {
+                        text.Span($"Total Students: {completed.Count}  ").SemiBold();
+                        text.Span($"Passed: {passCount}  ").FontColor(Colors.Green.Darken2);
+                        text.Span($"Failed: {completed.Count - passCount}").FontColor(Colors.Red.Darken2);
+                    });
+
+                    col.Item().PaddingTop(10).Table(table =>
+                    {
+                        table.ColumnsDefinition(columns =>
+                        {
+                            columns.RelativeColumn(3); // Student
+                            columns.RelativeColumn(1); // Score
+                            columns.RelativeColumn(1); // Total
+                            columns.RelativeColumn(1); // Status
+                            columns.RelativeColumn(2); // Submitted
+                        });
+
+                        // Header
+                        table.Header(header =>
+                        {
+                            header.Cell().Background(Colors.Blue.Lighten4).Padding(5).Text("Student").SemiBold();
+                            header.Cell().Background(Colors.Blue.Lighten4).Padding(5).AlignCenter().Text("Score").SemiBold();
+                            header.Cell().Background(Colors.Blue.Lighten4).Padding(5).AlignCenter().Text("Total").SemiBold();
+                            header.Cell().Background(Colors.Blue.Lighten4).Padding(5).AlignCenter().Text("Status").SemiBold();
+                            header.Cell().Background(Colors.Blue.Lighten4).Padding(5).AlignCenter().Text("Submitted").SemiBold();
+                        });
+
+                        // Rows
+                        foreach (var s in sessions)
+                        {
+                            var name = students.ContainsKey(s.StudentId) ? students[s.StudentId] : "Unknown";
+                            var isPassed = s.Status == "completed" && s.Score >= (decimal)passThreshold;
+                            var statusColor = s.Status == "completed" ? (isPassed ? Colors.Green.Lighten2 : Colors.Red.Lighten2) : Colors.Grey.Lighten2;
+
+                            table.Cell().Padding(5).Text(name);
+                            table.Cell().Padding(5).AlignCenter().Text(s.Score.ToString());
+                            table.Cell().Padding(5).AlignCenter().Text(s.TotalQuestions.ToString());
+                            table.Cell().Padding(5).AlignCenter().Background(statusColor).Text(s.Status ?? "-");
+                            table.Cell().Padding(5).AlignCenter().Text(s.SubmittedAt?.ToString("g") ?? "-");
+                        }
+                    });
+                });
+
+                page.Footer().AlignCenter().Text(text =>
+                {
+                    text.Span("Page ").FontSize(8);
+                    text.CurrentPageNumber().FontSize(8);
+                    text.Span(" of ").FontSize(8);
+                    text.TotalPages().FontSize(8);
+                });
+            });
+        });
+
+        return document.GeneratePdf();
     }
 
     public async Task<object> GetAttendanceReportAsync(int examId, int teacherId)
@@ -637,14 +693,4 @@ public class ExamService : IExamService
         return new { publishedCount };
     }
 
-    private static List<T> FisherYatesShuffle<T>(List<T> list)
-    {
-        var shuffled = new List<T>(list);
-        for (int i = shuffled.Count - 1; i > 0; i--)
-        {
-            var j = _random.Value!.Next(i + 1);
-            (shuffled[i], shuffled[j]) = (shuffled[j], shuffled[i]);
-        }
-        return shuffled;
     }
-}

@@ -49,59 +49,49 @@ public class TeacherService : ITeacherService
         limit = Math.Min(10000, Math.Max(1, limit));
         var offset = (page - 1) * limit;
 
-        var total = await conn.ExecuteScalarAsync<int>(
-            "SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'student'");
+        // Single optimized query with all needed data
+        var sql = @"
+            SELECT 
+                u.""id"", u.""name"", u.""email"", u.""phone"", u.""student_id"", u.""created_at"" as registered_at,
+                COUNT(es.""id"") as total_exams,
+                COUNT(es.""id"") FILTER (WHERE es.""status"" = 'completed') as completed_exams,
+                COALESCE(SUM(es.""score"") FILTER (WHERE es.""status"" = 'completed'), 0) as total_score,
+                COALESCE(SUM(e.""total_questions"") FILTER (WHERE es.""status"" = 'completed'), 0) as max_score,
+                c.""id"" as class_id,
+                c.""name"" as class_name
+            FROM ""Users"" u
+            LEFT JOIN ""ExamSessions"" es ON es.""student_id"" = u.""id""
+            LEFT JOIN ""Exams"" e ON e.""id"" = es.""exam_id""
+            LEFT JOIN (
+                SELECT cs1.""student_id"", c1.""id"", c1.""name""
+                FROM ""ClassStudents"" cs1
+                JOIN ""Classes"" c1 ON c1.""id"" = cs1.""class_id""
+            ) c ON c.""student_id"" = u.""id""
+            WHERE u.""role"" = 'student'
+            GROUP BY u.""id"", u.""name"", u.""email"", u.""phone"", u.""student_id"", u.""created_at"", c.""id"", c.""name""
+            ORDER BY u.""name"" ASC
+            LIMIT @Limit OFFSET @Offset";
 
-        var students = (await conn.QueryAsync<User>(
-            "SELECT * FROM \"Users\" WHERE \"role\" = 'student' ORDER BY \"name\" ASC LIMIT @Limit OFFSET @Offset",
-            new { Limit = limit, Offset = offset })).ToList();
+        var total = await conn.ExecuteScalarAsync<int>("SELECT COUNT(*) FROM \"Users\" WHERE \"role\" = 'student'");
 
-        if (students.Count == 0)
-            return new { data = new List<object>(), pagination = new { page, limit, total, totalPages = (int)Math.Ceiling((double)total / limit) } };
-
-        var studentIds = students.Select(s => s.Id).ToList();
-        var sessions = (await conn.QueryAsync<ExamSession>(
-            "SELECT * FROM \"ExamSessions\" WHERE \"student_id\" = ANY(@Ids) ORDER BY \"student_id\" ASC",
-            new { Ids = studentIds })).ToList();
-
-        var examIds = sessions.Select(s => s.ExamId).Distinct().ToList();
-        var exams = examIds.Any()
-            ? (await conn.QueryAsync<Exam>("SELECT * FROM \"Exams\" WHERE \"id\" = ANY(@Ids)", new { Ids = examIds }))
-                .ToDictionary(e => e.Id)
-            : new Dictionary<int, Exam>();
-
-        var sessionsByStudent = sessions.GroupBy(s => s.StudentId).ToDictionary(g => g.Key, g => g.ToList());
-
-        var classMemberships = (await conn.QueryAsync<dynamic>(
-            @"SELECT cs.""student_id"", c.""id"" as ""class_id"", c.""name"" as ""class_name""
-              FROM ""ClassStudents"" cs
-              JOIN ""Classes"" c ON c.""id"" = cs.""class_id""
-              WHERE cs.""student_id"" = ANY(@Ids)",
-            new { Ids = studentIds }))
-            .GroupBy(x => (int)x.student_id)
-            .ToDictionary(g => g.Key, g => g.Select(x => (ClassId: (int)x.class_id, ClassName: (string)x.class_name)).ToList());
+        var students = (await conn.QueryAsync<dynamic>(sql, new { Limit = limit, Offset = offset })).ToList();
 
         var data = students.Select(s =>
         {
-            var sess = sessionsByStudent.ContainsKey(s.Id) ? sessionsByStudent[s.Id] : new List<ExamSession>();
-            var completed = sess.Where(x => x.Status == "completed").ToList();
-            var totalScore = completed.Sum(x => (double)x.Score);
-            var maxScore = completed.Sum(x => (double)(exams.ContainsKey(x.ExamId) ? exams[x.ExamId].TotalQuestions : x.TotalQuestions));
-            var memberships = classMemberships.ContainsKey(s.Id) ? classMemberships[s.Id] : new List<(int ClassId, string ClassName)>();
-            var primaryClass = memberships.FirstOrDefault();
-
+            var totalScore = (double)s.total_score;
+            var maxScore = (double)s.max_score;
             return new
             {
-                id = s.Id,
-                name = s.Name,
-                email = s.Email,
-                phone = s.Phone,
-                student_id = s.StudentId,
-                registered_at = s.CreatedAt,
-                class_id = primaryClass.ClassId > 0 ? (int?)primaryClass.ClassId : null,
-                class_name = primaryClass.ClassName ?? null,
-                totalExams = sess.Count,
-                completedExams = completed.Count,
+                id = (int)s.id,
+                name = (string)s.name,
+                email = (string)s.email,
+                phone = (string)s.phone,
+                student_id = (string)s.student_id,
+                registered_at = (DateTime)s.registered_at,
+                class_id = s.class_id != null ? (int?)s.class_id : null,
+                class_name = s.class_name != null ? (string)s.class_name : null,
+                totalExams = (int)s.total_exams,
+                completedExams = (int)s.completed_exams,
                 totalScore,
                 maxScore,
                 averageScore = maxScore > 0 ? (int)Math.Round(totalScore / maxScore * 100) : 0
