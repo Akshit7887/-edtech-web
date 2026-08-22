@@ -2,10 +2,26 @@ const API_BASE = (() => {
   const stored = localStorage.getItem('api_base');
   if (stored) return stored.replace(/\/+$/, '');
   const host = window.location.hostname;
-  if (host !== 'localhost' && host !== '127.0.0.1') {
-    return 'https://edtech-web-rptw.onrender.com';
+  
+  // Check for API base URL in meta tag (set by backend or build process)
+  const metaApiBase = document.querySelector('meta[name="api-base-url"]');
+  if (metaApiBase && metaApiBase.content) {
+    return metaApiBase.content.replace(/\/+$/, '');
   }
-  return 'http://localhost:5000';
+  
+  // Check for environment variable injected at build time
+  if (typeof window.__API_BASE__ !== 'undefined' && window.__API_BASE__) {
+    return window.__API_BASE__.replace(/\/+$/, '');
+  }
+  
+  // Development fallback
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return 'http://localhost:5000';
+  }
+  
+  // Production: use relative URL (same origin) or configurable origin
+  // This allows deployment to any domain without code changes
+  return '';
 })();
 
 class ApiClient {

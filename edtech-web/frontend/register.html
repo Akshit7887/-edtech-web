@@ -150,10 +150,18 @@
 
       try {
         const res = await sendRegisterOtp(name, email, password, selectedRole);
-        showAlert(res.message || 'OTP sent to your email', 'success', document.getElementById('alert-container'));
+        let otpCode = null;
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          try {
+            const debugRes = await fetch(`${API_BASE}/api/auth/debug/otp?identifier=${encodeURIComponent(email)}&type=register`);
+            const debugData = await debugRes.json();
+            otpCode = debugData.otpCode;
+          } catch (e) {}
+        }
+        showAlert((otpCode ? 'OTP: <strong>' + otpCode + '</strong> ' : '') + (res.message || 'OTP sent to your email'), 'success', document.getElementById('alert-container'));
         sessionStorage.setItem('otp_identifier', email);
         sessionStorage.setItem('otp_registration', 'true');
-        if (res.otp_code) sessionStorage.setItem('otp_code', res.otp_code);
+        if (otpCode) sessionStorage.setItem('otp_code', otpCode);
         setTimeout(() => goTo('otp-verify.html'), 4000);
       } catch (e) {
         showAlert(e.message, 'error', document.getElementById('alert-container'));

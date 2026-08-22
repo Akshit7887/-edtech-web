@@ -4,6 +4,7 @@ import urllib.parse
 
 PORT = 8081
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend")
+API_BASE_URL = os.environ.get("API_BASE_URL", "http://localhost:5000")
 
 class CleanURLHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -48,7 +49,35 @@ class CleanURLHandler(http.server.SimpleHTTPRequestHandler):
         elif os.path.isfile(base + ".html"):
             self.path = os.path.relpath(base + ".html", FRONTEND_DIR).replace("\\", "/")
 
+        # Inject API_BASE_URL into HTML responses
+        if self.path.endswith('.html'):
+            self.inject_api_base()
+        
         return super().do_GET()
+
+    def inject_api_base(self):
+        try:
+            full_path = os.path.join(FRONTEND_DIR, self.path.lstrip('/'))
+            if os.path.isfile(full_path):
+                with open(full_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                
+                # Replace the meta tag content
+                if '<meta name="api-base-url" content="">' in content:
+                    content = content.replace(
+                        '<meta name="api-base-url" content="">',
+                        f'<meta name="api-base-url" content="{API_BASE_URL}">'
+                    )
+                
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(content.encode('utf-8'))))
+                self.end_headers()
+                self.wfile.write(content.encode('utf-8'))
+                return True
+        except Exception as e:
+            print(f"Error injecting API base URL: {e}")
+        return False
 
 
 if __name__ == "__main__":
@@ -56,6 +85,7 @@ if __name__ == "__main__":
     server = http.server.HTTPServer(("0.0.0.0", PORT), CleanURLHandler)
     print(f"Serving EdTech frontend at http://localhost:{PORT}")
     print(f"Clean URLs enabled: /login, /register, /pages/teacher/dashboard, etc.")
+    print(f"API Base URL: {API_BASE_URL}")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -12,10 +12,12 @@ namespace EdTechApi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IWebHostEnvironment _env;
 
-    public AuthController(IAuthService authService)
+    public AuthController(IAuthService authService, IWebHostEnvironment env)
     {
         _authService = authService;
+        _env = env;
     }
 
     [AllowAnonymous]
@@ -118,6 +120,17 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.ExternalAuthSessionAsync(request.Email, request.Name, request.Role, request.ExternalUserId);
         return Ok(result);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("debug/otp")]
+    public async Task<IActionResult> GetDebugOtp([FromQuery] string identifier, [FromQuery] string type = "login")
+    {
+        if (!_env.IsDevelopment())
+            return NotFound();
+
+        var otp = await _authService.GetLatestOtpAsync(identifier, type);
+        return Ok(new { success = true, otpCode = otp });
     }
 
     private int GetUserId()

@@ -4,29 +4,25 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'backend/**'
-      - 'mobile/**'
       - 'edtech-web/**'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'backend/**'
-      - 'mobile/**'
       - 'edtech-web/**'
 
 jobs:
-  backend-test:
+  dotnet-test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: ./edtech-web/EdTechApi
 
     services:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_DB: edtech_exam_test
+          POSTGRES_DB: edtech_test
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: test
         ports:
@@ -36,40 +32,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: './backend/package-lock.json'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run lint
-        run: npx eslint . --ignore-pattern node_modules/ --ignore-pattern __tests__/
-
-      - name: Run tests
-        run: npm test -- --forceExit --detectOpenHandles
-        env:
-          NODE_ENV: test
-          DB_HOST: localhost
-          DB_NAME: edtech_exam_test
-          DB_USER: postgres
-          DB_PASSWORD: test
-          DB_PORT: 5432
-          JWT_SECRET: ci-jwt-secret
-          GEMINI_API_KEY: ci-test-key
-
-  dotnet-test:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./edtech-web/EdTechApi
 
     steps:
       - uses: actions/checkout@v4
@@ -91,11 +53,11 @@ jobs:
           JWT_SECRET: ci-jwt-secret-that-is-at-least-thirty-two-characters-long!
           NEON_CONNECTION_STRING: Host=localhost;Database=edtech_test;Username=postgres;Password=test
 
-  backend-lint:
+  frontend-lint:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: ./edtech-web/frontend
 
     steps:
       - uses: actions/checkout@v4
@@ -105,36 +67,10 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: './backend/package-lock.json'
+          cache-dependency-path: './edtech-web/frontend/package-lock.json'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run linter
-        run: npx eslint . --ignore-pattern node_modules/
-
-  mobile-check:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./mobile
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-          cache-dependency-path: './mobile/package-lock.json'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: TypeScript type check
-        run: npx tsc --noEmit
-
-      - name: Run lint
-        run: npx eslint . --ignore-pattern node_modules/ --ext .ts,.tsx
-        continue-on-error: true
+        run: npx eslint . --ignore-pattern node_modules/ --ext .js

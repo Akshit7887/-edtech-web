@@ -20,6 +20,7 @@ namespace EdTechApi.Services;
     Task<object> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
     Task<VerifyOtpResponse> ExternalAuthSessionAsync(string email, string name, string role, string externalUserId);
     Task DeleteProfileAsync(int userId);
+    Task<string?> GetLatestOtpAsync(string identifier, string type);
 }
 
 public class AuthService : IAuthService
@@ -218,11 +219,11 @@ public class AuthService : IAuthService
             {
                 Success = true,
                 Message = emailDelivered
-                    ? "OTP sent successfully"
-                    : $"OTP: {otpCode} (email not configured — use this code)",
+                    ? "OTP sent successfully. Please check your email."
+                    : "OTP sent. If email is not configured, check server logs or use the debug endpoint.",
                 UserId = user.Id,
                 Identifier = identifier,
-                OtpCode = emailDelivered ? null : otpCode
+                OtpCode = null
             };
         }
         catch
@@ -316,9 +317,9 @@ public class AuthService : IAuthService
 
         return new RegisterOtpResponse
         {
-            Success = emailDelivered || true,
-            Message = emailDelivered ? "OTP sent successfully" : $"OTP: {otpCode} (email not configured)",
-            OtpCode = emailDelivered ? null : otpCode
+            Success = true,
+            Message = emailDelivered ? "OTP sent successfully. Please check your email." : "OTP sent. If email is not configured, check server logs.",
+            OtpCode = null
         };
     }
 
@@ -616,5 +617,30 @@ public class AuthService : IAuthService
 
         await conn.ExecuteAsync("DELETE FROM \"Users\" WHERE \"id\" = @Id", new { Id = userId });
         await _cache.RemoveAsync($"user:{userId}");
+    }
+
+    public async Task<string?> GetLatestOtpAsync(string identifier, string type)
+    {
+        if (!_env.IsDevelopment())
+            return null;
+
+        using var conn = _db.CreateConnection();
+
+        if (type == "register" || type == "forgot")
+        {
+            var pending = await conn.QueryFirstOrDefaultAsync<PendingRegistration>(
+                "SELECT \"otp_code\" FROM \"PendingRegistrations\" WHERE \"identifier\" = @Id AND \"is_used\" = false ORDER BY \"created_at\" DESC LIMIT 1",
+                new { Id = identifier });
+            return pending?.OtpCode;
+        }
+
+        var user = await conn.QueryFirstOrDefaultAsync<User>(
+            "SELECT \"id\" FROM \"Users\" WHERE \"email\" = @Email", new { Email = identifier });
+        if (user == null) return null;
+
+        var otp = await conn.QueryFirstOrDefaultAsync<OtpToken>(
+            "SELECT \"otp_code\" FROM \"OtpTokens\" WHERE \"user_id\" = @UserId AND \"is_used\" = false ORDER BY \"created_at\" DESC LIMIT 1",
+            new { UserId = user.Id });
+        return otp?.OtpCode;
     }
 }

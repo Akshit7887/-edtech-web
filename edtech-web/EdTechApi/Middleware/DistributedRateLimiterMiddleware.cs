@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using EdTechApi.Services;
+using Microsoft.AspNetCore.Hosting;
 
 namespace EdTechApi.Middleware;
 
@@ -7,6 +8,7 @@ public class DistributedRateLimiterMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<DistributedRateLimiterMiddleware> _logger;
+    private readonly IWebHostEnvironment _env;
     private static readonly TimeSpan AuthWindow = TimeSpan.FromMinutes(1);
     private const int AuthLimit = 5;
     private static readonly TimeSpan OtpWindow = TimeSpan.FromMinutes(1);
@@ -16,19 +18,20 @@ public class DistributedRateLimiterMiddleware
 
     private static readonly HashSet<string> AuthPaths = new(StringComparer.OrdinalIgnoreCase)
     {
-        "/api/auth/login", "/api/auth/register", "/api/auth/forgot-password",
+        "/api/auth/generate-otp", "/api/auth/send-register-otp", "/api/auth/forgot-password",
         "/api/auth/external-session"
     };
 
     private static readonly HashSet<string> OtpPaths = new(StringComparer.OrdinalIgnoreCase)
     {
-        "/api/auth/verify-otp", "/api/auth/register-verify-otp", "/api/auth/reset-password"
+        "/api/auth/verify-otp", "/api/auth/verify-register-otp", "/api/auth/reset-password"
     };
 
-    public DistributedRateLimiterMiddleware(RequestDelegate next, ILogger<DistributedRateLimiterMiddleware> logger)
+    public DistributedRateLimiterMiddleware(RequestDelegate next, ILogger<DistributedRateLimiterMiddleware> logger, IWebHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context, IRedisCacheService cache)
@@ -54,9 +57,24 @@ public class DistributedRateLimiterMiddleware
         {
             allowed = await cache.CheckRateLimitAsync(key, limit, window);
         }
+        else if (_env.IsDevelopment())
+        {
+            // Allow in-memory fallback ONLY in development
+            _logger.LogWarning("Redis not connected - using in-memory rate limiting (development only)");
+            allowed = InMemoryFallback(key, limit, window);
+        }
         else
         {
-            allowed = InMemoryFallback(key, limit, window);
+            // Production: fail closed if Redis unavailable
+            _logger.LogError("Redis not connected - rejecting request (rate limiter requires Redis in production)");
+            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            context.Response.Headers["Retry-After"] = "60";
+            await context.Response.WriteAsJsonAsync(new
+            {
+                success = false,
+                error = "Service temporarily unavailable. Please try again later."
+            });
+            return;
         }
 
         if (!allowed)

@@ -30,17 +30,10 @@ public class GoogleAuthController : ControllerBase
     [HttpGet("callback")]
     public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string? error, [FromQuery] string? state)
     {
-        var frontendFallback = "http://localhost:8081/google-callback.html";
-        string GetFrontendUrl()
-        {
-            var val = _config["Google:FrontendRedirect"];
-            if (!string.IsNullOrEmpty(val)) return val;
-            return Environment.GetEnvironmentVariable("GOOGLE_FRONTEND_REDIRECT") ?? frontendFallback;
-        }
-
         if (!string.IsNullOrEmpty(error))
         {
-            return Redirect($"{GetFrontendUrl()}?error={Uri.EscapeDataString(error)}");
+            var frontendError = GetFrontendRedirectUrl();
+            return Redirect($"{frontendError}?error={Uri.EscapeDataString(error)}");
         }
 
         if (string.IsNullOrEmpty(code))
@@ -48,11 +41,16 @@ public class GoogleAuthController : ControllerBase
             return BadRequest(new { success = false, message = "Missing authorization code" });
         }
 
+        if (string.IsNullOrEmpty(state))
+        {
+            var frontend = GetFrontendRedirectUrl();
+            return Redirect($"{frontend}?error={Uri.EscapeDataString("Invalid OAuth state parameter")}");
+        }
+
         try
         {
-            var selectedRole = !string.IsNullOrEmpty(state) && (state == "teacher" || state == "student") ? state : "student";
-            var result = await _googleAuth.HandleCallbackAsync(code, selectedRole);
-            var frontendUrl = GetFrontendUrl();
+            var result = await _googleAuth.HandleCallbackAsync(code, state);
+            var frontendUrl = GetFrontendRedirectUrl();
             var redirectUrl = $"{frontendUrl}?token={Uri.EscapeDataString(result.Token)}" +
                               $"&user_id={result.User.Id}" +
                               $"&name={Uri.EscapeDataString(result.User.Name)}" +
@@ -62,15 +60,24 @@ public class GoogleAuthController : ControllerBase
         }
         catch (AppException ex)
         {
-            var frontend = _config["Google:FrontendRedirect"] ?? "http://localhost:8081/google-callback.html";
+            var frontend = GetFrontendRedirectUrl();
             return Redirect($"{frontend}?error={Uri.EscapeDataString(ex.Message)}");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error in Google OAuth callback");
-            var frontend = _config["Google:FrontendRedirect"] ?? "http://localhost:8081/google-callback.html";
+            var frontend = GetFrontendRedirectUrl();
             return Redirect($"{frontend}?error={Uri.EscapeDataString("An unexpected error occurred during Google sign-in")}");
         }
+    }
+
+    private string GetFrontendRedirectUrl()
+    {
+        var val = _config["Google:FrontendRedirect"];
+        if (!string.IsNullOrEmpty(val)) return val;
+        var envVal = Environment.GetEnvironmentVariable("GOOGLE_FRONTEND_REDIRECT");
+        if (!string.IsNullOrEmpty(envVal)) return envVal;
+        throw new InvalidOperationException("GOOGLE_FRONTEND_REDIRECT environment variable or Google:FrontendRedirect config must be set");
     }
 
     [HttpPost("signin")]

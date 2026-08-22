@@ -49,6 +49,9 @@ public class ExamSession
     [JsonPropertyName("answers")]
     public List<Answer>? Answers { get; set; }
 
+    [JsonPropertyName("shuffle_mapping")]
+    public Dictionary<int, string>? ShuffleMapping { get; set; }
+
     [JsonPropertyName("created_at")]
     public DateTime CreatedAt { get; set; }
 

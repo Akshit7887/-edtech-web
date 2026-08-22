@@ -1,5 +1,9 @@
 using System.Data;
+using System.Globalization;
+using System.IO;
 using System.Text;
+using CsvHelper;
+using CsvHelper.Configuration;
 using Dapper;
 using EdTechApi.Data;
 using EdTechApi.DTOs;
@@ -403,32 +407,81 @@ public class ExamService : IExamService
         if (allPool.Count < exam.TotalQuestions)
             throw new AppException(400, "Not enough published questions (" + allPool.Count + ") for exam (" + exam.TotalQuestions + ").");
 
-        var lines = csvText.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)).ToList();
-        if (lines.Count == 0) return new BulkImportResponse();
+        if (string.IsNullOrWhiteSpace(csvText))
+            return new BulkImportResponse();
 
-        var header = lines[0].ToLower().Split(',').Select(h => h.Trim()).ToList();
-        var hasName = header.Any(h => h.Contains("name"));
-        var hasPhone = header.Any(h => h.Contains("phone"));
-        var hasEmail = header.Any(h => h.Contains("email"));
-        var dataStart = hasName || hasPhone || hasEmail ? 1 : 0;
+        // Use CsvHelper for robust CSV parsing (handles quoted fields, commas in fields, etc.)
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HasHeaderRecord = true,
+            TrimOptions = TrimOptions.Trim,
+            MissingFieldFound = null,
+            BadDataFound = null,
+            ReadingExceptionOccurred = ex =>
+            {
+                _logger.LogWarning("CSV parsing error at line {Line}: {Message}", ex.Context?.Parser?.Row, ex.Message);
+                return false; // Skip bad rows
+            }
+        };
+
+        using var reader = new StringReader(csvText);
+        using var csv = new CsvReader(reader, config);
+
+        var records = new List<CsvStudentRecord>();
+        try
+        {
+            records = csv.GetRecords<CsvStudentRecord>().ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to parse CSV");
+            throw new AppException(400, "Invalid CSV format: " + ex.Message);
+        }
+
+        if (records.Count == 0)
+            return new BulkImportResponse();
 
         var imported = 0;
         var errors = new List<string>();
 
-        for (int i = dataStart; i < lines.Count; i++)
+        for (int i = 0; i < records.Count; i++)
         {
-            var cols = lines[i].Split(',').Select(c => c.Trim()).ToList();
-            var name = hasName ? cols[header.FindIndex(h => h.Contains("name"))] : (cols.Count > 0 ? cols[0] : "");
-            var phone = hasPhone && header.FindIndex(h => h.Contains("phone")) >= 0 ? cols[header.FindIndex(h => h.Contains("phone"))] : (cols.Count > 1 ? cols[1] : "");
-            var email = hasEmail && header.FindIndex(h => h.Contains("email")) >= 0 ? cols[header.FindIndex(h => h.Contains("email"))] : (cols.Count > 2 ? cols[2] : "");
+            var record = records[i];
+            var rowNum = i + 2; // +2 for header and 0-based index
 
-            if (string.IsNullOrEmpty(name)) { errors.Add("Row " + (i + 1) + ": missing name"); continue; }
+            var name = record.Name?.Trim();
+            var email = record.Email?.Trim();
+            var phone = record.Phone?.Trim();
+
+            if (string.IsNullOrEmpty(name))
+            {
+                errors.Add($"Row {rowNum}: missing name");
+                continue;
+            }
+
+            var identifier = email ?? phone;
+            if (string.IsNullOrEmpty(identifier))
+            {
+                errors.Add($"Row {rowNum}: missing phone or email");
+                continue;
+            }
+
+            // Validate email format if provided
+            if (!string.IsNullOrEmpty(email) && !email.Contains('@'))
+            {
+                errors.Add($"Row {rowNum}: invalid email format");
+                continue;
+            }
+
+            // Validate phone format if provided (basic check)
+            if (!string.IsNullOrEmpty(phone) && !phone.Any(char.IsDigit))
+            {
+                errors.Add($"Row {rowNum}: invalid phone format");
+                continue;
+            }
 
             try
             {
-                var identifier = email ?? phone;
-                if (string.IsNullOrEmpty(identifier)) { errors.Add("Row " + (i + 1) + ": missing phone or email"); continue; }
-
                 var student = identifier.Contains('@')
                     ? await conn.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"Users\" WHERE \"email\" = @Email", new { Email = identifier })
                     : await conn.QueryFirstOrDefaultAsync<User>("SELECT * FROM \"Users\" WHERE \"phone\" = @Phone", new { Phone = identifier });
@@ -462,11 +515,19 @@ public class ExamService : IExamService
             }
             catch (Exception ex)
             {
-                errors.Add("Row " + (i + 1) + ": " + ex.Message);
+                _logger.LogError(ex, "Error importing student at row {Row}", rowNum);
+                errors.Add($"Row {rowNum}: {ex.Message}");
             }
         }
 
         return new BulkImportResponse { Imported = imported, Errors = errors };
+    }
+
+    private class CsvStudentRecord
+    {
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+        public string? Phone { get; set; }
     }
 
     public async Task<byte[]> ExportResultsPdfAsync(int examId, int teacherId)

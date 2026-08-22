@@ -112,8 +112,23 @@ builder.Services.AddSingleton<IRedisCacheService, RedisCacheService>();
 builder.Services.AddSingleton<ICircuitBreakerService, CircuitBreakerService>();
 
 // ── CORS ──
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? new[] { "http://localhost:8081", "http://localhost:5000" };
+var corsOrigins = Environment.GetEnvironmentVariable("CORS_ALLOWED_ORIGINS");
+string[] allowedOrigins;
+if (!string.IsNullOrEmpty(corsOrigins))
+{
+    allowedOrigins = corsOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}
+else
+{
+    var configOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+    allowedOrigins = configOrigins ?? new[] { "http://localhost:8081", "http://localhost:5000" };
+}
+
+// In development, allow all origins for easier testing
+if (builder.Environment.IsDevelopment())
+{
+    allowedOrigins = allowedOrigins.Concat(new[] { "http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8081", "http://127.0.0.1:8081" }).Distinct().ToArray();
+}
 
 builder.Services.AddCors(options =>
 {

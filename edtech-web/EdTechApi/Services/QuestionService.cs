@@ -64,10 +64,51 @@ public class QuestionService : IQuestionService
             if (existing.Status == "completed") throw new AppException(400, "Exam already completed");
         }
 
+        // Get assigned questions and generate shuffle mapping
+        var assignedIds = assignment.QuestionIds ?? new();
+        var allQuestions = (await conn.QueryAsync<QuestionPool>(
+            "SELECT * FROM \"QuestionPool\" WHERE \"exam_id\" = @ExamId",
+            new { ExamId = examId })).ToList();
+
+        var assignedQuestions = allQuestions.Where(q => assignedIds.Contains(q.Id)).ToList();
+        
+        var shuffleMapping = new Dictionary<int, string>();
+        var shuffledQuestions = new List<object>();
+        
+        foreach (var q in assignedQuestions)
+        {
+            var options = new List<(string key, string val)>();
+            if (!string.IsNullOrEmpty(q.OptionA)) options.Add(("A", q.OptionA));
+            if (!string.IsNullOrEmpty(q.OptionB)) options.Add(("B", q.OptionB));
+            if (!string.IsNullOrEmpty(q.OptionC)) options.Add(("C", q.OptionC));
+            if (!string.IsNullOrEmpty(q.OptionD)) options.Add(("D", q.OptionD));
+
+            var correctKey = q.CorrectAnswer;
+            var shuffled = FisherYatesShuffle(options);
+
+            var newKeyMap = new Dictionary<string, string>();
+            for (int i = 0; i < shuffled.Count; i++)
+                newKeyMap[shuffled[i].key] = Letters[i];
+
+            var newCorrect = newKeyMap[correctKey];
+            shuffleMapping[q.Id] = newCorrect;
+
+            shuffledQuestions.Add(new
+            {
+                questionText = q.QuestionText,
+                difficulty = q.Difficulty,
+                points = q.Points,
+                options = shuffled.Select((opt, i) => new { key = Letters[i], value = opt.val }),
+                correctAnswer = newCorrect,
+                originalQuestionId = q.Id
+            });
+        }
+
         var now = DateTime.UtcNow;
+        var mappingJson = System.Text.Json.JsonSerializer.Serialize(shuffleMapping);
         var session = await conn.QuerySingleAsync<ExamSession>(
-            @"INSERT INTO ""ExamSessions"" (""student_id"", ""exam_id"", ""total_questions"", ""status"", ""started_at"", ""time_remaining_seconds"", ""ip_address"", ""user_agent"", ""mode"", ""created_at"", ""updated_at"")
-              VALUES (@StudentId, @ExamId, @TotalQuestions, 'in_progress', @StartedAt, @TimeRemaining, '0.0.0.0', 'mobile', 'exam', @CreatedAt, @UpdatedAt) RETURNING *",
+            @"INSERT INTO ""ExamSessions"" (""student_id"", ""exam_id"", ""total_questions"", ""status"", ""started_at"", ""time_remaining_seconds"", ""ip_address"", ""user_agent"", ""mode"", ""created_at"", ""updated_at"", ""answers"")
+              VALUES (@StudentId, @ExamId, @TotalQuestions, 'in_progress', @StartedAt, @TimeRemaining, '0.0.0.0', 'mobile', 'exam', @CreatedAt, @UpdatedAt, @Answers::jsonb) RETURNING *",
             new
             {
                 StudentId = studentId,
@@ -76,10 +117,14 @@ public class QuestionService : IQuestionService
                 StartedAt = now,
                 TimeRemaining = exam.DurationMinutes * 60,
                 CreatedAt = now,
-                UpdatedAt = now
+                UpdatedAt = now,
+                Answers = mappingJson
             });
 
-        return session;
+        // Set the shuffle mapping on the returned session object
+        session.ShuffleMapping = shuffleMapping;
+
+        return new { session, questions = shuffledQuestions };
     }
 
     public async Task<object> SubmitExamAsync(int sessionId, List<AnswerDto> answers)
@@ -93,6 +138,14 @@ public class QuestionService : IQuestionService
     {
         using var conn = _db.CreateConnection();
 
+        var session = await conn.QueryFirstOrDefaultAsync<ExamSession>(
+            "SELECT * FROM \"ExamSessions\" WHERE \"student_id\" = @StudentId AND \"exam_id\" = @ExamId AND \"status\" = 'in_progress' ORDER BY \"created_at\" DESC LIMIT 1",
+            new { StudentId = studentId, ExamId = examId });
+        
+        if (session == null) throw new AppException(403, "No active exam session found");
+
+        var shuffleMapping = session.ShuffleMapping ?? new Dictionary<int, string>();
+
         var assignment = await conn.QueryFirstOrDefaultAsync<StudentExamAssignment>(
             "SELECT * FROM \"StudentExamAssignments\" WHERE \"student_id\" = @StudentId AND \"exam_id\" = @ExamId",
             new { StudentId = studentId, ExamId = examId });
@@ -104,7 +157,37 @@ public class QuestionService : IQuestionService
             new { ExamId = examId })).ToList();
 
         var assigned = allQuestions.Where(q => assignedIds.Contains(q.Id)).ToList();
-        return assigned.Select(q => ShuffleOptions(q)).Cast<object>().ToList();
+        
+        var shuffledQuestions = assigned.Select(q => 
+        {
+            var options = new List<(string key, string val)>();
+            if (!string.IsNullOrEmpty(q.OptionA)) options.Add(("A", q.OptionA));
+            if (!string.IsNullOrEmpty(q.OptionB)) options.Add(("B", q.OptionB));
+            if (!string.IsNullOrEmpty(q.OptionC)) options.Add(("C", q.OptionC));
+            if (!string.IsNullOrEmpty(q.OptionD)) options.Add(("D", q.OptionD));
+
+            var correctKey = q.CorrectAnswer;
+            var shuffled = FisherYatesShuffle(options);
+
+            var newKeyMap = new Dictionary<string, string>();
+            for (int i = 0; i < shuffled.Count; i++)
+                newKeyMap[shuffled[i].key] = Letters[i];
+
+            // Use stored mapping if available, otherwise compute
+            var newCorrect = shuffleMapping.ContainsKey(q.Id) ? shuffleMapping[q.Id] : newKeyMap[correctKey];
+
+            return new
+            {
+                questionText = q.QuestionText,
+                difficulty = q.Difficulty,
+                points = q.Points,
+                options = shuffled.Select((opt, i) => new { key = Letters[i], value = opt.val }),
+                correctAnswer = newCorrect,
+                originalQuestionId = q.Id
+            };
+        }).Cast<object>().ToList();
+        
+        return shuffledQuestions;
     }
 
     public async Task<ExamStatisticsResponse> GetExamStatisticsAsync(int examId, int teacherId)
@@ -313,7 +396,7 @@ public class QuestionService : IQuestionService
             "SELECT * FROM \"ExamSessions\" WHERE \"id\" = @Id", new { Id = sessionId });
         if (session == null) throw new AppException(404, "Session not found");
 
-        var assignedIds = session.Answers?.Select(a => a.QuestionId).ToList() ?? new();
+        var shuffleMapping = session.ShuffleMapping ?? new Dictionary<int, string>();
         var allQuestions = (await conn.QueryAsync<QuestionPool>(
             "SELECT * FROM \"QuestionPool\" WHERE \"exam_id\" = @ExamId",
             new { ExamId = session.ExamId })).ToList();
@@ -328,7 +411,10 @@ public class QuestionService : IQuestionService
             if (question == null) continue;
             answeredCount++;
 
-            var isCorrect = question.CorrectAnswer == answer.Answer;
+            var correctAnswer = shuffleMapping.ContainsKey(question.Id) 
+                ? shuffleMapping[question.Id] 
+                : question.CorrectAnswer;
+            var isCorrect = correctAnswer == answer.Answer;
             if (isCorrect) score += question.Points;
 
             savedAnswers.Add(new ExamSession.Answer
