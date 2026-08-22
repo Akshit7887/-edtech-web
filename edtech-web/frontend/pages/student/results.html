@@ -5,8 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>My Results - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=13">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
+  <link rel="stylesheet" href="../../css/main.css?v=14">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=14">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -16,15 +16,6 @@
     <button class="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false" type="button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon"><line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/><line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/><line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/></svg></button>
   </nav>
   <div class="layout">
-    <aside class="sidebar">
-      <ul class="sidebar-nav">
-        <li><a href="dashboard.html"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
-        <li><a href="profile.html"><span class="nav-icon">ðŸ‘¤</span><span>Profile &amp; Settings</span></a></li>
-        <li><a href="results.html" class="active"><span class="nav-icon">ðŸ“</span><span>My Results</span></a></li>
-        <li><a href="notifications.html"><span class="nav-icon">ðŸ””</span><span>Notifications</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
-      </ul>
-    </aside>
     <main class="main-content">
       <div class="dashboard-header" data-aos="fade-up">
         <h1>My Results</h1>
@@ -36,14 +27,14 @@
       </div>
     </main>
   </div>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=12"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js?v=14"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
   <script>
     AOS.init({ once: true });
   </script>
-  <script src="../../js/api.js?v=12"></script>
-  <script src="../../js/auth.js?v=12"></script>
-  <script src="../../js/exam.js?v=12"></script>
+  <script src="../../js/api.js?v=14"></script>
+  <script src="../../js/auth.js?v=14"></script>
+  <script src="../../js/exam.js?v=14"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!requireRole('student')) return;
@@ -128,6 +119,6 @@
        }
     }
   </script>
-  <script src="../../js/nav.js?v=12"></script>
+  <script src="../../js/nav.js?v=14"></script>
 </body>
 </html>

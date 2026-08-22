@@ -1,6 +1,6 @@
 /* ============================================================
    EdTech Web - Animation System
-   Minimal, smooth, purposeful animations
+   Smooth, purposeful animations with enhanced micro-interactions
    ============================================================ */
 
 /* ── Keyframes ── */
@@ -125,6 +125,117 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 
+/* ── Enhanced Keyframes ── */
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes slideInBottom {
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInTop {
+  from { opacity: 0; transform: translateY(-40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rotateIn {
+  from { opacity: 0; transform: rotate(-10deg) scale(0.9); }
+  to   { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+@keyframes flipIn {
+  from { opacity: 0; transform: perspective(400px) rotateX(20deg); }
+  to   { opacity: 1; transform: perspective(400px) rotateX(0); }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.3); }
+  50% { opacity: 1; transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes elasticIn {
+  0% { opacity: 0; transform: scale(0); }
+  55% { opacity: 1; transform: scale(1.1); }
+  70% { transform: scale(0.95); }
+  85% { transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 5px var(--accent-ghost); }
+  50% { box-shadow: 0 0 20px var(--accent-ghost), 0 0 40px var(--accent-ghost); }
+}
+
+@keyframes borderGlow {
+  0%, 100% { border-color: var(--border); }
+  50% { border-color: var(--accent); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes wobble {
+  0% { transform: translateX(0); }
+  15% { transform: translateX(-6px) rotate(-3deg); }
+  30% { transform: translateX(5px) rotate(2deg); }
+  45% { transform: translateX(-4px) rotate(-1deg); }
+  60% { transform: translateX(3px) rotate(1deg); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+
+@keyframes rippleExpand {
+  0% { transform: scale(0); opacity: 0.6; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes progressBar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@keyframes slideRight {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideLeft {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes morphIn {
+  0% { opacity: 0; border-radius: 50%; transform: scale(0.5); }
+  50% { border-radius: 20%; }
+  100% { opacity: 1; border-radius: var(--radius-lg); transform: scale(1); }
+}
+
 /* ── Base Animation Utilities ── */
 .anim-fade       { animation: fadeIn      0.4s var(--ease) both; }
 .anim-fade-up    { animation: fadeInUp    0.5s var(--ease) both; }
@@ -139,10 +250,27 @@
 .anim-ring       { animation: ring-pulse 2s ease-in-out infinite; }
 .anim-pop        { animation: pop-success 0.6s var(--ease-bounce) both; }
 
+/* ── Enhanced Animation Utilities ── */
+.anim-fade-in-scale { animation: fadeInScale 0.5s var(--ease) both; }
+.anim-slide-bottom  { animation: slideInBottom 0.6s var(--ease-out) both; }
+.anim-slide-top     { animation: slideInTop 0.6s var(--ease-out) both; }
+.anim-zoom          { animation: zoomIn 0.4s var(--ease-bounce) both; }
+.anim-rotate        { animation: rotateIn 0.5s var(--ease-bounce) both; }
+.anim-flip          { animation: flipIn 0.6s var(--ease) both; }
+.anim-bounce-in     { animation: bounceIn 0.6s var(--ease) both; }
+.anim-elastic       { animation: elasticIn 0.8s var(--ease) both; }
+.anim-glow          { animation: glowPulse 2s ease-in-out infinite; }
+.anim-border-glow   { animation: borderGlow 2s ease-in-out infinite; }
+.anim-shake         { animation: shake 0.5s var(--ease) both; }
+.anim-wobble        { animation: wobble 0.8s var(--ease) both; }
+.anim-heartbeat     { animation: heartbeat 1.5s ease-in-out infinite; }
+.anim-morph         { animation: morphIn 0.6s var(--ease-bounce) both; }
+
 /* ── Animation Durations ── */
 .anim-fast    { animation-duration: 0.2s !important; }
 .anim-normal  { animation-duration: 0.4s !important; }
 .anim-slow    { animation-duration: 0.6s !important; }
+.anim-slower  { animation-duration: 0.8s !important; }
 
 /* ── Stagger Delays ── */
 .stagger-1 { animation-delay: 0.05s; }
@@ -153,6 +281,8 @@
 .stagger-6 { animation-delay: 0.3s; }
 .stagger-7 { animation-delay: 0.35s; }
 .stagger-8 { animation-delay: 0.4s; }
+.stagger-9 { animation-delay: 0.45s; }
+.stagger-10 { animation-delay: 0.5s; }
 
 /* ── Scroll Reveal (used with JS) ── */
 .reveal {
@@ -199,14 +329,19 @@
   transform: scale(1);
 }
 
-/* ── Hover Transitions ── */
+/* ── Enhanced Hover Transitions ── */
 .hover-lift {
   transition: transform var(--duration-normal) var(--ease), box-shadow var(--duration-normal) var(--ease);
 }
 
 .hover-lift:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+}
+
+.hover-lift:active {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .hover-scale {
@@ -214,7 +349,11 @@
 }
 
 .hover-scale:hover {
-  transform: scale(1.02);
+  transform: scale(1.05);
+}
+
+.hover-scale:active {
+  transform: scale(0.98);
 }
 
 .hover-glow {
@@ -223,6 +362,82 @@
 
 .hover-glow:hover {
   box-shadow: var(--shadow-red);
+}
+
+.hover-bright {
+  transition: filter var(--duration-fast) var(--ease), transform var(--duration-fast) var(--ease);
+}
+
+.hover-bright:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.hover-rotate {
+  transition: transform var(--duration-normal) var(--ease);
+}
+
+.hover-rotate:hover {
+  transform: rotate(5deg);
+}
+
+.hover-shake:hover {
+  animation: wobble 0.5s var(--ease);
+}
+
+/* ── Card Hover Effects ── */
+.card-hover {
+  transition: transform var(--duration-normal) var(--ease), box-shadow var(--duration-normal) var(--ease), border-color var(--duration-normal) var(--ease);
+}
+
+.card-hover:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--accent-ghost);
+}
+
+.card-hover:active {
+  transform: translateY(-2px) scale(0.99);
+}
+
+.card-tilt {
+  transition: transform 0.35s var(--ease);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.card-tilt:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(2deg);
+}
+
+/* ── Button Enhancements ── */
+.btn-press {
+  transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+
+.btn-press:active {
+  transform: scale(0.96) translateY(1px);
+  box-shadow: none;
+}
+
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, var(--accent), transparent, var(--accent));
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+  z-index: -1;
+}
+
+.btn-glow:hover::before {
+  opacity: 0.5;
 }
 
 /* ── Link Underline Animation ── */
@@ -237,7 +452,7 @@
   bottom: -2px;
   left: 0;
   width: 100%;
-  height: 1px;
+  height: 2px;
   background: currentColor;
   transform: scaleX(0);
   transform-origin: left;
@@ -361,7 +576,7 @@ body.page-flip-in {
   position: absolute;
   z-index: -1;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   transform: scale(0);
   animation: ripple-in 0.6s var(--ease) forwards;
   pointer-events: none;
@@ -369,6 +584,11 @@ body.page-flip-in {
 
 @keyframes ripple-in {
   to { transform: scale(1); opacity: 0; }
+}
+
+/* ── Enhanced Ripple (larger, more visible) ── */
+.btn-ripple-lg .ripple {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* ── Animated gradient text ── */
@@ -405,6 +625,167 @@ body.page-flip-in {
   border-radius: var(--radius-sm);
 }
 
+.skeleton-text {
+  height: 1em;
+  margin-bottom: 0.5em;
+  border-radius: var(--radius-sm);
+}
+
+.skeleton-text:last-child {
+  width: 70%;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  height: 200px;
+  border-radius: var(--radius-lg);
+}
+
+/* ── Loading Dots ── */
+.loading-dots {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* ── Form Input Animations ── */
+.form-group {
+  position: relative;
+}
+
+.form-input,
+.form-textarea {
+  transition: border-color var(--duration-fast) var(--ease),
+              box-shadow var(--duration-fast) var(--ease),
+              background 0.3s var(--ease),
+              transform 0.2s var(--ease);
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  transform: translateY(-1px);
+}
+
+.form-input:invalid:not(:placeholder-shown),
+.form-textarea:invalid:not(:placeholder-shown) {
+  border-color: var(--error);
+  animation: shake 0.4s var(--ease);
+}
+
+.form-input:valid:not(:placeholder-shown) {
+  border-color: var(--success);
+}
+
+/* ── Floating Label Animation ── */
+.form-floating .form-label {
+  transition: all var(--duration-fast) var(--ease);
+}
+
+.form-floating .form-input:focus ~ .form-label,
+.form-floating .form-input:not(:placeholder-shown) ~ .form-label {
+  color: var(--accent);
+}
+
+/* ── Checkbox/Radio Animations ── */
+input[type="checkbox"],
+input[type="radio"] {
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  animation: bounceIn 0.3s var(--ease);
+}
+
+/* ── Select Animation ── */
+.form-select {
+  transition: border-color var(--duration-fast) var(--ease),
+              box-shadow var(--duration-fast) var(--ease),
+              background 0.3s var(--ease);
+}
+
+/* ── Alert Animations ── */
+.alert {
+  animation: fadeInScale 0.3s var(--ease) both;
+}
+
+.alert-error {
+  animation: fadeInScale 0.3s var(--ease) both, shake 0.4s var(--ease) 0.3s;
+}
+
+/* ── Modal Animations ── */
+.modal {
+  animation: fadeIn 0.2s var(--ease) both;
+}
+
+.modal-content {
+  animation: fadeInScale 0.3s var(--ease-bounce) both;
+}
+
+/* ── Dropdown Animations ── */
+.dropdown-menu {
+  animation: slideInTop 0.2s var(--ease-out) both;
+  transform-origin: top;
+}
+
+/* ── Tooltip Animations ── */
+.tooltip {
+  animation: fadeIn 0.15s var(--ease) both;
+}
+
+/* ── Tab Active Indicator ── */
+.tab-indicator {
+  transition: transform 0.3s var(--ease-bounce), width 0.3s var(--ease);
+}
+
+/* ── Progress Bar Animation ── */
+.progress-bar {
+  animation: progressBar 1s var(--ease-out) both;
+}
+
+/* ── Notification Badge ── */
+.notification-badge {
+  animation: bounceIn 0.4s var(--ease-bounce) both;
+}
+
+.notification-badge.pulse {
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+/* ── Avatar Hover ── */
+.avatar-hover {
+  transition: transform 0.3s var(--ease-bounce), box-shadow 0.3s var(--ease);
+}
+
+.avatar-hover:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 3px var(--accent-ghost);
+}
+
+/* ── Icon Spin on Hover ── */
+.icon-spin:hover svg {
+  animation: spin 0.5s var(--ease);
+}
+
 /* ── Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -417,6 +798,12 @@ body.page-flip-in {
   
   .reveal, .reveal-left, .reveal-right, .reveal-scale {
     opacity: 1;
+    transform: none;
+  }
+  
+  .hover-lift:hover,
+  .hover-scale:hover,
+  .card-hover:hover {
     transform: none;
   }
 }

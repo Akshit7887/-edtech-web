@@ -98,6 +98,8 @@
   align-items: center;
   gap: var(--space-3);
   margin-left: auto;
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--border-light);
 }
 
 /* ── Action icon buttons inside the pill (injected by nav.js) ── */
@@ -908,7 +910,6 @@
 
 .text-center { text-align: center; }
 .text-muted { color: var(--text-muted); }
-.text-sm { font-size: var(--text-sm); }
 
 /* ── Success Pop Notification ── */
 .success-pop-overlay {

@@ -5,28 +5,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Admin Dashboard - EdTech AI Test &amp; Learning App</title>
-  <link rel="stylesheet" href="../../css/main.css?v=13">
-  <link rel="stylesheet" href="../../css/dashboard.css?v=12">
+  <link rel="stylesheet" href="../../css/main.css?v=14">
+  <link rel="stylesheet" href="../../css/dashboard.css?v=14">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <nav class="navbar">
-    <div class="navbar-brand"><span class="brand-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></span>EdTech AI Test &amp; Learning App</div>
+    <a href="dashboard.html" class="navbar-brand"><span class="brand-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8"/><path d="M8 11h6"/></svg></span>EdTech AI Test &amp; Learning App</a>
     <button class="hamburger-btn" aria-label="Open navigation menu" aria-expanded="false" type="button"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hamburger-icon"><line class="hamburger-line top" x1="3" y1="6" x2="21" y2="6"/><line class="hamburger-line mid" x1="3" y1="12" x2="21" y2="12"/><line class="hamburger-line bot" x1="3" y1="18" x2="21" y2="18"/></svg></button>
   </nav>
   <div class="layout">
-    <aside class="sidebar">
-      <ul class="sidebar-nav">
-        <li><a href="dashboard.html" class="active"><span class="nav-icon">ðŸ“Š</span><span>Dashboard</span></a></li>
-        <li><a href="users.html"><span class="nav-icon">ðŸ‘¥</span><span>Users</span></a></li>
-        <li><a href="classes.html"><span class="nav-icon">ðŸ«</span><span>Classes</span></a></li>
-        <li><a href="departments.html"><span class="nav-icon">ðŸ›ï¸</span><span>Departments</span></a></li>
-        <li><a href="exams.html"><span class="nav-icon">ðŸ“</span><span>Exams</span></a></li>
-        <li><a href="db-monitor.html"><span class="nav-icon">ðŸ—„ï¸</span><span>DB Monitor</span></a></li>
-        <li><a href="profile.html"><span class="nav-icon">ðŸ‘¤</span><span>Profile</span></a></li>
-        <li><a href="#" onclick="logout()"><span class="nav-icon">ðŸšª</span><span>Logout</span></a></li>
-      </ul>
-    </aside>
     <main class="main-content">
       <div class="page-header">
         <div>
@@ -128,9 +116,9 @@
     </main>
   </div>
 
-  <script src="../../js/api.js?v=12"></script>
-  <script src="../../js/auth.js?v=12"></script>
-  <script src="../../js/animations.js?v=12"></script>
+  <script src="../../js/api.js?v=14"></script>
+  <script src="../../js/auth.js?v=14"></script>
+  <script src="../../js/animations.js?v=14"></script>
   <script>
 
     async function backfillStudentIds() {
@@ -160,13 +148,13 @@
       try {
         const res = await api.get('/api/admin/stats');
         const d = res.data || {};
-        animateCounter('stat-users', d.total_users || 0);
-        animateCounter('stat-students', d.total_students || 0);
-        animateCounter('stat-teachers', d.total_teachers || 0);
-        animateCounter('stat-exams', d.total_exams || 0);
-        animateCounter('stat-departments', d.total_departments || 0);
-        animateCounter('stat-classes', d.total_classes || 0);
-        animateCounter('stat-pending-teachers', d.pending_teachers || 0);
+        animateCount(document.getElementById('stat-users'), d.total_users || 0);
+        animateCount(document.getElementById('stat-students'), d.total_students || 0);
+        animateCount(document.getElementById('stat-teachers'), d.total_teachers || 0);
+        animateCount(document.getElementById('stat-exams'), d.total_exams || 0);
+        animateCount(document.getElementById('stat-departments'), d.total_departments || 0);
+        animateCount(document.getElementById('stat-classes'), d.total_classes || 0);
+        animateCount(document.getElementById('stat-pending-teachers'), d.pending_teachers || 0);
       } catch (e) {
         document.getElementById('stats-grid').innerHTML = '<div class="alert alert-error">Failed to load stats</div>';
       }
@@ -220,24 +208,7 @@
       }
     }
 
-    function animateCounter(id, target) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const numTarget = typeof target === 'number' ? target : parseFloat(target) || 0;
-      const current = parseInt(el.textContent) || 0;
-      if (current === numTarget) return;
-      const duration = 800;
-      const start = performance.now();
-      const from = current;
-      function update(now) {
-        const progress = Math.min((now - start) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        el.textContent = Math.round(from + (numTarget - from) * eased);
-        if (progress < 1) requestAnimationFrame(update);
-      }
-      requestAnimationFrame(update);
-    }
-  </script>
-  <script src="../../js/nav.js?v=12"></script>
+      </script>
+  <script src="../../js/nav.js?v=14"></script>
 </body>
 </html>
